@@ -1,7 +1,16 @@
-.venv/
-__pycache__/
-*.pyc
-
+# General
+.DS_Store
+.env
 
 # IDE related folders
 .idea/
+
+# Python (Backend)
+__pycache__/
+*.pyc
+.grocery-helper-venv/
+.python-version
+
+# Node (Frontend)
+node_modules/
+dist/
