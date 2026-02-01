@@ -4,6 +4,7 @@ from bson import ObjectId
 from enum import Enum
 from datetime import datetime
 
+
 class GroceryType(Enum):
     WEIGHT = 'weight'
     SACK = 'sack'
@@ -17,7 +18,15 @@ class GroceryStockStatus(Enum):
     FULL_STOCK = 'full_stock'
 
 
+class BestSeller(Enum):
+    MEENA = 'meena'
+    SHWAPNO = 'shwapno'
+    LOCAL = 'local'
+    COMILLA = 'comilla'
+
+
 class Grocery(BaseModel):
+    # required field
     name: str = Field(
         min_length=2,
         max_length=100,
@@ -36,24 +45,14 @@ class Grocery(BaseModel):
         ge=0,
         description="Price of grocery item"
     )
-    quantity_in_stock: PositiveInt = Field(
-        ge=0,
-        default=0,
-        description="Quantity in stock of grocery item"
-    )
-    best_price: PositiveFloat = Field(
-        ge=0,
-        description="Best price of grocery item"
-    )
-    best_seller: str = Field(
-        min_length=1,
-        max_length=100,
-        description="Best seller name"
-    )
     quantity_required: PositiveInt = Field(
         ge=0,
-        default=0,
         description="Quantity in stock of grocery item"
+    )
+    low_stock_threshold: PositiveInt = Field(
+        ge=0,
+        default=1,
+        description="Minimum quantity in stock of grocery item"
     )
 
 
@@ -62,12 +61,17 @@ class GroceryCreate(Grocery):
 
 
 class GroceryOut(Grocery):
-    id: str = Field(..., alias="_id")                   # string version of ObjectId
+    id: str = Field(..., alias="_id")  # string version of ObjectId
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    stock_status: Optional[GroceryStockStatus] = None   # computed field
+
+    # All computed fields live here
+    quantity_in_stock: PositiveInt
+    best_price: PositiveFloat
+    best_seller: BestSeller
+    stock_status: GroceryStockStatus
 
     model_config = {
-        "populate_by_name": True,                       # allow alias="_id"
+        "populate_by_name": True,  # allow alias="_id"
         "json_encoders": {ObjectId: str, datetime: lambda v: v.isoformat()},
     }
