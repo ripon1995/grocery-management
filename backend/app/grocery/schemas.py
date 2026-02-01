@@ -15,7 +15,6 @@ class GroceryType(Enum):
 class GroceryStockStatus(Enum):
     IN_STOCK = 'in_stock'
     BELOW_STOCK = 'below_stock'
-    FULL_STOCK = 'full_stock'
 
 
 class BestSeller(Enum):
@@ -58,6 +57,41 @@ class Grocery(BaseModel):
 
 class GroceryCreate(Grocery):
     pass
+
+
+class GroceryUpdate(BaseModel):
+    """Used for PATCH /groceries/{id}"""
+    name: Optional[str] = Field(
+        default=None,
+        min_length=2,
+        max_length=100,
+        description="New name of grocery item"
+    )
+    brand: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=100,
+        description="New brand name"
+    )
+    type: Optional[GroceryType] = Field(
+        default=None,
+        description="New type of grocery item"
+    )
+    current_price: Optional[PositiveFloat] = Field(
+        default=None,
+        ge=0,
+        description="Updated current price"
+    )
+    quantity_required: Optional[PositiveInt] = Field(
+        default=None,
+        ge=0,
+        description="Updated required quantity"
+    )
+    low_stock_threshold: Optional[PositiveInt] = Field(
+        default=None,
+        ge=0,
+        description="Updated low stock threshold"
+    )
 
 
 class GroceryOut(Grocery):
