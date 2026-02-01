@@ -1,8 +1,12 @@
 from fastapi import FastAPI
+from .grocery.router import router as grocery_router
 
-app = FastAPI()
+app = FastAPI(title='Grocery Helper APIs')
 
 
 @app.get("/")
-def read_root():
-    return {"Hello": "World"}
+def welcome():
+    return {"Hello": "Chief"}
+
+
+app.include_router(grocery_router)
