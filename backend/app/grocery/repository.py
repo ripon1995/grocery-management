@@ -34,3 +34,11 @@ class GroceryRepository:
             return updated
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
+
+    def find_all(self) -> list[Dict[str, Any]]:
+        try:
+            result = self.collection.find().limit(100)
+            return list(result)
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=500, detail="Failed to retrieve items")

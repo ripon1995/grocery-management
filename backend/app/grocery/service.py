@@ -3,7 +3,9 @@ from datetime import datetime
 from typing import Dict, Any
 
 from .repository import GroceryRepository
-from .schemas import GroceryCreate, Grocery, GroceryStockStatus, GroceryUpdate, GroceryOut
+from .schemas.response_schemas import GroceryListDetailResponseSchema, GroceryCreateUpdateResponseSchema
+from .schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
+from ..utils.enums import GroceryStockStatus
 
 
 def get_stock_status(quantity: int, low_stock_threshold: int) -> GroceryStockStatus:
@@ -13,7 +15,7 @@ def get_stock_status(quantity: int, low_stock_threshold: int) -> GroceryStockSta
     return GroceryStockStatus.IN_STOCK
 
 
-def prepare_grocery_document(create_data: GroceryCreate) -> Dict[str, Any]:
+def prepare_grocery_document(create_data: GroceryCreateSchema) -> Dict[str, Any]:
     """
     Prepare MongoDB document with timestamps and any computed fields
     """
@@ -27,7 +29,7 @@ def prepare_grocery_document(create_data: GroceryCreate) -> Dict[str, Any]:
     }
 
 
-def grocery_to_response(doc: Dict[str, Any]) -> Grocery | None:
+def grocery_to_response(doc: Dict[str, Any]) -> GroceryCreateUpdateResponseSchema | None:
     """
     Convert raw MongoDB document → Pydantic response model
     """
@@ -38,13 +40,31 @@ def grocery_to_response(doc: Dict[str, Any]) -> Grocery | None:
     doc["id"] = str(doc.pop("_id"))
 
     # Make sure datetime fields are kept as datetime (Pydantic will serialize them)
-    return Grocery(**doc)
+    return GroceryCreateUpdateResponseSchema(**doc)
+
+
+def grocery_to_list_detail_response(doc: Dict[str, Any]) -> GroceryListDetailResponseSchema | None:
+    """
+    Convert raw MongoDB document → Pydantic response model
+    """
+    if not doc:
+        return None
+
+    # Convert ObjectId → string
+    doc["id"] = str(doc.pop("_id"))
+    doc['quantity_in_stock'] = 77
+    doc['best_price'] = 10000.89
+    doc['best_seller'] = 'meena'
+    doc['stock_status'] = 'in_stock'
+
+    # Make sure datetime fields are kept as datetime (Pydantic will serialize them)
+    return GroceryListDetailResponseSchema(**doc)
 
 
 def create_grocery_item(
-        grocery_data: GroceryCreate,
-        db  # MongoDB database instance
-) -> Grocery:
+        grocery_data: GroceryCreateSchema,
+        db
+) -> GroceryCreateUpdateResponseSchema:
     repository = GroceryRepository(db)
     doc = prepare_grocery_document(grocery_data)
     created_doc = repository.create(doc)
@@ -55,12 +75,11 @@ def create_grocery_item(
 
 def update_grocery_item(
         grocery_id: str,
-        update_data: GroceryUpdate,
+        update_data: GroceryUpdateSchema,
         db
-) -> GroceryOut | None:
+) -> GroceryCreateUpdateResponseSchema | None:
     """
     Update grocery item with partial data.
-    Re-calculates stock_status when relevant fields change.
     """
     repo = GroceryRepository(db)
 
@@ -76,32 +95,6 @@ def update_grocery_item(
     if not update_fields:
         return grocery_to_response(current)
 
-    # 3. Check if stock-related fields are being updated
-    needs_stock_recalculation = False
-
-    if "quantity_in_stock" in update_fields:
-        needs_stock_recalculation = True
-
-    if "low_stock_threshold" in update_fields:
-        needs_stock_recalculation = True
-
-    # 4. Re-calculate stock_status if needed
-    if needs_stock_recalculation:
-        # Use new values if provided, otherwise keep existing
-        new_quantity = update_fields.get(
-            "quantity_in_stock",
-            current.get("quantity_in_stock", 0)
-        )
-        new_threshold = update_fields.get(
-            "low_stock_threshold",
-            current.get("low_stock_threshold", 10)
-        )
-
-        update_fields["stock_status"] = get_stock_status(
-            new_quantity,
-            new_threshold
-        ).value
-
     # 5. Always update timestamp
     update_fields["updated_at"] = datetime.now()
 
@@ -113,3 +106,18 @@ def update_grocery_item(
 
     # 7. Return transformed response
     return grocery_to_response(updated_doc)
+
+
+def get_grocery_item(grocery_id: str, db) -> GroceryListDetailResponseSchema | None:
+    repository = GroceryRepository(db)
+    doc = repository.find_by_id(grocery_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Grocery item not found")
+
+    return grocery_to_list_detail_response(doc)
+
+
+def get_grocery_items(db) -> list[GroceryListDetailResponseSchema]:
+    repository = GroceryRepository(db)
+    docs = repository.find_all()
+    return list(map(lambda doc: grocery_to_list_detail_response(doc), docs))
