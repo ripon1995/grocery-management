@@ -1,15 +1,13 @@
-import {Container, Typography} from '@mui/material';
-import Sample from "../components/Sample.tsx";
-
-export const homeRoute='/';
+import {Typography} from '@mui/material';
+import GroceryTable from "../components/grocery_components/GroceryList.tsx";
+import Box from "@mui/material/Box";
 
 function Home() {
     return (
-        <Container>
-            <Typography variant="h2">Welcome to the Home Page</Typography>
-            <Sample/>
-
-        </Container>
+        <Box>
+            <Typography variant="h4">Monthly Grocery List</Typography>
+            <GroceryTable></GroceryTable>
+        </Box>
     );
 }
 

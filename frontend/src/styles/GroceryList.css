@@ -1,0 +1,13 @@
+.grocery-header {
+    background-color: purple !important;
+}
+
+.grocery-header .MuiTableCell-head {
+    color: white !important;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.grocery-row:hover {
+    background-color: #f3e5f5 !important;
+}
