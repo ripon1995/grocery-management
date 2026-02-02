@@ -5,7 +5,7 @@ import './App.css'
 import Home from "./pages/Home.tsx";
 import About from "./pages/About.tsx";
 import PATHS from "./utils/paths.ts";
-import MonthlyGroceryAppBar from "./components/MonthlyGroceryAppBar.tsx";
+import MonthlyGroceryAppBar from "./components/common/MonthlyGroceryAppBar.tsx";
 
 
 function App() {

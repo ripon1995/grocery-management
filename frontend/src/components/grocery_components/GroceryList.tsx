@@ -9,6 +9,8 @@ import type {IGroceryListItem} from "../../types/IGroceryList.ts";
 import {BestSeller, GroceryStockStatus, GroceryType} from "../../utils/enums.ts";
 import {Chip} from "@mui/material";
 import '../../styles/GroceryList.css';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpwardRounded';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 
 const createGroceryListItem = (
@@ -102,9 +104,13 @@ function GroceryTable() {
                                 <TableCell align="right">{row.updated_at}</TableCell>
                                 <TableCell align="center">
                                     <Chip
+                                        icon={
+                                            row.stock_status === GroceryStockStatus.IN_STOCK
+                                                ? <ArrowUpwardIcon sx={{ fontSize: '15px !important' }}/>
+                                                : <ArrowDownwardIcon sx={{ fontSize: '15px !important' }}/>
+                                        }
                                         label={row.stock_status === GroceryStockStatus.IN_STOCK ? 'In Stock' : 'Low Stock'}
                                         color={row.stock_status === GroceryStockStatus.IN_STOCK ? 'success' : 'error'}
-                                        size="small"
                                         variant="outlined"
                                     />
                                 </TableCell>
