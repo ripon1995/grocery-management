@@ -8,7 +8,7 @@ from .schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
 from ..utils.enums import GroceryStockStatus
 
 
-def get_stock_status(quantity: int, low_stock_threshold: int) -> GroceryStockStatus:
+def __get_stock_status(quantity: int, low_stock_threshold: int) -> GroceryStockStatus:
     """Pure business rule — easy to test separately"""
     if quantity <= low_stock_threshold:
         return GroceryStockStatus.BELOW_STOCK
@@ -55,7 +55,7 @@ def grocery_to_list_detail_response(doc: Dict[str, Any]) -> GroceryListDetailRes
     doc['quantity_in_stock'] = 77
     doc['best_price'] = 10000.89
     doc['best_seller'] = 'meena'
-    doc['stock_status'] = 'in_stock'
+    doc['stock_status'] = __get_stock_status(doc['quantity_in_stock'], doc['low_stock_threshold'])
 
     # Make sure datetime fields are kept as datetime (Pydantic will serialize them)
     return GroceryListDetailResponseSchema(**doc)
