@@ -2,6 +2,8 @@ from fastapi import HTTPException
 from datetime import datetime
 from typing import Dict, Any
 
+from pydantic.v1 import PositiveFloat
+
 from .repository import GroceryRepository
 from .schemas.response_schemas import GroceryListDetailResponseSchema, GroceryCreateUpdateResponseSchema
 from .schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
@@ -13,6 +15,10 @@ def __get_stock_status(quantity: int, low_stock_threshold: int) -> GroceryStockS
     if quantity <= low_stock_threshold:
         return GroceryStockStatus.BELOW_STOCK
     return GroceryStockStatus.IN_STOCK
+
+# TODO -> check this
+def __calculate_best_price(new_price: float, best_price: float) -> float:
+    return min(new_price, best_price)
 
 
 def prepare_grocery_document(create_data: GroceryCreateSchema) -> Dict[str, Any]:
@@ -52,7 +58,6 @@ def grocery_to_list_detail_response(doc: Dict[str, Any]) -> GroceryListDetailRes
 
     # Convert ObjectId → string
     doc["id"] = str(doc.pop("_id"))
-    doc['quantity_in_stock'] = 77
     doc['best_price'] = 10000.89
     doc['best_seller'] = 'meena'
     doc['stock_status'] = __get_stock_status(doc['quantity_in_stock'], doc['low_stock_threshold'])
@@ -97,6 +102,8 @@ def update_grocery_item(
 
     # 5. Always update timestamp
     update_fields["updated_at"] = datetime.now()
+    # TODO -> Check this
+    update_fields['best_price'] = __calculate_best_price(update_fields['current_price'], current['best_price'])
 
     # 6. Perform the update
     updated_doc = repo.update(grocery_id, update_fields)

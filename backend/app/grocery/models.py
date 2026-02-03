@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
+from pydantic import BaseModel, Field, PositiveFloat, PositiveInt, Optional
 
 from backend.app.utils.enums import GroceryType
 
@@ -30,4 +30,10 @@ class Grocery(BaseModel):
         ge=0,
         default=1,
         description="Minimum quantity in stock of grocery item"
+    )
+    # TODO -> check this
+    # calculated field
+    best_price: Optional[PositiveFloat] = Field(
+        default=None,
+        description="Lowest price recorded. Defaults to current_price if not provided."
     )
