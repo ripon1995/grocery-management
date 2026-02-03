@@ -31,7 +31,7 @@ class GroceryUpdateSchema(BaseModel):
         ge=0,
         description="Updated current price"
     )
-    quantity_required: Optional[PositiveInt] = Field(
+    quantity_in_stock: Optional[PositiveInt] = Field(
         default=None,
         ge=0,
         description="Updated required quantity"

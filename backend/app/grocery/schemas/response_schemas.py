@@ -12,7 +12,6 @@ class GroceryListDetailResponseSchema(Grocery):
     updated_at: Optional[datetime] = None
 
     # All computed fields live here
-    quantity_in_stock: PositiveInt
     best_price: PositiveFloat
     best_seller: BestSeller
     stock_status: GroceryStockStatus

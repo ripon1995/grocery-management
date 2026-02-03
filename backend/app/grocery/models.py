@@ -22,7 +22,7 @@ class Grocery(BaseModel):
         ge=0,
         description="Price of grocery item"
     )
-    quantity_required: PositiveInt = Field(
+    quantity_in_stock: PositiveInt = Field(
         ge=0,
         description="Quantity in stock of grocery item"
     )
