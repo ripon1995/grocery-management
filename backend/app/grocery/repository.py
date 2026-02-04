@@ -1,14 +1,17 @@
-from bson import ObjectId
 from typing import Optional, Dict, Any
 
+from bson import ObjectId
 from fastapi import HTTPException
+
+from backend.app.grocery.models import Grocery
 
 
 class GroceryRepository:
     def __init__(self, db):
         self.collection = db.groceries
 
-    def create(self, document: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def create(self, grocery: Grocery) -> Dict[str, Any]:
+        document = grocery.model_dump(mode='json')
         result = self.collection.insert_one(document)
         return self.collection.find_one({"_id": result.inserted_id})
 

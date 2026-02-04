@@ -1,11 +1,11 @@
 from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
 from typing import Optional
 
-from ..models import Grocery
-from ...utils.enums import GroceryType
+from ..models import GroceryBase
+from ...utils.enums import GroceryType, Seller
 
 
-class GroceryCreateSchema(Grocery):
+class GroceryCreateSchema(GroceryBase):
     pass
 
 
@@ -40,4 +40,8 @@ class GroceryUpdateSchema(BaseModel):
         default=None,
         ge=0,
         description="Updated low stock threshold"
+    )
+    current_seller: Optional[str] = Field(
+        default=Seller.MEENA.value,
+        description="Seller of grocery item"
     )

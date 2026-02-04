@@ -1,39 +1,19 @@
-from pydantic import BaseModel, Field, PositiveFloat, PositiveInt, Optional
+from typing import Optional
+from pydantic import Field, PositiveFloat
 
-from backend.app.utils.enums import GroceryType
+from backend.app.grocery.schemas.grocery_base import GroceryBase
 
 
-class Grocery(BaseModel):
-    name: str = Field(
-        min_length=2,
-        max_length=100,
-        description="Name of grocery item"
-    )
-    brand: str = Field(
-        min_length=1,
-        max_length=100,
-        description="Brand of grocery item"
-    )
-    type: GroceryType = Field(
-        default=GroceryType.CAN,
-        description="Type of grocery item"
-    )
-    current_price: PositiveFloat = Field(
-        ge=0,
-        description="Price of grocery item"
-    )
-    quantity_in_stock: PositiveInt = Field(
-        ge=0,
-        description="Quantity in stock of grocery item"
-    )
-    low_stock_threshold: PositiveInt = Field(
-        ge=0,
-        default=1,
-        description="Minimum quantity in stock of grocery item"
-    )
-    # TODO -> check this
+# db model
+# talks with database
+class Grocery(GroceryBase):
+    # inherits all the fields from grocery base and adds the new fields
     # calculated field
     best_price: Optional[PositiveFloat] = Field(
         default=None,
         description="Lowest price recorded. Defaults to current_price if not provided."
+    )
+    best_seller: Optional[str] = Field(
+        default=None,
+        description="Best seller recorded. Defaults to current_price if not provided."
     )

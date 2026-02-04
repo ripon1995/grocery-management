@@ -1,19 +1,18 @@
-from pydantic import PositiveFloat, PositiveInt
-from typing import Optional
-from bson import ObjectId
 from datetime import datetime
-from ..models import Grocery
-from ...utils.enums import BestSeller, GroceryStockStatus
+from typing import Optional
+
+from bson import ObjectId
+
+from ..models import GroceryBase
+from ...utils.enums import GroceryStockStatus
 
 
-class GroceryListDetailResponseSchema(Grocery):
+class GroceryListDetailResponseSchema(GroceryBase):
     id: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
     # All computed fields live here
-    best_price: PositiveFloat
-    best_seller: BestSeller
     stock_status: GroceryStockStatus
 
     model_config = {
@@ -22,7 +21,7 @@ class GroceryListDetailResponseSchema(Grocery):
     }
 
 
-class GroceryCreateUpdateResponseSchema(Grocery):
+class GroceryCreateUpdateResponseSchema(GroceryBase):
     id: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

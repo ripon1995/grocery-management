@@ -1,12 +1,13 @@
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
 
 from fastapi import HTTPException
 
+from .models import Grocery
 from .repository import GroceryRepository
 from .schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
 from .schemas.response_schemas import GroceryListDetailResponseSchema, GroceryCreateUpdateResponseSchema
-from ..utils.enums import GroceryStockStatus
+from ..utils.enums import GroceryStockStatus, Seller
 
 
 def __get_stock_status(quantity: int, low_stock_threshold: int) -> GroceryStockStatus:
@@ -16,24 +17,31 @@ def __get_stock_status(quantity: int, low_stock_threshold: int) -> GroceryStockS
     return GroceryStockStatus.IN_STOCK
 
 
-def __calculate_best_price(new_price: float, best_price: float) -> float:
+def __update_best_price_and_best_seller(
+        new_price: float,
+        best_price: float,
+        new_seller: str,
+        best_seller: str,
+) -> Tuple[float, str]:
     if best_price is None:
         best_price = new_price
-    return min(new_price, best_price)
+        best_seller = Seller.MEENA.value
+        return best_price, best_seller
+    if new_price < best_price:
+        best_price = new_price
+        best_seller = new_seller
+
+    return best_price, best_seller
 
 
-def prepare_grocery_document(create_data: GroceryCreateSchema) -> Dict[str, Any]:
-    """
-    Prepare MongoDB document with timestamps and any computed fields
-    """
-    now = datetime.now()
-    return {
+def prepare_grocery_model(create_data: GroceryCreateSchema) -> Grocery:
+    grocery = Grocery(
         **create_data.model_dump(mode='json'),
-        "created_at": now,
-        "updated_at": now,
-        # You can add more automatic fields here if needed
-        # e.g. "stock_status": compute_stock_status(create_data.quantity_in_stock),
-    }
+        best_price=create_data.current_price,
+        best_seller=create_data.current_seller
+    )
+
+    return grocery
 
 
 def grocery_to_response(doc: Dict[str, Any]) -> GroceryCreateUpdateResponseSchema | None:
@@ -50,6 +58,20 @@ def grocery_to_response(doc: Dict[str, Any]) -> GroceryCreateUpdateResponseSchem
     return GroceryCreateUpdateResponseSchema(**doc)
 
 
+def create_grocery_item(
+        grocery_data: GroceryCreateSchema,
+        db
+) -> GroceryCreateUpdateResponseSchema:
+    repository = GroceryRepository(db)
+    internal_model = prepare_grocery_model(grocery_data)
+    created_doc = repository.create(internal_model)
+    if not created_doc:
+        raise HTTPException(status_code=400, detail="Failed to create grocery item")
+    return grocery_to_response(created_doc)
+
+
+
+################ updated ###################
 def grocery_to_list_detail_response(doc: Dict[str, Any]) -> GroceryListDetailResponseSchema | None:
     """
     Convert raw MongoDB document → Pydantic response model
@@ -59,24 +81,13 @@ def grocery_to_list_detail_response(doc: Dict[str, Any]) -> GroceryListDetailRes
 
     # Convert ObjectId → string
     doc["id"] = str(doc.pop("_id"))
-    doc['best_price'] = __calculate_best_price(doc['current_price'], doc['best_price'])
-    doc['best_seller'] = 'meena'
+    # display information
+    # not stored in backend
+    # only calculated on the fly
     doc['stock_status'] = __get_stock_status(doc['quantity_in_stock'], doc['low_stock_threshold'])
 
     # Make sure datetime fields are kept as datetime (Pydantic will serialize them)
     return GroceryListDetailResponseSchema(**doc)
-
-
-def create_grocery_item(
-        grocery_data: GroceryCreateSchema,
-        db
-) -> GroceryCreateUpdateResponseSchema:
-    repository = GroceryRepository(db)
-    doc = prepare_grocery_document(grocery_data)
-    created_doc = repository.create(doc)
-    if not created_doc:
-        raise HTTPException(status_code=400, detail="Failed to create grocery item")
-    return grocery_to_response(created_doc)
 
 
 def update_grocery_item(
@@ -103,8 +114,10 @@ def update_grocery_item(
 
     # 5. Always update timestamp
     update_fields["updated_at"] = datetime.now()
-    # TODO -> Check this
-    update_fields['best_price'] = __calculate_best_price(update_fields['current_price'], current['best_price'])
+    update_fields['best_price'], update_fields['best_seller'] = __update_best_price_and_best_seller(
+        update_fields['current_price'], current['best_price'],
+        update_fields['current_seller'], current['best_seller']
+    )
 
     # 6. Perform the update
     updated_doc = repo.update(grocery_id, update_fields)

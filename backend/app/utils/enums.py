@@ -13,7 +13,7 @@ class GroceryStockStatus(Enum):
     BELOW_STOCK = 'below_stock'
 
 
-class BestSeller(Enum):
+class Seller(Enum):
     MEENA = 'meena'
     SHWAPNO = 'shwapno'
     LOCAL = 'local'
