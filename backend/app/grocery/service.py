@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Dict, Any, Tuple
+from typing import Tuple
 
 from fastapi import HTTPException
 
@@ -67,25 +66,6 @@ def create_grocery_item(
     return grocery_to_response(created_grocery)
 
 
-################ updated ###################
-def grocery_to_list_detail_response(doc: Dict[str, Any]) -> GroceryListDetailResponseSchema | None:
-    """
-    Convert raw MongoDB document → Pydantic response model
-    """
-    if not doc:
-        return None
-
-    # Convert ObjectId → string
-    doc["id"] = str(doc.pop("_id"))
-    # display information
-    # not stored in backend
-    # only calculated on the fly
-    doc['stock_status'] = __get_stock_status(doc['quantity_in_stock'], doc['low_stock_threshold'])
-
-    # Make sure datetime fields are kept as datetime (Pydantic will serialize them)
-    return GroceryListDetailResponseSchema(**doc)
-
-
 def update_grocery_item(
         grocery_id: str,
         update_data: GroceryUpdateSchema,
@@ -97,8 +77,8 @@ def update_grocery_item(
     repo = GroceryRepository(db)
 
     # 1. Fetch current document
-    current = repo.find_by_id(grocery_id)
-    if not current:
+    current_grocery = repo.find_by_id(grocery_id)
+    if not current_grocery:
         raise HTTPException(status_code=404, detail="Grocery item not found")
 
     # 2. Prepare update payload
@@ -106,35 +86,51 @@ def update_grocery_item(
 
     # If nothing was sent → return current state (no-op update)
     if not update_fields:
-        return grocery_to_response(current)
+        return grocery_to_response(current_grocery)
 
     # 5. Always update timestamp
-    update_fields["updated_at"] = datetime.now()
-    update_fields['best_price'], update_fields['best_seller'] = __update_best_price_and_best_seller(
-        update_fields['current_price'], current['best_price'],
-        update_fields['current_seller'], current['best_seller']
+    new_price = update_fields.get("current_price", current_grocery.current_price)
+    new_seller = update_fields.get("current_seller", current_grocery.current_seller)
+
+    # Calculate the new best pair
+    best_p, best_s = __update_best_price_and_best_seller(
+        new_price,
+        current_grocery.best_price,
+        new_seller,
+        current_grocery.best_seller
     )
+    update_fields["best_price"] = best_p
+    update_fields["best_seller"] = best_s
 
     # 6. Perform the update
-    updated_doc = repo.update(grocery_id, update_fields)
+    updated_grocery = repo.update(grocery_id, update_fields)
 
-    if not updated_doc:
+    if not updated_grocery:
         raise HTTPException(status_code=500, detail="Failed to update grocery item")
 
     # 7. Return transformed response
-    return grocery_to_response(updated_doc)
+    return grocery_to_response(updated_grocery)
+
+
+def grocery_to_list_detail_response(grocery: Grocery) -> GroceryListDetailResponseSchema | None:
+    if not grocery:
+        return None
+    stock_status = __get_stock_status(grocery.quantity_in_stock, grocery.low_stock_threshold)
+    response_data = grocery.model_dump()
+    response_data["stock_status"] = stock_status
+    return GroceryListDetailResponseSchema(**response_data)
 
 
 def get_grocery_item(grocery_id: str, db) -> GroceryListDetailResponseSchema | None:
     repository = GroceryRepository(db)
-    doc = repository.find_by_id(grocery_id)
-    if not doc:
+    grocery = repository.find_by_id(grocery_id)
+    if not grocery:
         raise HTTPException(status_code=404, detail="Grocery item not found")
 
-    return grocery_to_list_detail_response(doc)
+    return grocery_to_list_detail_response(grocery)
 
 
 def get_grocery_items(db) -> list[GroceryListDetailResponseSchema]:
     repository = GroceryRepository(db)
-    docs = repository.find_all()
-    return list(map(lambda doc: grocery_to_list_detail_response(doc), docs))
+    groceries = repository.find_all()
+    return list(map(lambda doc: grocery_to_list_detail_response(doc), groceries))
