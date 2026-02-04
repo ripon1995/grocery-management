@@ -10,10 +10,12 @@ class GroceryRepository:
     def __init__(self, db):
         self.collection = db.groceries
 
-    def create(self, grocery: Grocery) -> Dict[str, Any]:
+    def create(self, grocery: Grocery) -> Grocery:
         document = grocery.model_dump(mode='json')
         result = self.collection.insert_one(document)
-        return self.collection.find_one({"_id": result.inserted_id})
+        saved_doc = self.collection.find_one({"_id": result.inserted_id})
+        saved_doc["_id"] = str(saved_doc["_id"])
+        return Grocery(**saved_doc)
 
     def find_by_id(self, id_str: str) -> Optional[Dict[str, Any]]:
         try:

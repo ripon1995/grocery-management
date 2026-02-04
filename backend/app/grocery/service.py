@@ -44,18 +44,15 @@ def prepare_grocery_model(create_data: GroceryCreateSchema) -> Grocery:
     return grocery
 
 
-def grocery_to_response(doc: Dict[str, Any]) -> GroceryCreateUpdateResponseSchema | None:
+def grocery_to_response(grocery: Grocery) -> GroceryCreateUpdateResponseSchema | None:
     """
     Convert raw MongoDB document → Pydantic response model
     """
-    if not doc:
+    if not grocery:
         return None
 
-    # Convert ObjectId → string
-    doc["id"] = str(doc.pop("_id"))
-
     # Make sure datetime fields are kept as datetime (Pydantic will serialize them)
-    return GroceryCreateUpdateResponseSchema(**doc)
+    return GroceryCreateUpdateResponseSchema(**grocery.model_dump(mode="json"))
 
 
 def create_grocery_item(
@@ -64,11 +61,10 @@ def create_grocery_item(
 ) -> GroceryCreateUpdateResponseSchema:
     repository = GroceryRepository(db)
     internal_model = prepare_grocery_model(grocery_data)
-    created_doc = repository.create(internal_model)
-    if not created_doc:
+    created_grocery = repository.create(internal_model)
+    if not created_grocery:
         raise HTTPException(status_code=400, detail="Failed to create grocery item")
-    return grocery_to_response(created_doc)
-
+    return grocery_to_response(created_grocery)
 
 
 ################ updated ###################
