@@ -1,12 +1,11 @@
-from fastapi import HTTPException
 from datetime import datetime
 from typing import Dict, Any
 
-from pydantic.v1 import PositiveFloat
+from fastapi import HTTPException
 
 from .repository import GroceryRepository
-from .schemas.response_schemas import GroceryListDetailResponseSchema, GroceryCreateUpdateResponseSchema
 from .schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
+from .schemas.response_schemas import GroceryListDetailResponseSchema, GroceryCreateUpdateResponseSchema
 from ..utils.enums import GroceryStockStatus
 
 
@@ -16,8 +15,10 @@ def __get_stock_status(quantity: int, low_stock_threshold: int) -> GroceryStockS
         return GroceryStockStatus.BELOW_STOCK
     return GroceryStockStatus.IN_STOCK
 
-# TODO -> check this
+
 def __calculate_best_price(new_price: float, best_price: float) -> float:
+    if best_price is None:
+        best_price = new_price
     return min(new_price, best_price)
 
 
@@ -58,7 +59,7 @@ def grocery_to_list_detail_response(doc: Dict[str, Any]) -> GroceryListDetailRes
 
     # Convert ObjectId → string
     doc["id"] = str(doc.pop("_id"))
-    doc['best_price'] = 10000.89
+    doc['best_price'] = __calculate_best_price(doc['current_price'], doc['best_price'])
     doc['best_seller'] = 'meena'
     doc['stock_status'] = __get_stock_status(doc['quantity_in_stock'], doc['low_stock_threshold'])
 
