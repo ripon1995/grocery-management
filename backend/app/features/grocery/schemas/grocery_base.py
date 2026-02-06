@@ -1,3 +1,9 @@
+"""
+Pydantic schemas only
+NO DB LOGIC
+"""
+
+
 from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
 from backend.app.utils.enums import GroceryType, Seller
 

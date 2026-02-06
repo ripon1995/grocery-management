@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from .grocery.router import router as grocery_router
-from .database.database_client import get_client, close_mongo_connection
+from .db.session import get_client, close_mongo_connection
 
 
 @asynccontextmanager

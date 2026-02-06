@@ -1,3 +1,8 @@
+"""
+TALKS TO DB ONLY
+No FASTAPI no HTTP concepts
+"""
+
 from typing import Optional, Dict, Any, List
 
 from bson import ObjectId

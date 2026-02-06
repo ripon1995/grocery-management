@@ -1,3 +1,12 @@
+"""
+Only HTTP concerns:
+	•	request/response
+	•	status codes
+	•	dependency injection
+
+Router should be thin.
+"""
+
 from fastapi import APIRouter, status, Depends
 
 from .service import create_grocery_item, update_grocery_item, get_grocery_items, get_grocery_item

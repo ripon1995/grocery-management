@@ -1,3 +1,21 @@
+"""
+service.py — Business logic layer
+
+Where real logic lives.
+
+Examples:
+	•	validation rules
+	•	permissions
+	•	workflows
+	•	orchestration across repositories
+
+Service calls repository.
+
+Router calls service.
+
+Never skip this layer in large apps.
+"""
+
 from typing import Tuple
 
 from fastapi import HTTPException
