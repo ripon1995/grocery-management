@@ -1,20 +1,7 @@
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from .grocery.router import router as grocery_router
-from .db.session import get_client, close_mongo_connection
+from app.api.router import api_router
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    get_client()
-    yield
-    close_mongo_connection()
-
-
-app = FastAPI(
-    title='Grocery Helper APIs',
-    lifespan=lifespan,
-)
+app = FastAPI(title='Grocery Helper APIs')
 
 
 @app.get("/")
@@ -22,4 +9,4 @@ def welcome():
     return {"Hello": "Chief"}
 
 
-app.include_router(grocery_router)
+app.include_router(api_router, prefix='/api')
