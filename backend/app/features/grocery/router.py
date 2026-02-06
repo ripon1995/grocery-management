@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, Depends
 
 from .service import create_grocery_item, update_grocery_item, get_grocery_items, get_grocery_item
-from ..database.database_client import get_db
+from ..db.session import get_db
 
 from .schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
 from .schemas.response_schemas import GroceryListDetailResponseSchema, GroceryCreateUpdateResponseSchema

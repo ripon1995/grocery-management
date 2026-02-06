@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
 from backend.app.utils.enums import GroceryType, Seller
 
 
+from sqlalchemy import String
+
 # base model talks with user only
 class GroceryBase(BaseModel):
     name: str = Field(

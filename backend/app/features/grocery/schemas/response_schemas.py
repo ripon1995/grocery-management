@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import Optional
 
-from bson import ObjectId
-
 from ..models import GroceryBase
 from ...utils.enums import GroceryStockStatus
 
@@ -17,7 +15,7 @@ class GroceryListDetailResponseSchema(GroceryBase):
 
     model_config = {
         "populate_by_name": True,  # allow alias="_id"
-        "json_encoders": {ObjectId: str, datetime: lambda v: v.isoformat()},
+        # "json_encoders": {ObjectId: str, datetime: lambda v: v.isoformat()},
     }
 
 
