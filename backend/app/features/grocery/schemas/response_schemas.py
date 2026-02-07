@@ -1,25 +1,22 @@
-from datetime import datetime
-from typing import Optional
+from pydantic import BaseModel, ConfigDict
 
-from ..models import GroceryBase
-from ...utils.enums import GroceryStockStatus
+from app.common.enums import GroceryType, Seller
 
 
-class GroceryListDetailResponseSchema(GroceryBase):
-    id: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+class GroceryListDetailResponseSchema(BaseModel):
+    name: str
+    brand: str
+    type: GroceryType
+    current_price: float
+    current_seller: Seller
+    low_stock_threshold: int
+    quantity_in_stock: int
+    should_include: bool
 
-    # All computed fields live here
-    stock_status: GroceryStockStatus
-
-    model_config = {
-        "populate_by_name": True,  # allow alias="_id"
-        # "json_encoders": {ObjectId: str, datetime: lambda v: v.isoformat()},
-    }
-
-
-class GroceryCreateUpdateResponseSchema(GroceryBase):
-    id: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_encoders={
+            GroceryType: lambda v: v.value,
+            Seller: lambda v: v.value,
+        }
+    )
