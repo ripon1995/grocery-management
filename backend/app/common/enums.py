@@ -18,3 +18,4 @@ class Seller(str, Enum):
     SHWAPNO = 'shwapno'
     LOCAL = 'local'
     COMILLA = 'comilla'
+    DEFAULT = 'default'

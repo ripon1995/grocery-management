@@ -50,4 +50,16 @@ class Grocery(Base, BaseModelMixin):
         Boolean,
         default=False
     )
-
+    # computed field
+    # following field will be computed everytime when an instance is created
+    # or updated
+    best_seller: Mapped[Seller] = mapped_column(
+        SQLEnum(Seller),
+        nullable=False,
+        default=Seller.DEFAULT
+    )
+    best_price: Mapped[float] = mapped_column(
+        Float(precision=2),
+        nullable=True,
+        default=0.0
+    )

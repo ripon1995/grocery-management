@@ -16,6 +16,8 @@ class GroceryBaseResponseSchema(BaseModel):
     low_stock_threshold: int
     quantity_in_stock: int
     should_include: bool
+    best_seller: Seller
+    best_price: float
 
     model_config = ConfigDict(
         from_attributes=True,
