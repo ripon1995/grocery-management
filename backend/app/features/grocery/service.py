@@ -20,17 +20,21 @@ from typing import Tuple, List
 
 from app.common.enums import Seller, GroceryStockStatus
 from .repository import GroceryRepository
-from .schemas.response_schemas import GroceryListDetailResponseSchema
+from .schemas.response_schemas import GroceryListResponseSchema, GroceryDetailResponseSchema
 
 
 class GroceryService:
     def __init__(self, repo: GroceryRepository):
         self.repo = repo
 
-    async def list_all_groceries(self) -> List[GroceryListDetailResponseSchema]:
+    async def list_all_groceries(self) -> List[GroceryListResponseSchema]:
         groceries = await self.repo.get_groceries()
 
-        return [GroceryListDetailResponseSchema.model_validate(item) for item in groceries]
+        return [GroceryListResponseSchema.model_validate(item) for item in groceries]
+
+    async def get_grocery_by_id(self, grocery_id) -> GroceryDetailResponseSchema:
+        grocery = await self.repo.get_by_id(grocery_id)
+        return GroceryDetailResponseSchema.model_validate(grocery)
 
 
 ########################################################################################################################################
