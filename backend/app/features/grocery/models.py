@@ -2,31 +2,52 @@
 DB structure only
 """
 
-from app.database.base import Base
-
-from sqlalchemy import String, Boolean, DateTime, func
+from sqlalchemy import (
+    String, Boolean, Integer, Float,
+    Enum as SQLEnum,
+)
 from sqlalchemy.orm import Mapped, mapped_column
-from datetime import datetime
+
+from app.common.enums import GroceryType, Seller
+from app.db.base import Base
+from app.db.mixins import BaseModelMixin
 
 
-class Todo(Base):
-    __tablename__ = "todos"
+class Grocery(Base, BaseModelMixin):
+    __tablename__ = "grocery"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-
-    description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
-
-    is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now()
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
+    brand: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
+    type: Mapped[GroceryType] = mapped_column(
+        SQLEnum(GroceryType),
+        default=GroceryType.CAN,
+        nullable=False
+    )
+    current_price: Mapped[float] = mapped_column(
+        Float(precision=2),
+        nullable=False
+    )
+    current_seller: Mapped[Seller] = mapped_column(
+        SQLEnum(Seller),
+        default=Seller.MEENA,
+        nullable=False
+    )
+    low_stock_threshold: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )
+    quantity_in_stock: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )
+    should_include: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False
     )
 
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now()
-    )
