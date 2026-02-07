@@ -23,3 +23,8 @@ class GroceryRepository:
         stmt = select(Grocery).where(Grocery.id == grocery_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def add_grocery(self, grocery: Grocery) -> Grocery:
+        self.session.add(grocery)
+        await self.session.commit()
+        return grocery

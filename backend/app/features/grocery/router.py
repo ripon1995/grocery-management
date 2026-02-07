@@ -14,7 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 
 from app.features.grocery.dependencies import get_grocery_service
-from app.features.grocery.schemas.response_schemas import GroceryListResponseSchema, GroceryDetailResponseSchema
+from app.features.grocery.schemas.request_schemas import GroceryCreateSchema
+from app.features.grocery.schemas.response_schemas import GroceryListResponseSchema, GroceryDetailResponseSchema, \
+    GroceryCreateResponseSchema
 from app.features.grocery.service import GroceryService
 
 router = APIRouter(
@@ -45,3 +47,16 @@ async def list_groceries(service: GroceryService = Depends(get_grocery_service))
 async def get_grocery_by_id(grocery_id: str, service: GroceryService = Depends(get_grocery_service)):
     item = await service.get_grocery_by_id(grocery_id)
     return item
+
+
+@router.post(
+    "/",
+    response_model=GroceryCreateResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new grocery item",
+)
+async def create_grocery(
+        data: GroceryCreateSchema = GroceryCreateSchema,
+        service: GroceryService = Depends(get_grocery_service)
+):
+    return await service.create_grocery(data)

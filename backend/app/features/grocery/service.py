@@ -19,8 +19,30 @@ Never skip this layer in large apps.
 from typing import Tuple, List
 
 from app.common.enums import Seller, GroceryStockStatus
+from .models import Grocery
 from .repository import GroceryRepository
-from .schemas.response_schemas import GroceryListResponseSchema, GroceryDetailResponseSchema
+from .schemas.request_schemas import GroceryCreateSchema
+from .schemas.response_schemas import (
+    GroceryListResponseSchema,
+    GroceryDetailResponseSchema,
+    GroceryCreateResponseSchema
+)
+
+
+def _prepare_grocery(data: GroceryCreateSchema) -> Grocery:
+    """Map create schema → ORM model + apply business defaults/rules"""
+    return Grocery(
+        name=data.name,
+        brand=data.brand,
+        type=data.type,
+        current_price=float(data.current_price),  # Decimal → float
+        current_seller=data.current_seller,
+        low_stock_threshold=int(data.low_stock_threshold),
+        quantity_in_stock=int(data.quantity_in_stock),
+        # business rules / computed fields
+        best_seller=data.current_seller,
+        best_price=float(data.current_price),
+    )
 
 
 class GroceryService:
@@ -35,6 +57,11 @@ class GroceryService:
     async def get_grocery_by_id(self, grocery_id) -> GroceryDetailResponseSchema:
         grocery = await self.repo.get_by_id(grocery_id)
         return GroceryDetailResponseSchema.model_validate(grocery)
+
+    async def create_grocery(self, data: GroceryCreateSchema) -> GroceryCreateResponseSchema:
+        grocery = _prepare_grocery(data)
+        created_grocery = await self.repo.add_grocery(grocery)
+        return GroceryCreateResponseSchema.model_validate(created_grocery)
 
 
 ########################################################################################################################################
