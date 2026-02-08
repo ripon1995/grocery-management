@@ -1,9 +1,9 @@
 from uuid import UUID
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
 
-from app.common.enums import GroceryType, Seller
+from app.common.enums import GroceryType, Seller, GroceryStockStatus
 
 
 class GroceryBaseResponseSchema(BaseModel):
@@ -27,6 +27,14 @@ class GroceryBaseResponseSchema(BaseModel):
             UUID: lambda v: str(v)
         }
     )
+
+    @computed_field(return_type=GroceryStockStatus)
+    @property
+    def stock_status(self) -> GroceryStockStatus:
+        """Computed stock status based on quantity and threshold"""
+        if self.quantity_in_stock <= self.low_stock_threshold:
+            return GroceryStockStatus.BELOW_STOCK
+        return GroceryStockStatus.IN_STOCK
 
 
 class GroceryListResponseSchema(GroceryBaseResponseSchema):

@@ -53,15 +53,6 @@ class GroceryService:
 
         return best_price, best_seller
 
-    @staticmethod
-    def __get_stock_status(
-            quantity: int,
-            low_stock_threshold: int,
-    ) -> GroceryStockStatus:
-        if quantity <= low_stock_threshold:
-            return GroceryStockStatus.BELOW_STOCK
-        return GroceryStockStatus.IN_STOCK
-
     # ───────────────────────────────────────────────
     # Prepare / mapping methods
     # ───────────────────────────────────────────────
