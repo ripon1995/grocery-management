@@ -18,7 +18,7 @@ Never skip this layer in large apps.
 
 from typing import Tuple, List
 
-from app.common.enums import Seller, GroceryStockStatus
+from app.common.enums import Seller
 from .models import Grocery
 from .repository import GroceryRepository
 from .schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
