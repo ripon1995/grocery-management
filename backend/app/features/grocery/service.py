@@ -105,3 +105,7 @@ class GroceryService:
         updated_grocery_data = self.__prepare_grocery_for_update(grocery, data)
         updated_grocery = await self.repo.update_grocery(updated_grocery_data)
         return GroceryUpdateResponseSchema.model_validate(updated_grocery)
+
+    async def delete_grocery(self, grocery_id: str) -> None:
+        grocery = await self.repo.get_by_id(grocery_id)
+        await self.repo.delete_grocery(grocery)

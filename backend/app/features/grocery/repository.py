@@ -33,3 +33,7 @@ class GroceryRepository:
         await self.session.commit()
         await self.session.refresh(grocery)
         return grocery
+
+    async def delete_grocery(self, grocery: Grocery) -> None:
+        await self.session.delete(grocery)
+        await self.session.commit()

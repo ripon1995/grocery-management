@@ -76,3 +76,15 @@ async def update_grocery(
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
     return await grocery_service.update_grocery(grocery_id, data)
+
+
+@router.delete(
+    "/{grocery_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a grocery item",
+)
+async def delete_grocery(
+        grocery_id: str,
+        grocery_service: GroceryService = Depends(get_grocery_service)
+):
+    return await grocery_service.delete_grocery(grocery_id)
