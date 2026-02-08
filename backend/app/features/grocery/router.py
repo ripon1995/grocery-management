@@ -12,11 +12,10 @@ from fastapi import APIRouter, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-
 from app.features.grocery.dependencies import get_grocery_service
-from app.features.grocery.schemas.request_schemas import GroceryCreateSchema
+from app.features.grocery.schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
 from app.features.grocery.schemas.response_schemas import GroceryListResponseSchema, GroceryDetailResponseSchema, \
-    GroceryCreateResponseSchema
+    GroceryCreateResponseSchema, GroceryUpdateResponseSchema
 from app.features.grocery.service import GroceryService
 
 router = APIRouter(
@@ -33,8 +32,8 @@ DbDep = Annotated[AsyncSession, Depends(get_db)]
     status_code=status.HTTP_200_OK,
     summary="Get all groceries",
 )
-async def list_groceries(service: GroceryService = Depends(get_grocery_service)):
-    items = await service.list_all_groceries()
+async def list_groceries(grocery_service: GroceryService = Depends(get_grocery_service)):
+    items = await grocery_service.list_all_groceries()
     return items
 
 
@@ -44,8 +43,11 @@ async def list_groceries(service: GroceryService = Depends(get_grocery_service))
     status_code=status.HTTP_200_OK,
     summary="Get grocery details",
 )
-async def get_grocery_by_id(grocery_id: str, service: GroceryService = Depends(get_grocery_service)):
-    item = await service.get_grocery_by_id(grocery_id)
+async def get_grocery_by_id(
+        grocery_id: str,
+        grocery_service: GroceryService = Depends(get_grocery_service)
+):
+    item = await grocery_service.get_grocery_by_id(grocery_id)
     return item
 
 
@@ -57,6 +59,20 @@ async def get_grocery_by_id(grocery_id: str, service: GroceryService = Depends(g
 )
 async def create_grocery(
         data: GroceryCreateSchema = GroceryCreateSchema,
-        service: GroceryService = Depends(get_grocery_service)
+        grocery_service: GroceryService = Depends(get_grocery_service)
 ):
-    return await service.create_grocery(data)
+    return await grocery_service.create_grocery(data)
+
+
+@router.put(
+    "/{grocery_id}",
+    response_model=GroceryUpdateResponseSchema,
+    status_code=status.HTTP_200_OK,
+    summary="Update a grocery item",
+)
+async def update_grocery(
+        grocery_id: str,
+        data: GroceryUpdateSchema = GroceryUpdateSchema,
+        grocery_service: GroceryService = Depends(get_grocery_service)
+):
+    return await grocery_service.update_grocery(grocery_id, data)

@@ -19,7 +19,7 @@ class GroceryRepository:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
-    async def get_by_id(self, grocery_id: int) -> Grocery | None:
+    async def get_by_id(self, grocery_id: str) -> Grocery | None:
         stmt = select(Grocery).where(Grocery.id == grocery_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
@@ -27,4 +27,9 @@ class GroceryRepository:
     async def add_grocery(self, grocery: Grocery) -> Grocery:
         self.session.add(grocery)
         await self.session.commit()
+        return grocery
+
+    async def update_grocery(self, grocery: Grocery) -> Grocery:
+        await self.session.commit()
+        await self.session.refresh(grocery)
         return grocery

@@ -40,3 +40,7 @@ class GroceryDetailResponseSchema(GroceryBaseResponseSchema):
 
 class GroceryCreateResponseSchema(GroceryBaseResponseSchema):
     created_at: datetime
+
+
+class GroceryUpdateResponseSchema(GroceryBaseResponseSchema):
+    updated_at: datetime
