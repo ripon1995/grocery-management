@@ -27,6 +27,8 @@ from .schemas.response_schemas import (
     GroceryDetailResponseSchema,
     GroceryCreateResponseSchema, GroceryUpdateResponseSchema
 )
+from ...common.constants import GROCERY_NOT_FOUND
+from ...core.exceptions import ResourceNotFoundException
 
 
 class GroceryService:
@@ -93,6 +95,8 @@ class GroceryService:
 
     async def get_grocery_by_id(self, grocery_id) -> GroceryDetailResponseSchema:
         grocery = await self.repo.get_by_id(grocery_id)
+        if grocery is None:
+            raise ResourceNotFoundException(message=GROCERY_NOT_FOUND.format(grocery_id=grocery_id))
         return GroceryDetailResponseSchema.model_validate(grocery)
 
     async def create_grocery(self, data: GroceryCreateSchema) -> GroceryCreateResponseSchema:
@@ -102,10 +106,14 @@ class GroceryService:
 
     async def update_grocery(self, grocery_id: str, data: GroceryUpdateSchema) -> GroceryUpdateResponseSchema:
         grocery = await self.repo.get_by_id(grocery_id)
+        if grocery is None:
+            raise ResourceNotFoundException(message=GROCERY_NOT_FOUND.format(grocery_id=grocery_id))
         updated_grocery_data = self.__prepare_grocery_for_update(grocery, data)
         updated_grocery = await self.repo.update_grocery(updated_grocery_data)
         return GroceryUpdateResponseSchema.model_validate(updated_grocery)
 
     async def delete_grocery(self, grocery_id: str) -> None:
         grocery = await self.repo.get_by_id(grocery_id)
+        if grocery is None:
+            raise ResourceNotFoundException(message=GROCERY_NOT_FOUND.format(grocery_id=grocery_id))
         await self.repo.delete_grocery(grocery)
