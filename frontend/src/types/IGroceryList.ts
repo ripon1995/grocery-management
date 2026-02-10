@@ -1,4 +1,4 @@
-import type {BestSeller, GroceryStockStatus, GroceryType} from "../utils/enums.ts";
+import type {Seller, GroceryStockStatus, GroceryType} from "../utils/enums.ts";
 
 export interface IGroceryListItem {
     id: string;
@@ -6,12 +6,27 @@ export interface IGroceryListItem {
     brand: string;
     type: GroceryType;
     current_price: number;
-    quantity_required: number;
+    current_seller: string;
     low_stock_threshold: number;
     quantity_in_stock: number;
+    should_include: boolean;
     best_price: number;
-    best_seller: BestSeller;
+    best_seller: Seller;
     stock_status: GroceryStockStatus;
-    created_at: string; // ISO Date strings are best kept as strings in TS
-    updated_at: string;
 }
+
+
+ // {
+ //    "id": "22250b85-7faa-4b06-ac7f-92180118c903",
+ //    "name": "Basmati Rice",
+ //    "brand": "Fortune",
+ //    "type": "sack",
+ //    "current_price": 12.5,
+ //    "current_seller": "shwapno",
+ //    "low_stock_threshold": 2,
+ //    "quantity_in_stock": 5,
+ //    "should_include": true,
+ //    "best_seller": "meena",
+ //    "best_price": 0,
+ //    "stock_status": "in_stock"
+ //  }

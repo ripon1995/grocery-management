@@ -6,7 +6,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import type {IGroceryListItem} from "../../types/IGroceryList.ts";
-import {BestSeller, GroceryStockStatus, GroceryType} from "../../utils/enums.ts";
+import {Seller, GroceryStockStatus, GroceryType} from "../../utils/enums.ts";
 import {Chip} from "@mui/material";
 import '../../styles/GroceryList.css';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpwardRounded';
@@ -14,44 +14,80 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 
 const createGroceryListItem = (
+    id: string,
     name: string,
     brand: string,
     type: GroceryType,
-    price: number,
-    required: number,
-    stock: number,
-    bestSeller: BestSeller
+    current_price: number,
+    current_seller: Seller,
+    low_stock_threshold: number,
+    quantity_in_stock: number,
+    should_include: boolean,
+    best_price: number,
+    bestSeller: Seller,
+    stock_status: GroceryStockStatus
 ): IGroceryListItem => {
     return {
-        id: Math.random().toString(36).substring(2, 12), // Random 10-char ID
-        name,
-        brand,
-        type,
-        current_price: price,
-        quantity_required: required,
-        low_stock_threshold: 5,
-        quantity_in_stock: stock,
-        best_price: price * 0.9, // Assuming best price is 10% lower
+        id: id,
+        name: name,
+        brand: brand,
+        type: type,
+        current_price: current_price,
+        current_seller: current_seller,
+        low_stock_threshold: low_stock_threshold,
+        quantity_in_stock: quantity_in_stock,
+        should_include: should_include,
+        best_price: best_price,
         best_seller: bestSeller,
-        stock_status: stock <= 5 ? GroceryStockStatus.BELOW_STOCK : GroceryStockStatus.IN_STOCK,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        stock_status: stock_status,
     };
 };
 
 
 const groceryRows: IGroceryListItem[] = [
 
-    createGroceryListItem('Basmati Rice', 'Fortune', GroceryType.SACK, 1200, 2, 1, BestSeller.SHWAPNO),
-    createGroceryListItem('Full Cream Milk', 'Arla', GroceryType.CAN, 95, 12, 24, BestSeller.MEENA),
-    createGroceryListItem('Whole Wheat Flour', 'Aashirvaad', GroceryType.SACK, 550, 1, 0, BestSeller.LOCAL),
-    createGroceryListItem('Greek Yogurt', 'Danone', GroceryType.PIECE, 120, 5, 8, BestSeller.MEENA),
-    createGroceryListItem('Canned Tuna', 'John West', GroceryType.CAN, 210, 10, 15, BestSeller.SHWAPNO),
-    createGroceryListItem('Potatoes', 'Local Farm', GroceryType.WEIGHT, 40, 5, 12, BestSeller.LOCAL),
-    createGroceryListItem('Sugar', 'Fresh', GroceryType.WEIGHT, 110, 2, 4, BestSeller.COMILLA),
-    createGroceryListItem('Lentils (Dal)', 'Teer', GroceryType.SACK, 140, 3, 10, BestSeller.SHWAPNO),
-    createGroceryListItem('Eggs (Dozen)', 'Farm Egg', GroceryType.PIECE, 150, 4, 2, BestSeller.LOCAL),
-    createGroceryListItem('Cooking Oil', 'Rupchanda', GroceryType.CAN, 185, 5, 20, BestSeller.MEENA),
+    createGroceryListItem(
+        '#1234',
+        'Basmati Rice',
+        'Fortune',
+        GroceryType.SACK,
+        1200,
+        Seller.MEENA,
+        1,
+        5,
+        true,
+        1000,
+        Seller.LOCAL,
+        GroceryStockStatus.IN_STOCK
+    ),
+    createGroceryListItem(
+        '#1234',
+        'Basmati Rice',
+        'Fortune',
+        GroceryType.SACK,
+        1200,
+        Seller.MEENA,
+        1,
+        5,
+        true,
+        1000,
+        Seller.LOCAL,
+        GroceryStockStatus.IN_STOCK
+    ),
+    createGroceryListItem(
+        '#1234',
+        'Basmati Rice',
+        'Fortune',
+        GroceryType.SACK,
+        1200,
+        Seller.MEENA,
+        1,
+        5,
+        true,
+        1000,
+        Seller.LOCAL,
+        GroceryStockStatus.IN_STOCK
+    ),
 ];
 
 function GroceryTable() {
@@ -67,15 +103,16 @@ function GroceryTable() {
                             }
                         }}>
                             <TableCell sx={{fontWeight: 'bold'}}>SL</TableCell>
-                            <TableCell sx={{fontWeight: 'bold'}}>Item Name</TableCell>
+                            <TableCell sx={{fontWeight: 'bold'}}>Name</TableCell>
                             <TableCell>Brand</TableCell>
                             <TableCell align="center">Type</TableCell>
-                            <TableCell align="right">In Stock</TableCell>
-                            <TableCell align="right">Required</TableCell>
-                            <TableCell align="right">Current Price</TableCell>
+                            <TableCell align="center">Price</TableCell>
+                            <TableCell align="right">Seller</TableCell>
+                            <TableCell align="right">Threshold</TableCell>
+                            <TableCell align="right">Stock</TableCell>
+                            <TableCell align="right">Include?</TableCell>
                             <TableCell align="right">Best Price</TableCell>
                             <TableCell align="right">Best Seller</TableCell>
-                            <TableCell align="right">Updated</TableCell>
                             <TableCell align="center">Status</TableCell>
                         </TableRow>
                     </TableHead>
@@ -96,18 +133,19 @@ function GroceryTable() {
                                 <TableCell align="center" sx={{textTransform: 'capitalize'}}>
                                     {row.type}
                                 </TableCell>
-                                <TableCell align="right">{row.quantity_in_stock}</TableCell>
-                                <TableCell align="right">{row.quantity_required}</TableCell>
                                 <TableCell align="right">${row.current_price.toFixed(2)}</TableCell>
+                                <TableCell align="right">{row.current_seller}</TableCell>
+                                <TableCell align="right">{row.low_stock_threshold}</TableCell>
+                                <TableCell align="right">{row.quantity_in_stock}</TableCell>
+                                <TableCell align="right">{row.should_include}</TableCell>
                                 <TableCell align="right">${row.best_price.toFixed(2)}</TableCell>
                                 <TableCell align="right">{row.best_seller}</TableCell>
-                                <TableCell align="right">{row.updated_at}</TableCell>
                                 <TableCell align="center">
                                     <Chip
                                         icon={
                                             row.stock_status === GroceryStockStatus.IN_STOCK
-                                                ? <ArrowUpwardIcon sx={{ fontSize: '15px !important' }}/>
-                                                : <ArrowDownwardIcon sx={{ fontSize: '15px !important' }}/>
+                                                ? <ArrowUpwardIcon sx={{fontSize: '15px !important'}}/>
+                                                : <ArrowDownwardIcon sx={{fontSize: '15px !important'}}/>
                                         }
                                         label={row.stock_status === GroceryStockStatus.IN_STOCK ? 'In Stock' : 'Low Stock'}
                                         color={row.stock_status === GroceryStockStatus.IN_STOCK ? 'success' : 'error'}

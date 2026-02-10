@@ -4,7 +4,6 @@ export const GroceryType = {
     CAN: 'can',
     PIECE: 'piece'
 } as const;
-
 export type GroceryType = typeof GroceryType[keyof typeof GroceryType];
 
 export const GroceryStockStatus = {
@@ -13,10 +12,10 @@ export const GroceryStockStatus = {
 } as const;
 export type GroceryStockStatus = typeof GroceryStockStatus[keyof typeof GroceryStockStatus];
 
-export const BestSeller = {
+export const Seller = {
     MEENA: 'meena',
     SHWAPNO: 'shwapno',
     LOCAL: 'local',
     COMILLA: 'comilla'
 } as const;
-export type BestSeller = typeof BestSeller[keyof typeof BestSeller];
+export type Seller = typeof Seller[keyof typeof Seller];
