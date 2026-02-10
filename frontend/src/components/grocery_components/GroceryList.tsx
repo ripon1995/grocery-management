@@ -28,12 +28,12 @@ const GroceryTableHeader = () => (
             <TableCell>Brand</TableCell>
             <TableCell align="center">Type</TableCell>
             <TableCell align="center">Price</TableCell>
-            <TableCell align="right">Seller</TableCell>
-            <TableCell align="right">Threshold</TableCell>
-            <TableCell align="right">Stock</TableCell>
-            <TableCell align="right">Include?</TableCell>
-            <TableCell align="right">Best Price</TableCell>
-            <TableCell align="right">Best Seller</TableCell>
+            <TableCell align="center">Seller</TableCell>
+            <TableCell align="center">Threshold</TableCell>
+            <TableCell align="center">Stock</TableCell>
+            <TableCell align="center">Include?</TableCell>
+            <TableCell align="center">Best Price</TableCell>
+            <TableCell align="center">Best Seller</TableCell>
             <TableCell align="center">Status</TableCell>
         </TableRow>
     </TableHead>
@@ -55,13 +55,21 @@ const GroceryTableRow = ({row, index}: { row: IGroceryListItem; index: number })
         <TableCell align="center" sx={{textTransform: 'capitalize'}}>
             {row.type}
         </TableCell>
-        <TableCell align="right">${row.current_price.toFixed(2)}</TableCell>
-        <TableCell align="right">{row.current_seller}</TableCell>
-        <TableCell align="right">{row.low_stock_threshold}</TableCell>
-        <TableCell align="right">{row.quantity_in_stock}</TableCell>
-        <TableCell align="right">{row.should_include}</TableCell>
-        <TableCell align="right">${row.best_price.toFixed(2)}</TableCell>
-        <TableCell align="right">{row.best_seller}</TableCell>
+        <TableCell align="center">${row.current_price.toFixed(2)}</TableCell>
+        <TableCell align="center" sx={{textTransform: 'uppercase'}}>{row.current_seller}</TableCell>
+        <TableCell align="center">{row.low_stock_threshold}</TableCell>
+        <TableCell align="center">{row.quantity_in_stock}</TableCell>
+        <TableCell align="center">
+            {row.should_include}
+            <Chip
+                label={row.should_include ? 'YES' : 'NO'}
+                color={row.should_include ? 'success' : 'error'}
+                variant={"filled"}
+                sx={{borderRadius: '2px'}}
+            />
+        </TableCell>
+        <TableCell align="center">${row.best_price.toFixed(2)}</TableCell>
+        <TableCell align="center" sx={{textTransform: 'uppercase'}}>{row.best_seller}</TableCell>
         <TableCell align="center">
             <Chip
                 icon={
