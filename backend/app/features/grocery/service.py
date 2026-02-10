@@ -17,7 +17,7 @@ Never skip this layer in large apps.
 """
 
 from typing import Tuple, List
-
+import logging
 from app.common.enums import Seller
 from .models import Grocery
 from .repository import GroceryRepository
@@ -29,6 +29,8 @@ from .schemas.response_schemas import (
 )
 from ...common.constants import GROCERY_NOT_FOUND
 from ...core.exceptions import ResourceNotFoundException
+
+logger = logging.getLogger(__name__)
 
 
 class GroceryService:
@@ -107,6 +109,7 @@ class GroceryService:
     async def update_grocery(self, grocery_id: str, data: GroceryUpdateSchema) -> GroceryUpdateResponseSchema:
         grocery = await self.repo.get_by_id(grocery_id)
         if grocery is None:
+            logger.error(GROCERY_NOT_FOUND.format(grocery_id=grocery_id))
             raise ResourceNotFoundException(message=GROCERY_NOT_FOUND.format(grocery_id=grocery_id))
         updated_grocery_data = self.__prepare_grocery_for_update(grocery, data)
         updated_grocery = await self.repo.update_grocery(updated_grocery_data)
