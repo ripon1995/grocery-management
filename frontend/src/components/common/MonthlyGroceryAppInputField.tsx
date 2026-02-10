@@ -1,26 +1,27 @@
-import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 
 
 interface ITextInputProps {
     label: string;
+    value: string;
+    onChange: (val: string) => void;
 }
 
-function MonthlyGroceryAppInputField({label}: ITextInputProps) {
+function MonthlyGroceryAppInputField({label, value, onChange}: ITextInputProps) {
     return (
-        <Box
-            component="form"
-            sx={{'& > :not(style)': {m: 1, width: '40%'}}}
-            noValidate
-            autoComplete="off"
-        >
-            <TextField id="outlined-basic" label={label} variant="outlined" sx={{
+        <TextField
+            fullWidth
+            label={label}
+            variant="outlined"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            sx={{
+                mb: 2,
                 '& .MuiOutlinedInput-root': {
                     borderRadius: '4px',
                 }
-            }}/>
-
-        </Box>
+            }}
+        />
     );
 }
 
