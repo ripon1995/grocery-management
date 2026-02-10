@@ -6,89 +6,13 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import type {IGroceryListItem} from "../../types/IGroceryList.ts";
-import {Seller, GroceryStockStatus, GroceryType} from "../../utils/enums.ts";
+import {GroceryStockStatus} from "../../utils/enums.ts";
 import {Chip} from "@mui/material";
 import '../../styles/GroceryList.css';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-
-
-const createGroceryListItem = (
-    id: string,
-    name: string,
-    brand: string,
-    type: GroceryType,
-    current_price: number,
-    current_seller: Seller,
-    low_stock_threshold: number,
-    quantity_in_stock: number,
-    should_include: boolean,
-    best_price: number,
-    bestSeller: Seller,
-    stock_status: GroceryStockStatus
-): IGroceryListItem => {
-    return {
-        id: id,
-        name: name,
-        brand: brand,
-        type: type,
-        current_price: current_price,
-        current_seller: current_seller,
-        low_stock_threshold: low_stock_threshold,
-        quantity_in_stock: quantity_in_stock,
-        should_include: should_include,
-        best_price: best_price,
-        best_seller: bestSeller,
-        stock_status: stock_status,
-    };
-};
-
-
-const groceryRows: IGroceryListItem[] = [
-
-    createGroceryListItem(
-        '#1234',
-        'Basmati Rice',
-        'Fortune',
-        GroceryType.SACK,
-        1200,
-        Seller.MEENA,
-        1,
-        5,
-        true,
-        1000,
-        Seller.LOCAL,
-        GroceryStockStatus.IN_STOCK
-    ),
-    createGroceryListItem(
-        '#1234',
-        'Basmati Rice',
-        'Fortune',
-        GroceryType.SACK,
-        1200,
-        Seller.MEENA,
-        1,
-        5,
-        true,
-        1000,
-        Seller.LOCAL,
-        GroceryStockStatus.IN_STOCK
-    ),
-    createGroceryListItem(
-        '#1234',
-        'Basmati Rice',
-        'Fortune',
-        GroceryType.SACK,
-        1200,
-        Seller.MEENA,
-        1,
-        5,
-        true,
-        1000,
-        Seller.LOCAL,
-        GroceryStockStatus.IN_STOCK
-    ),
-];
+import {useGroceryStore} from "../../store/useGroceryStore.ts";
+import {useEffect} from "react";
 
 
 const GroceryTableHeader = () => (
@@ -154,13 +78,20 @@ const GroceryTableRow = ({row, index}: { row: IGroceryListItem; index: number })
 )
 
 function GroceryTable() {
+
+    const {groceries, fetchGroceries} = useGroceryStore();
+    useEffect(() => {
+        fetchGroceries().then();
+    }, [fetchGroceries]);
+
+
     return (
         <Paper elevation={10} sx={{borderRadius: 1, overflow: 'hidden'}}>
             <TableContainer>
                 <Table sx={{minWidth: 650}} aria-label="grocery inventory table">
                     <GroceryTableHeader></GroceryTableHeader>
                     <TableBody>
-                        {groceryRows.map((row, index) => (
+                        {groceries.map((row, index) => (
                             <GroceryTableRow row={row} index={index}></GroceryTableRow>
                         ))}
                     </TableBody>
