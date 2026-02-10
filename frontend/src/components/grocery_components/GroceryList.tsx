@@ -5,90 +5,15 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import type {IGroceryListItem} from "../../types/IGroceryList.ts";
-import {Seller, GroceryStockStatus, GroceryType} from "../../utils/enums.ts";
 import {Chip} from "@mui/material";
+import type {IGroceryListItem} from "../../types/IGroceryList.ts";
+import {GroceryStockStatus} from "../../constants/enums.ts";
 import '../../styles/GroceryList.css';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-
-
-const createGroceryListItem = (
-    id: string,
-    name: string,
-    brand: string,
-    type: GroceryType,
-    current_price: number,
-    current_seller: Seller,
-    low_stock_threshold: number,
-    quantity_in_stock: number,
-    should_include: boolean,
-    best_price: number,
-    bestSeller: Seller,
-    stock_status: GroceryStockStatus
-): IGroceryListItem => {
-    return {
-        id: id,
-        name: name,
-        brand: brand,
-        type: type,
-        current_price: current_price,
-        current_seller: current_seller,
-        low_stock_threshold: low_stock_threshold,
-        quantity_in_stock: quantity_in_stock,
-        should_include: should_include,
-        best_price: best_price,
-        best_seller: bestSeller,
-        stock_status: stock_status,
-    };
-};
-
-
-const groceryRows: IGroceryListItem[] = [
-
-    createGroceryListItem(
-        '#1234',
-        'Basmati Rice',
-        'Fortune',
-        GroceryType.SACK,
-        1200,
-        Seller.MEENA,
-        1,
-        5,
-        true,
-        1000,
-        Seller.LOCAL,
-        GroceryStockStatus.IN_STOCK
-    ),
-    createGroceryListItem(
-        '#1234',
-        'Basmati Rice',
-        'Fortune',
-        GroceryType.SACK,
-        1200,
-        Seller.MEENA,
-        1,
-        5,
-        true,
-        1000,
-        Seller.LOCAL,
-        GroceryStockStatus.IN_STOCK
-    ),
-    createGroceryListItem(
-        '#1234',
-        'Basmati Rice',
-        'Fortune',
-        GroceryType.SACK,
-        1200,
-        Seller.MEENA,
-        1,
-        5,
-        true,
-        1000,
-        Seller.LOCAL,
-        GroceryStockStatus.IN_STOCK
-    ),
-];
+import {useEffect} from "react";
+import useGroceryStore from "../../store/useGroceryStore.ts";
+import MonthlyGroceryAppLoader from "../common/MonthlyGroceryAppLoader.tsx";
 
 
 const GroceryTableHeader = () => (
@@ -104,12 +29,12 @@ const GroceryTableHeader = () => (
             <TableCell>Brand</TableCell>
             <TableCell align="center">Type</TableCell>
             <TableCell align="center">Price</TableCell>
-            <TableCell align="right">Seller</TableCell>
-            <TableCell align="right">Threshold</TableCell>
-            <TableCell align="right">Stock</TableCell>
-            <TableCell align="right">Include?</TableCell>
-            <TableCell align="right">Best Price</TableCell>
-            <TableCell align="right">Best Seller</TableCell>
+            <TableCell align="center">Seller</TableCell>
+            <TableCell align="center">Threshold</TableCell>
+            <TableCell align="center">Stock</TableCell>
+            <TableCell align="center">Include?</TableCell>
+            <TableCell align="center">Best Price</TableCell>
+            <TableCell align="center">Best Seller</TableCell>
             <TableCell align="center">Status</TableCell>
         </TableRow>
     </TableHead>
@@ -131,13 +56,21 @@ const GroceryTableRow = ({row, index}: { row: IGroceryListItem; index: number })
         <TableCell align="center" sx={{textTransform: 'capitalize'}}>
             {row.type}
         </TableCell>
-        <TableCell align="right">${row.current_price.toFixed(2)}</TableCell>
-        <TableCell align="right">{row.current_seller}</TableCell>
-        <TableCell align="right">{row.low_stock_threshold}</TableCell>
-        <TableCell align="right">{row.quantity_in_stock}</TableCell>
-        <TableCell align="right">{row.should_include}</TableCell>
-        <TableCell align="right">${row.best_price.toFixed(2)}</TableCell>
-        <TableCell align="right">{row.best_seller}</TableCell>
+        <TableCell align="center">${row.current_price.toFixed(2)}</TableCell>
+        <TableCell align="center" sx={{textTransform: 'uppercase'}}>{row.current_seller}</TableCell>
+        <TableCell align="center">{row.low_stock_threshold}</TableCell>
+        <TableCell align="center">{row.quantity_in_stock}</TableCell>
+        <TableCell align="center">
+            {row.should_include}
+            <Chip
+                label={row.should_include ? 'YES' : 'NO'}
+                color={row.should_include ? 'success' : 'error'}
+                variant={"filled"}
+                sx={{borderRadius: '2px'}}
+            />
+        </TableCell>
+        <TableCell align="center">${row.best_price.toFixed(2)}</TableCell>
+        <TableCell align="center" sx={{textTransform: 'uppercase'}}>{row.best_seller}</TableCell>
         <TableCell align="center">
             <Chip
                 icon={
@@ -154,15 +87,31 @@ const GroceryTableRow = ({row, index}: { row: IGroceryListItem; index: number })
 )
 
 function GroceryTable() {
+
+    const {groceries, fetchGroceries, isLoading} = useGroceryStore();
+    useEffect(() => {
+        fetchGroceries().then();
+    }, [fetchGroceries]);
+
+
     return (
         <Paper elevation={10} sx={{borderRadius: 1, overflow: 'hidden'}}>
             <TableContainer>
                 <Table sx={{minWidth: 650}} aria-label="grocery inventory table">
                     <GroceryTableHeader></GroceryTableHeader>
                     <TableBody>
-                        {groceryRows.map((row, index) => (
-                            <GroceryTableRow row={row} index={index}></GroceryTableRow>
-                        ))}
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={12} sx={{p: 0, borderBottom: 'none'}}>
+                                    <MonthlyGroceryAppLoader message="Fetching Groceries..." minHeight={500}/>
+                                </TableCell>
+                            </TableRow>
+
+                        ) : (
+                            groceries.map((row, index) => (
+                                <GroceryTableRow key={row.id} row={row} index={index}/>
+                            ))
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>
