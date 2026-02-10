@@ -5,7 +5,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import {Chip} from "@mui/material";
+import {Chip, CircularProgress, Typography} from "@mui/material";
 import type {IGroceryListItem} from "../../types/IGroceryList.ts";
 import {GroceryStockStatus} from "../../constants/enums.ts";
 import '../../styles/GroceryList.css';
@@ -13,6 +13,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import {useEffect} from "react";
 import useGroceryStore from "../../store/useGroceryStore.ts";
+import Box from "@mui/material/Box";
 
 
 const GroceryTableHeader = () => (
@@ -87,7 +88,7 @@ const GroceryTableRow = ({row, index}: { row: IGroceryListItem; index: number })
 
 function GroceryTable() {
 
-    const {groceries, fetchGroceries} = useGroceryStore();
+    const {groceries, fetchGroceries, isLoading} = useGroceryStore();
     useEffect(() => {
         fetchGroceries().then();
     }, [fetchGroceries]);
@@ -99,9 +100,20 @@ function GroceryTable() {
                 <Table sx={{minWidth: 650}} aria-label="grocery inventory table">
                     <GroceryTableHeader></GroceryTableHeader>
                     <TableBody>
-                        {groceries.map((row, index) => (
-                            <GroceryTableRow row={row} index={index}></GroceryTableRow>
-                        ))}
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={12} align="center" sx={{py: 10}}>
+                                    <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
+                                        <CircularProgress color="secondary"/>
+                                        <Typography color="textSecondary">Fetching Groceries...</Typography>
+                                    </Box>
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            groceries.map((row, index) => (
+                                <GroceryTableRow key={row.id} row={row} index={index}/>
+                            ))
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>

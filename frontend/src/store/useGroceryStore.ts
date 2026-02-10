@@ -18,11 +18,13 @@ const useGroceryStore = create<IGroceryState>((set) => ({
     isLoading: false,
     error: null,
     fetchGroceries: async () => {
+        set({isLoading: true, error: null});
         try {
             const data = await getGroceries();
-            set({groceries: data});
+            set({groceries: data, isLoading: false});
         } catch (err) {
             console.log(err);
+            set({isLoading: false});
         }
     }
 }));
