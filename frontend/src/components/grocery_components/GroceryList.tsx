@@ -100,7 +100,7 @@ function GroceryTable() {
                 <Table sx={{minWidth: 650}} aria-label="grocery inventory table">
                     <GroceryTableHeader></GroceryTableHeader>
                     <TableBody>
-                        {!isLoading ? (
+                        {isLoading ? (
                             <TableRow>
                                 <TableCell colSpan={12} sx={{p: 0, borderBottom: 'none'}}>
                                     <MonthlyGroceryAppLoader message="Fetching Groceries..." minHeight={500}/>
