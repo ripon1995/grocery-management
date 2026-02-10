@@ -33,7 +33,10 @@ class DevLoggerFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-def setup_stdlib_colored_logging(level: str = "INFO", for_dev: bool = True):
+def configure_logging(level: str = "INFO", environment: str = 'development'):
+    for_dev = False
+    if environment.lower() in ("development", "staging"):
+        for_dev = True
     root = logging.getLogger()
     root.setLevel(level.upper())
 
