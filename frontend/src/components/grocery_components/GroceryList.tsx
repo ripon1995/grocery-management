@@ -5,14 +5,14 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import {Chip} from "@mui/material";
 import type {IGroceryListItem} from "../../types/IGroceryList.ts";
 import {GroceryStockStatus} from "../../utils/enums.ts";
-import {Chip} from "@mui/material";
 import '../../styles/GroceryList.css';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import {useGroceryStore} from "../../store/useGroceryStore.ts";
 import {useEffect} from "react";
+import useGroceryStore from "../../store/useGroceryStore.ts";
 
 
 const GroceryTableHeader = () => (
