@@ -4,7 +4,7 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import './App.css'
 import Home from "./pages/Home.tsx";
 import About from "./pages/About.tsx";
-import PATHS from "./utils/paths.ts";
+import PATHS from "./constants/paths.ts";
 import MonthlyGroceryAppBar from "./components/common/MonthlyGroceryAppBar.tsx";
 
 

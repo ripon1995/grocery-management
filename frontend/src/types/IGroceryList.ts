@@ -1,4 +1,4 @@
-import type {Seller, GroceryStockStatus, GroceryType} from "../utils/enums.ts";
+import type {Seller, GroceryStockStatus, GroceryType} from "../constants/enums.ts";
 
 export interface IGroceryListItem {
     id: string;
