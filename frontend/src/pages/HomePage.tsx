@@ -6,7 +6,7 @@ import {MonthlyGroceryAppAddButton} from "../components/common/MonthlyGroceryApp
 import PATHS from "../constants/paths.ts";
 
 
-function Home() {
+function HomePage() {
     const navigate = useNavigate();
 
     const handleSave = () => {
@@ -42,4 +42,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default HomePage;
