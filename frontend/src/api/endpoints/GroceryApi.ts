@@ -2,9 +2,10 @@ import axiosInstance from "../axiosInstance.ts";
 import type {IGroceryListItem} from "../../types/IGroceryList.ts";
 import type {ApiGroceryItem} from "../types/responses/GroceryListResponse.ts";
 import API_ENDPOINT from "../../constants/apiEndpoints.ts";
+import type {IGroceryCreateItem} from "../types/requests/CreateGroceryItem.ts";
 
 
-const getGroceries = async (): Promise<IGroceryListItem[]> => {
+export const getGroceries = async (): Promise<IGroceryListItem[]> => {
     const response = await axiosInstance.get<ApiGroceryItem[]>(API_ENDPOINT.GROCERY_LIST);
     const grocery_list: IGroceryListItem[] = response.data.map(item => ({
         ...item
@@ -13,4 +14,7 @@ const getGroceries = async (): Promise<IGroceryListItem[]> => {
     return grocery_list;
 }
 
-export default getGroceries;
+export const createGroceries = async (newItem: IGroceryCreateItem): Promise<void> => {
+    await axiosInstance.post<void>(API_ENDPOINT.GROCERY_ADD, newItem);
+    return;
+}

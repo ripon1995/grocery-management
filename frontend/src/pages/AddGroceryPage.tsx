@@ -5,6 +5,7 @@ import CreateGroceryForm from "../components/grocery_components/CreateGroceryFor
 import PATHS from "../constants/paths.ts";
 import type {IGroceryCreateItem} from "../api/types/requests/CreateGroceryItem.ts";
 import {GroceryType, Seller} from "../constants/enums.ts";
+import useGroceryStore from "../store/useGroceryStore.ts";
 
 const INITIAL_GROCERY_STATE: IGroceryCreateItem = {
     name: '',
@@ -20,6 +21,7 @@ const INITIAL_GROCERY_STATE: IGroceryCreateItem = {
 function AddGroceryPage() {
 
     const navigate = useNavigate();
+    const {addGroceries} = useGroceryStore();
 
     // Initial state for all fields
     const [formData, setFormData] = useState<IGroceryCreateItem>(INITIAL_GROCERY_STATE);
@@ -34,14 +36,15 @@ function AddGroceryPage() {
         setFormData(prev => ({...prev, [field]: Number(value) || 0}));
     };
 
-    const handleSave = () => {
-        console.log("Saving Grocery Data:", formData);
-        // You can now see all values in your console!
+    const handleSave = async () => {
+        await addGroceries(formData)
+        navigateToBack();
     };
 
     const navigateToBack = () => {
         navigate(PATHS.HOME);
     };
+
 
     return (
         <Container>
