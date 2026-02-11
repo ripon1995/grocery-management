@@ -5,28 +5,41 @@ import {MonthlyGroceryAppSaveButton} from "../common/MonthlyGroceryAppButton.tsx
 import {MonthlyGroceryAppCancelButton} from "../common/MonthlyGroceryAppButton.tsx";
 import Stack from "@mui/material/Stack";
 import {useState} from "react";
+import type {IGroceryCreateItem} from "../../api/types/requests/CreateGroceryItem.ts";
+import {GroceryType, Seller} from "../../constants/enums.ts";
 
 function GroceryCreateForm() {
 
-    // Initial state for all fields
-    const [formData, setFormData] = useState({
+    const INITIAL_GROCERY_STATE: IGroceryCreateItem = {
         name: '',
         brand: '',
-        type: '',
-        price: '',
-        seller: '',
-        threshold: '',
-        stock: ''
-    });
+        type: GroceryType.CAN,
+        current_price: 0,
+        current_seller: Seller.MEENA,
+        low_stock_threshold: 2,
+        quantity_in_stock: 0
+    };
 
-    // Helper to update specific fields
-    const handleChange = (field: string) => (value: string) => {
-        setFormData((prev) => ({...prev, [field]: value}));
+
+    // Initial state for all fields
+    const [formData, setFormData] = useState<IGroceryCreateItem>(INITIAL_GROCERY_STATE);
+
+    // Handle string inputs (name, brand)
+    const handleStringChange = (field: keyof IGroceryCreateItem) => (value: string) => {
+        setFormData(prev => ({...prev, [field]: value}));
+    };
+
+    // Handle number inputs (price, threshold, stock)
+    const handleNumberChange = (field: keyof IGroceryCreateItem) => (value: string) => {
+        setFormData(prev => ({...prev, [field]: Number(value) || 0}));
     };
 
     const handleSave = () => {
         console.log("Saving Grocery Data:", formData);
         // You can now see all values in your console!
+    };
+    const handleReset = () => {
+        setFormData(INITIAL_GROCERY_STATE); // Use the constant again here
     };
 
 
@@ -53,37 +66,37 @@ function GroceryCreateForm() {
                 <MonthlyGroceryAppInputField
                     label={'Name'}
                     value={formData.name}
-                    onChange={handleChange('name')}>
+                    onChange={handleStringChange('name')}>
                 </MonthlyGroceryAppInputField>
                 <MonthlyGroceryAppInputField
                     label='Brand'
                     value={formData.brand}
-                    onChange={handleChange('brand')}
+                    onChange={handleStringChange('brand')}
                 />
                 <MonthlyGroceryAppInputField
                     label='Type'
                     value={formData.type}
-                    onChange={handleChange('type')}
+                    onChange={handleStringChange('type')}
                 />
                 <MonthlyGroceryAppInputField
                     label='Current Price'
-                    value={formData.price}
-                    onChange={handleChange('price')}
+                    value={formData.current_price.toString()}
+                    onChange={handleNumberChange('current_price')}
                 />
                 <MonthlyGroceryAppInputField
                     label='Current Seller'
-                    value={formData.seller}
-                    onChange={handleChange('seller')}
+                    value={formData.current_seller}
+                    onChange={handleStringChange('current_seller')}
                 />
                 <MonthlyGroceryAppInputField
                     label='Low Stock Threshold'
-                    value={formData.threshold}
-                    onChange={handleChange('threshold')}
+                    value={formData.low_stock_threshold.toString()}
+                    onChange={handleNumberChange('low_stock_threshold')}
                 />
                 <MonthlyGroceryAppInputField
                     label='Quantity in stock'
-                    value={formData.stock}
-                    onChange={handleChange('stock')}
+                    value={formData.quantity_in_stock.toString()}
+                    onChange={handleNumberChange('quantity_in_stock')}
                 />
                 <Stack
                     direction="row"
@@ -91,15 +104,7 @@ function GroceryCreateForm() {
                     sx={{mt: 4, width: '100%', justifyContent: 'center'}}
                 >
                     <MonthlyGroceryAppSaveButton onClick={handleSave}></MonthlyGroceryAppSaveButton>
-                    <MonthlyGroceryAppCancelButton onClick={() => setFormData({
-                        name: '',
-                        brand: '',
-                        type: '',
-                        price: '',
-                        seller: '',
-                        threshold: '',
-                        stock: ''
-                    })}/>
+                    <MonthlyGroceryAppCancelButton onClick={handleReset}></MonthlyGroceryAppCancelButton>
                 </Stack>
             </Paper>
         </Box>
