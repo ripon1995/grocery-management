@@ -1,13 +1,23 @@
+import {useEffect} from "react";
 import {useNavigate} from 'react-router-dom';
 import {Typography} from '@mui/material';
 import GroceryTable from "../components/grocery_components/GroceryList.tsx";
 import Box from "@mui/material/Box";
 import {MonthlyGroceryAppAddButton} from "../components/common/MonthlyGroceryAppButton.tsx";
 import PATHS from "../constants/paths.ts";
+import useGroceryStore from "../store/useGroceryStore.ts";
 
 
 function HomePage() {
     const navigate = useNavigate();
+
+    // 1. Hook into the store at the Page level
+    const {groceries, fetchGroceries, isLoading} = useGroceryStore();
+
+    // 2. Trigger the fetch when the page mounts
+    useEffect(() => {
+        fetchGroceries().then();
+    }, [fetchGroceries]);
 
     const handleSave = () => {
         navigate(PATHS.ADD_GROCERY);
@@ -35,7 +45,7 @@ function HomePage() {
                     <MonthlyGroceryAppAddButton onClick={handleSave}/>
                 </Box>
             </Box>
-            <GroceryTable></GroceryTable>
+            <GroceryTable groceries={groceries} isLoading={isLoading}></GroceryTable>
         </Box>
     );
 }

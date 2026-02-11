@@ -11,8 +11,6 @@ import {GroceryStockStatus} from "../../constants/enums.ts";
 import '../../styles/GroceryList.css';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import {useEffect} from "react";
-import useGroceryStore from "../../store/useGroceryStore.ts";
 import MonthlyGroceryAppLoader from "../common/MonthlyGroceryAppLoader.tsx";
 
 
@@ -86,14 +84,13 @@ const GroceryTableRow = ({row, index}: { row: IGroceryListItem; index: number })
     </TableRow>
 )
 
-function GroceryTable() {
 
-    const {groceries, fetchGroceries, isLoading} = useGroceryStore();
-    useEffect(() => {
-        fetchGroceries().then();
-    }, [fetchGroceries]);
+interface IGroceryTableProps {
+    groceries: IGroceryListItem[];
+    isLoading: boolean;
+}
 
-
+function GroceryTable({groceries, isLoading}: IGroceryTableProps) {
     return (
         <Paper elevation={10} sx={{borderRadius: 1, overflow: 'hidden'}}>
             <TableContainer>
