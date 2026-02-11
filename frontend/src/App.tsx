@@ -2,11 +2,11 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom';
 // import {Button, Container, Typography, Stack} from '@mui/material';
 // import DeleteIcon from '@mui/icons-material/Delete';
 import './App.css'
-import Home from "./pages/Home.tsx";
-import About from "./pages/About.tsx";
+import HomePage from "./pages/HomePage.tsx";
+import AboutPage from "./pages/AboutPage.tsx";
 import PATHS from "./constants/paths.ts";
 import MonthlyGroceryAppBar from "./components/common/MonthlyGroceryAppBar.tsx";
-import AddGrocery from "./pages/AddGrocery.tsx";
+import AddGroceryPage from "./pages/AddGroceryPage.tsx";
 
 
 function App() {
@@ -14,9 +14,9 @@ function App() {
         <BrowserRouter>
             <MonthlyGroceryAppBar></MonthlyGroceryAppBar>
             <Routes>
-                <Route path={PATHS.HOME} element={<Home/>}/>
-                <Route path={PATHS.ADD_GROCERY} element={<AddGrocery/>}/>
-                <Route path={PATHS.ABOUT} element={<About/>}/>
+                <Route path={PATHS.HOME} element={<HomePage/>}/>
+                <Route path={PATHS.ADD_GROCERY} element={<AddGroceryPage/>}/>
+                <Route path={PATHS.ABOUT} element={<AboutPage/>}/>
             </Routes>
         </BrowserRouter>
     );
