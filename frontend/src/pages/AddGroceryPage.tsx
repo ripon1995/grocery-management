@@ -13,8 +13,8 @@ const INITIAL_GROCERY_STATE: IGroceryCreateItem = {
     type: GroceryType.CAN,
     current_price: 0,
     current_seller: Seller.MEENA,
-    low_stock_threshold: 2,
-    quantity_in_stock: 0
+    low_stock_threshold: 1,
+    quantity_in_stock: 1
 };
 
 
