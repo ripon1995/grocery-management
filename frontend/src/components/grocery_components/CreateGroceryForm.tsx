@@ -9,19 +9,18 @@ import type {IGroceryCreateItem} from "../../api/types/requests/CreateGroceryIte
 import {GroceryType, Seller} from "../../constants/enums.ts";
 import MonthlyGroceryAppSelectField from "../common/MonthlyGroceryAppSelectField.tsx";
 
+const INITIAL_GROCERY_STATE: IGroceryCreateItem = {
+    name: '',
+    brand: '',
+    type: GroceryType.CAN,
+    current_price: 0,
+    current_seller: Seller.MEENA,
+    low_stock_threshold: 2,
+    quantity_in_stock: 0
+};
+
+
 function GroceryCreateForm() {
-
-    const INITIAL_GROCERY_STATE: IGroceryCreateItem = {
-        name: '',
-        brand: '',
-        type: GroceryType.CAN,
-        current_price: 0,
-        current_seller: Seller.MEENA,
-        low_stock_threshold: 2,
-        quantity_in_stock: 0
-    };
-
-
     // Initial state for all fields
     const [formData, setFormData] = useState<IGroceryCreateItem>(INITIAL_GROCERY_STATE);
 
