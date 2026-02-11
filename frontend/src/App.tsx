@@ -6,6 +6,7 @@ import Home from "./pages/Home.tsx";
 import About from "./pages/About.tsx";
 import PATHS from "./constants/paths.ts";
 import MonthlyGroceryAppBar from "./components/common/MonthlyGroceryAppBar.tsx";
+import AddGrocery from "./pages/AddGrocery.tsx";
 
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
             <MonthlyGroceryAppBar></MonthlyGroceryAppBar>
             <Routes>
                 <Route path={PATHS.HOME} element={<Home/>}/>
+                <Route path={PATHS.ADD_GROCERY} element={<AddGrocery/>}/>
                 <Route path={PATHS.ABOUT} element={<About/>}/>
             </Routes>
         </BrowserRouter>
