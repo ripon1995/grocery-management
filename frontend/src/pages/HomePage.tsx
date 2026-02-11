@@ -22,6 +22,15 @@ function HomePage() {
     const handleSave = () => {
         navigate(PATHS.ADD_GROCERY);
     };
+    const handleOnViewAction = (grocery_id: string) => {
+        navigate(PATHS.DETAIL_GROCERY.replace(':id', grocery_id));
+    };
+    const handleOnEditAction = (grocery_id: string) => {
+        navigate(PATHS.EDIT_GROCERY.replace(':id', grocery_id));
+    };
+    const handleOnDeleteAction = () => {
+        navigate(PATHS.ADD_GROCERY);
+    };
 
     return (
         <Box>
@@ -45,7 +54,13 @@ function HomePage() {
                     <MonthlyGroceryAppAddButton onClick={handleSave}/>
                 </Box>
             </Box>
-            <GroceryTable groceries={groceries} isLoading={isLoading}></GroceryTable>
+            <GroceryTable
+                groceries={groceries}
+                isLoading={isLoading}
+                onView={handleOnViewAction}
+                onEdit={handleOnEditAction}
+                onDelete={handleOnDeleteAction}>
+            </GroceryTable>
         </Box>
     );
 }

@@ -21,9 +21,9 @@ import Stack from "@mui/material/Stack";
 interface IGroceryTableProps {
     groceries: IGroceryListItem[];
     isLoading: boolean;
-    onView: (item: IGroceryListItem) => void;
-    onEdit: (item: IGroceryListItem) => void;
-    onDelete: (id: string) => void;
+    onView: (grocery_id: string) => void;
+    onEdit: (grocery_id: string) => void;
+    onDelete: (grocery_id: string) => void;
 }
 
 
@@ -54,9 +54,11 @@ const GroceryTableHeader = () => (
 
 
 const GroceryTableRow = ({row, index, onView, onEdit, onDelete}: {
-    row: IGroceryListItem; index: number, onView: (item: IGroceryListItem) => void;
-    onEdit: (item: IGroceryListItem) => void;
-    onDelete: (id: string) => void;
+    row: IGroceryListItem;
+    index: number,
+    onView: (grocery_id: string) => void;
+    onEdit: (grocery_id: string) => void;
+    onDelete: (grocery_id: string) => void;
 }) => (
     <TableRow
         key={row.id}
@@ -103,12 +105,12 @@ const GroceryTableRow = ({row, index, onView, onEdit, onDelete}: {
         <TableCell align="center">
             <Stack direction="row" spacing={1} justifyContent="center">
                 <Tooltip title="View">
-                    <IconButton onClick={() => onView(row)} color="primary" size="small">
+                    <IconButton onClick={() => onView(row.id)} color="primary" size="small">
                         <VisibilityIcon fontSize="small"/>
                     </IconButton>
                 </Tooltip>
                 <Tooltip title="Edit">
-                    <IconButton onClick={() => onEdit(row)} color="info" size="small">
+                    <IconButton onClick={() => onEdit(row.id)} color="info" size="small">
                         <EditIcon fontSize="small"/>
                     </IconButton>
                 </Tooltip>
@@ -139,8 +141,14 @@ function GroceryTable({groceries, isLoading, onView, onEdit, onDelete}: IGrocery
 
                         ) : (
                             groceries.map((row, index) => (
-                                <GroceryTableRow key={row.id} row={row} index={index} onView={onView} onEdit={onEdit}
-                                                 onDelete={onDelete}/>
+                                <GroceryTableRow
+                                    key={row.id}
+                                    row={row}
+                                    index={index}
+                                    onView={onView}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                />
                             ))
                         )}
                     </TableBody>
