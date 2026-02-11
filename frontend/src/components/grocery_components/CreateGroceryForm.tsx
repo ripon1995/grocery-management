@@ -7,6 +7,7 @@ import Stack from "@mui/material/Stack";
 import {useState} from "react";
 import type {IGroceryCreateItem} from "../../api/types/requests/CreateGroceryItem.ts";
 import {GroceryType, Seller} from "../../constants/enums.ts";
+import MonthlyGroceryAppSelectField from "../common/MonthlyGroceryAppSelectField.tsx";
 
 function GroceryCreateForm() {
 
@@ -73,19 +74,22 @@ function GroceryCreateForm() {
                     value={formData.brand}
                     onChange={handleStringChange('brand')}
                 />
-                <MonthlyGroceryAppInputField
+                <MonthlyGroceryAppSelectField
                     label='Type'
                     value={formData.type}
+                    options={Object.values(GroceryType)}
                     onChange={handleStringChange('type')}
                 />
+
                 <MonthlyGroceryAppInputField
                     label='Current Price'
                     value={formData.current_price.toString()}
                     onChange={handleNumberChange('current_price')}
                 />
-                <MonthlyGroceryAppInputField
+                <MonthlyGroceryAppSelectField
                     label='Current Seller'
                     value={formData.current_seller}
+                    options={Object.values(Seller)}
                     onChange={handleStringChange('current_seller')}
                 />
                 <MonthlyGroceryAppInputField
