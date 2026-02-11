@@ -59,7 +59,7 @@ function GroceryCreateForm() {
                 alignItems: 'center',      // Center children horizontally
                 // justifyContent: 'center', // Center children vertically inside the paper
                 width: 900,
-                height: 700,
+                height: 'auto',
                 gap: 1,                   // Adds consistent spacing between inputs
                 p: 4                       // Add padding so items don't touch edges
             }}>

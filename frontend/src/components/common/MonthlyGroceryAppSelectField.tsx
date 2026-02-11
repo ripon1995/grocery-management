@@ -27,6 +27,7 @@ function MonthlyGroceryAppSelectField({label, value, onChange, options}: ISelect
                 label={label}
                 onChange={handleChange}
                 sx={{
+                    textAlign: 'left',
                     '& .MuiOutlinedInput-notchedOutline': {
                         borderRadius: '4px',
                     }
