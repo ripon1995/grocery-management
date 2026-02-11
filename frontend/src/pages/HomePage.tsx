@@ -35,8 +35,6 @@ function HomePage() {
                     <MonthlyGroceryAppAddButton onClick={handleSave}/>
                 </Box>
             </Box>
-            {/*<Typography variant="h4">Monthly Grocery List</Typography>*/}
-            {/*<MonthlyGroceryAppAddButton onClick={handleSave}></MonthlyGroceryAppAddButton>*/}
             <GroceryTable></GroceryTable>
         </Box>
     );
