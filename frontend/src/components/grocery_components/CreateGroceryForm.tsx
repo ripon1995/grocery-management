@@ -39,7 +39,7 @@ function GroceryCreateForm(
             }}
         >
             <Paper elevation={6} sx={{
-                borderRadius: 2,
+                borderRadius: 1,
                 display: 'flex',           // Turn Paper into a flex container
                 flexDirection: 'column',  // Stack children vertically
                 alignItems: 'center',      // Center children horizontally
