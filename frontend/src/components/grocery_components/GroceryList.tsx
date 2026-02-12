@@ -5,15 +5,26 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import {Chip} from "@mui/material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import {Chip, IconButton, Tooltip} from "@mui/material";
 import type {IGroceryListItem} from "../../types/IGroceryList.ts";
 import {GroceryStockStatus} from "../../constants/enums.ts";
 import '../../styles/GroceryList.css';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import {useEffect} from "react";
-import useGroceryStore from "../../store/useGroceryStore.ts";
 import MonthlyGroceryAppLoader from "../common/MonthlyGroceryAppLoader.tsx";
+import Stack from "@mui/material/Stack";
+
+
+interface IGroceryTableProps {
+    groceries: IGroceryListItem[];
+    isLoading: boolean;
+    onView: (grocery_id: string) => void;
+    onEdit: (grocery_id: string) => void;
+    onDelete: (grocery_id: string) => void;
+}
 
 
 const GroceryTableHeader = () => (
@@ -36,11 +47,19 @@ const GroceryTableHeader = () => (
             <TableCell align="center">Best Price</TableCell>
             <TableCell align="center">Best Seller</TableCell>
             <TableCell align="center">Status</TableCell>
+            <TableCell align="center">Actions</TableCell>
         </TableRow>
     </TableHead>
 );
 
-const GroceryTableRow = ({row, index}: { row: IGroceryListItem; index: number }) => (
+
+const GroceryTableRow = ({row, index, onView, onEdit, onDelete}: {
+    row: IGroceryListItem;
+    index: number,
+    onView: (grocery_id: string) => void;
+    onEdit: (grocery_id: string) => void;
+    onDelete: (grocery_id: string) => void;
+}) => (
     <TableRow
         key={row.id}
         className="grocery-row"
@@ -83,17 +102,30 @@ const GroceryTableRow = ({row, index}: { row: IGroceryListItem; index: number })
                 variant="outlined"
             />
         </TableCell>
+        <TableCell align="center">
+            <Stack direction="row" spacing={1} justifyContent="center">
+                <Tooltip title="View">
+                    <IconButton onClick={() => onView(row.id)} color="primary" size="small">
+                        <VisibilityIcon fontSize="small"/>
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title="Edit">
+                    <IconButton onClick={() => onEdit(row.id)} color="info" size="small">
+                        <EditIcon fontSize="small"/>
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete">
+                    <IconButton onClick={() => onDelete(row.id)} color="error" size="small">
+                        <DeleteIcon fontSize="small"/>
+                    </IconButton>
+                </Tooltip>
+            </Stack>
+        </TableCell>
     </TableRow>
 )
 
-function GroceryTable() {
 
-    const {groceries, fetchGroceries, isLoading} = useGroceryStore();
-    useEffect(() => {
-        fetchGroceries().then();
-    }, [fetchGroceries]);
-
-
+function GroceryTable({groceries, isLoading, onView, onEdit, onDelete}: IGroceryTableProps) {
     return (
         <Paper elevation={10} sx={{borderRadius: 1, overflow: 'hidden'}}>
             <TableContainer>
@@ -109,7 +141,14 @@ function GroceryTable() {
 
                         ) : (
                             groceries.map((row, index) => (
-                                <GroceryTableRow key={row.id} row={row} index={index}/>
+                                <GroceryTableRow
+                                    key={row.id}
+                                    row={row}
+                                    index={index}
+                                    onView={onView}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                />
                             ))
                         )}
                     </TableBody>

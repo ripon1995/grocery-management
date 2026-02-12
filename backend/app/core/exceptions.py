@@ -6,7 +6,7 @@ class AppBaseException(Exception):
     error_code = 'internal_server_error'
     detail = 'Internal Server Error'
     message = 'Internal Server Error'
-    success = False
+    status = 'fail'
 
     def __init__(
             self,
@@ -27,3 +27,10 @@ class ResourceNotFoundException(AppBaseException):
     error_code = 'resource_not_found'
     detail = 'Resource not found'
     message = 'Resource not found'
+
+
+class InvalidUUIDException(AppBaseException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error_code = 'invalid_uuid'
+    detail = 'Invalid UUID'
+    message = 'Provided UUID is invalid'

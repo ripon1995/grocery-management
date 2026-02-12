@@ -1,6 +1,6 @@
 import {Container, Typography} from '@mui/material';
 
-function About() {
+function AboutPage() {
     return (
         <Container>
             <Typography variant="h3">Welcome to the About Page</Typography>
@@ -9,4 +9,4 @@ function About() {
     );
 }
 
-export default About;
+export default AboutPage;
