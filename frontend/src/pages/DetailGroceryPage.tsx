@@ -24,7 +24,7 @@ function GroceryDetailPage() {
             <Typography variant="h4" sx={{fontWeight: 'regular'}}>
                 Monthly Grocery Detail
             </Typography>
-            <GroceryDetail grocery={grocery}></GroceryDetail>
+            <GroceryDetail grocery={grocery} isLoading={isLoading}></GroceryDetail>
         </Container>
 
     );
