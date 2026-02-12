@@ -3,8 +3,8 @@ import {useParams} from "react-router-dom";
 import GroceryDetail from "../components/grocery_components/GroceryDetail.tsx";
 import useGroceryStore from "../store/useGroceryStore.ts";
 import {useEffect} from "react";
-
 import MonthlyGroceryAppError from "../components/common/MonthlyGroceryAppError.tsx";
+import MonthlyGroceryAppLoader from "../components/common/MonthlyGroceryAppLoader.tsx";
 
 
 function GroceryDetailPage() {
@@ -18,11 +18,21 @@ function GroceryDetailPage() {
     }, [id, getGroceryDetail]);
 
     // 1. If there's an error and no grocery data, show Error
-    if (error || grocery == null) {
+    if (error) {
         return (
             <Container>
                 <Typography variant="h4" sx={{mb: 2}}>Monthly Grocery Detail</Typography>
-                <MonthlyGroceryAppError message={error}></MonthlyGroceryAppError>
+                <MonthlyGroceryAppError message={error}/>
+            </Container>
+        );
+    }
+
+    // 2. Handle Loading State (Moved from Child to Page)
+    if (isLoading || !grocery) {
+        return (
+            <Container>
+                <Typography variant="h4" sx={{mb: 2}}>Monthly Grocery Detail</Typography>
+                <MonthlyGroceryAppLoader message="Fetching Details..."/>
             </Container>
         );
     }

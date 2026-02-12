@@ -3,22 +3,6 @@ import {Box} from '@mui/material';
 import {Paper} from '@mui/material';
 import {formatDate} from "../../constants/utils.ts";
 import MonthlyGroceryAppDisplayField from "../common/MonthlyGroceryAppDiplayField.tsx";
-import MonthlyGroceryAppLoader from "../common/MonthlyGroceryAppLoader.tsx";
-
-// 1. Function for the Loader View
-const renderLoader = () => (
-    <Paper elevation={6} sx={{
-        borderRadius: 1,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 900,
-        minHeight: 400,
-        p: 4
-    }}>
-        <MonthlyGroceryAppLoader message="Loading details..."/>
-    </Paper>
-);
 
 
 // 2. Function for the Data View
@@ -68,10 +52,7 @@ function GroceryDetail(props: IGroceryDetailProps) {
             }}
         >
 
-            {props.isLoading
-                ? renderLoader()
-                : renderGroceryContent(props.grocery)
-            }
+            {renderGroceryContent(props.grocery)}
 
         </Box>
     );
