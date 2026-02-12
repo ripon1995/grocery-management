@@ -36,7 +36,6 @@ const renderGroceryContent = (data: IGroceryDetail) => (
 
 interface IGroceryDetailProps {
     grocery: IGroceryDetail
-    isLoading: boolean
 }
 
 

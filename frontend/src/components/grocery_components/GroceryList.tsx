@@ -14,13 +14,11 @@ import {GroceryStockStatus} from "../../constants/enums.ts";
 import '../../styles/GroceryList.css';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import MonthlyGroceryAppLoader from "../common/MonthlyGroceryAppLoader.tsx";
 import Stack from "@mui/material/Stack";
 
 
 interface IGroceryTableProps {
     groceries: IGroceryListItem[];
-    isLoading: boolean;
     onView: (grocery_id: string) => void;
     onEdit: (grocery_id: string) => void;
     onDelete: (grocery_id: string) => void;
@@ -125,21 +123,14 @@ const GroceryTableRow = ({row, index, onView, onEdit, onDelete}: {
 )
 
 
-function GroceryTable({groceries, isLoading, onView, onEdit, onDelete}: IGroceryTableProps) {
+function GroceryTable({groceries, onView, onEdit, onDelete}: IGroceryTableProps) {
     return (
         <Paper elevation={10} sx={{borderRadius: 1, overflow: 'hidden'}}>
             <TableContainer>
                 <Table sx={{minWidth: 650}} aria-label="grocery inventory table">
                     <GroceryTableHeader></GroceryTableHeader>
                     <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={12} sx={{p: 0, borderBottom: 'none'}}>
-                                    <MonthlyGroceryAppLoader message="Fetching Groceries..." minHeight={500}/>
-                                </TableCell>
-                            </TableRow>
-
-                        ) : (
+                        {(
                             groceries.map((row, index) => (
                                 <GroceryTableRow
                                     key={row.id}

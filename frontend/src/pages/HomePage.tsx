@@ -1,11 +1,12 @@
 import {useEffect} from "react";
 import {useNavigate} from 'react-router-dom';
-import {Typography} from '@mui/material';
+import {Container, Typography} from '@mui/material';
 import GroceryTable from "../components/grocery_components/GroceryList.tsx";
 import Box from "@mui/material/Box";
 import {MonthlyGroceryAppAddButton} from "../components/common/MonthlyGroceryAppButton.tsx";
 import PATHS from "../constants/paths.ts";
 import useGroceryStore from "../store/useGroceryStore.ts";
+import MonthlyGroceryAppLoader from "../components/common/MonthlyGroceryAppLoader.tsx";
 
 
 function HomePage() {
@@ -32,6 +33,18 @@ function HomePage() {
         navigate(PATHS.ADD_GROCERY);
     };
 
+
+    // 2. Handle Loading State (Moved from Child to Page)
+    if (isLoading || !groceries) {
+        return (
+            <Container>
+                <Typography variant="h4" sx={{mb: 2}}>Monthly Grocery Detail</Typography>
+                <MonthlyGroceryAppLoader message="Fetching list..."/>
+            </Container>
+        );
+    }
+
+
     return (
         <Box>
             {/* Header Row Container */}
@@ -56,7 +69,6 @@ function HomePage() {
             </Box>
             <GroceryTable
                 groceries={groceries}
-                isLoading={isLoading}
                 onView={handleOnViewAction}
                 onEdit={handleOnEditAction}
                 onDelete={handleOnDeleteAction}>
