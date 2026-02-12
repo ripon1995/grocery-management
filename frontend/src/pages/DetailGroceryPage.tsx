@@ -4,9 +4,11 @@ import GroceryDetail from "../components/grocery_components/GroceryDetail.tsx";
 import useGroceryStore from "../store/useGroceryStore.ts";
 import {useEffect} from "react";
 
+import MonthlyGroceryAppError from "../components/common/MonthlyGroceryAppError.tsx";
+
 
 function GroceryDetailPage() {
-    const {getGroceryDetail, grocery, isLoading} = useGroceryStore();
+    const {getGroceryDetail, grocery, isLoading, error} = useGroceryStore();
     const {id} = useParams<{ id: string }>();
 
     useEffect(() => {
@@ -15,9 +17,16 @@ function GroceryDetailPage() {
         }
     }, [id, getGroceryDetail]);
 
-    if (grocery == null) {
-        return;
+    // 1. If there's an error and no grocery data, show Error
+    if (error || grocery == null) {
+        return (
+            <Container>
+                <Typography variant="h4" sx={{mb: 2}}>Monthly Grocery Detail</Typography>
+                <MonthlyGroceryAppError message={error}></MonthlyGroceryAppError>
+            </Container>
+        );
     }
+
 
     return (
         <Container>

@@ -47,9 +47,9 @@ const useGroceryStore = create<IGroceryState>((set) => ({
         try {
             const data = await getGroceryDetail(grocery_id);
             set({grocery: data, isLoading: false});
-        } catch (err) {
+        } catch (err: any) {
             console.log(err);
-            set({error: 'Could not fetch grocery detail for now.....', isLoading: false})
+            set({error: err.message, isLoading: false})
         }
     }
 }));
