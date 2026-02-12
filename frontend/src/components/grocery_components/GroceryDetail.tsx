@@ -62,8 +62,9 @@ function GroceryDetail(props: IGroceryDetailProps) {
             sx={{
                 display: 'flex',
                 justifyContent: 'center', // Centers the Paper horizontally in the screen
-                alignItems: 'center',     // Centers the Paper vertically in the screen
+                alignItems: 'flex-start',     // Centers the Paper vertically in the screen
                 minHeight: '100vh',       // Ensures the box takes full screen heigh
+                pt: 4
             }}
         >
 
