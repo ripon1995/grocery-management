@@ -11,7 +11,6 @@ interface IGroceryState {
     isLoading: boolean;
     error: string | null;
 
-    // TODO #FE# -> Check the Promise return type <void> ????
     // actions
     fetchGroceries: () => Promise<void>;
     addGroceries: (newItem: IGroceryCreateItem) => Promise<void>;
