@@ -6,7 +6,7 @@ class AppBaseException(Exception):
     error_code = 'internal_server_error'
     detail = 'Internal Server Error'
     message = 'Internal Server Error'
-    success = False
+    status = 'fail'
 
     def __init__(
             self,
