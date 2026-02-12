@@ -29,6 +29,7 @@ from .schemas.response_schemas import (
 )
 from ...common.constants import GROCERY_NOT_FOUND
 from ...core.exceptions import ResourceNotFoundException
+from ...utils.uuid_validation_helper import validate_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -96,9 +97,10 @@ class GroceryService:
         return [GroceryListResponseSchema.model_validate(item) for item in groceries]
 
     async def get_grocery_by_id(self, grocery_id) -> GroceryDetailResponseSchema:
-        grocery = await self.repo.get_by_id(grocery_id)
+        validated_id = validate_uuid(grocery_id)
+        grocery = await self.repo.get_by_id(validated_id)
         if grocery is None:
-            raise ResourceNotFoundException(message=GROCERY_NOT_FOUND.format(grocery_id=grocery_id))
+            raise ResourceNotFoundException(message=GROCERY_NOT_FOUND.format(grocery_id=validated_id))
         return GroceryDetailResponseSchema.model_validate(grocery)
 
     async def create_grocery(self, data: GroceryCreateSchema) -> GroceryCreateResponseSchema:
