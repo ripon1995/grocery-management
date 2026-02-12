@@ -1,23 +1,28 @@
 import {create} from "zustand";
 import type {IGroceryListItem} from "../types/IGroceryList.ts";
-import {getGroceries, createGroceries} from "../api/endpoints/GroceryApi.ts";
+import {getGroceries, createGroceries, getGroceryDetail} from "../api/endpoints/GroceryApi.ts";
 import type {IGroceryCreateItem} from "../api/types/requests/CreateGroceryItem.ts";
+import type {IGroceryDetail} from "../types/IGroceryDetail.ts";
 
 
 interface IGroceryState {
     groceries: IGroceryListItem[];
+    grocery: IGroceryDetail | null;
     isLoading: boolean;
     error: string | null;
 
+    // TODO #FE# -> Check the Promise return type <void> ????
     // actions
     fetchGroceries: () => Promise<void>;
     addGroceries: (newItem: IGroceryCreateItem) => Promise<void>;
+    getGroceryDetail: (grocery_id: string) => Promise<void>;
 }
 
 
 const useGroceryStore = create<IGroceryState>((set) => ({
     groceries: [],
     isLoading: false,
+    grocery: null,
     error: null,
     fetchGroceries: async () => {
         set({isLoading: true, error: null});
@@ -36,6 +41,16 @@ const useGroceryStore = create<IGroceryState>((set) => ({
         } catch (err) {
             console.log(err);
             set({isLoading: false});
+        }
+    },
+    getGroceryDetail: async (grocery_id: string) => {
+        set({isLoading: true});
+        try {
+            const data = await getGroceryDetail(grocery_id);
+            set({grocery: data, isLoading: false});
+        } catch (err) {
+            console.log(err);
+            set({isLoading: false})
         }
     }
 }));
