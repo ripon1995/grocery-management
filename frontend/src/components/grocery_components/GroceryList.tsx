@@ -73,7 +73,7 @@ const GroceryTableRow = ({row, index, onView, onEdit, onDelete}: {
         <TableCell align="center" sx={{textTransform: 'capitalize'}}>
             {row.type}
         </TableCell>
-        <TableCell align="center">${row.current_price.toFixed(2)}</TableCell>
+        <TableCell align="center">${row.current_price.toFixed(0)}</TableCell>
         <TableCell align="center" sx={{textTransform: 'uppercase'}}>{row.current_seller}</TableCell>
         <TableCell align="center">{row.low_stock_threshold}</TableCell>
         <TableCell align="center">{row.quantity_in_stock}</TableCell>
@@ -86,7 +86,7 @@ const GroceryTableRow = ({row, index, onView, onEdit, onDelete}: {
                 sx={{borderRadius: '2px'}}
             />
         </TableCell>
-        <TableCell align="center">${row.best_price.toFixed(2)}</TableCell>
+        <TableCell align="center">${row.best_price.toFixed(0)}</TableCell>
         <TableCell align="center" sx={{textTransform: 'uppercase'}}>{row.best_seller}</TableCell>
         <TableCell align="center">
             <Chip

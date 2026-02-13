@@ -52,7 +52,7 @@ const renderGroceryContent = (
         <MonthlyGroceryAppInputFieldSmall
             onChange={onNumberChange('current_price')}
             label="Current Price"
-            value={`$${formData.current_price.toFixed(2)}`}
+            value={`$${formData.current_price.toFixed(0)}`}
         />
         <MonthlyGroceryAppSelectFieldSmall
             options={Object.values(Seller)}
