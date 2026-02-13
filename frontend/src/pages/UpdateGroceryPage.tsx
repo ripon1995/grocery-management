@@ -1,7 +1,7 @@
 import {Container, Typography} from '@mui/material';
 import {useParams} from "react-router-dom";
 
-function GroceryEditPage() {
+function UpdateGroceryPage() {
     const {id} = useParams<{ id: string }>();
     return (
         <Container>
@@ -11,4 +11,4 @@ function GroceryEditPage() {
     );
 }
 
-export default GroceryEditPage;
+export default UpdateGroceryPage;

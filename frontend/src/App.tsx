@@ -5,7 +5,7 @@ import AboutPage from "./pages/AboutPage.tsx";
 import PATHS from "./constants/paths.ts";
 import MonthlyGroceryAppBar from "./components/common/MonthlyGroceryAppBar.tsx";
 import AddGroceryPage from "./pages/AddGroceryPage.tsx";
-import GroceryEditPage from "./pages/EdtiGroceryPage.tsx";
+import UpdateGroceryPage from "./pages/UpdateGroceryPage.tsx";
 import GroceryDetailPage from "./pages/DetailGroceryPage.tsx";
 
 
@@ -17,7 +17,7 @@ function App() {
                 <Route path={PATHS.HOME} element={<HomePage/>}/>
                 <Route path={PATHS.ADD_GROCERY} element={<AddGroceryPage/>}/>
                 <Route path={PATHS.DETAIL_GROCERY} element={<GroceryDetailPage/>}/>
-                <Route path={PATHS.EDIT_GROCERY} element={<GroceryEditPage/>}/>
+                <Route path={PATHS.EDIT_GROCERY} element={<UpdateGroceryPage/>}/>
                 <Route path={PATHS.ABOUT} element={<AboutPage/>}/>
             </Routes>
         </BrowserRouter>
