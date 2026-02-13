@@ -13,7 +13,7 @@ function HomePage() {
     const navigate = useNavigate();
 
     // 1. Hook into the store at the Page level
-    const {groceries, fetchGroceries, isLoading} = useGroceryStore();
+    const {groceries, fetchGroceries, isLoading, deleteGroceryItem} = useGroceryStore();
 
     // 2. Trigger the fetch when the page mounts
     useEffect(() => {
@@ -29,8 +29,9 @@ function HomePage() {
     const handleOnEditAction = (grocery_id: string) => {
         navigate(PATHS.EDIT_GROCERY.replace(':id', grocery_id));
     };
-    const handleOnDeleteAction = () => {
-        navigate(PATHS.ADD_GROCERY);
+    const handleOnDeleteAction = async (grocery_id: string) => {
+        await deleteGroceryItem(grocery_id);
+        await fetchGroceries();
     };
 
 
