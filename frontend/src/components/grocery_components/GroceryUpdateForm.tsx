@@ -4,13 +4,14 @@ import {MonthlyGroceryAppCancelButton, MonthlyGroceryAppSaveButton} from "../com
 import type {IPayloadGroceryItemUpdate} from "../../api/types/requests/UpdateGroceryItem.ts";
 import MonthlyGroceryAppInputFieldSmall from "../common/MonthlyGroceryAppInputFieldSmall.tsx";
 import MonthlyGroceryAppSelectFieldSmall from "../common/MonthlyGroceryAppSelectFieldSmall.tsx";
-import {GroceryType, Seller} from "../../constants/enums.ts";
+import {GroceryType, Seller, YesNoChoice} from "../../constants/enums.ts";
 
 
 interface IGroceryUpdateProps {
     formData: IPayloadGroceryItemUpdate
     onStringChange: (field: keyof IPayloadGroceryItemUpdate) => (value: string) => void;
     onNumberChange: (field: keyof IPayloadGroceryItemUpdate) => (value: string) => void;
+    onBooleanChange: (field: keyof IPayloadGroceryItemUpdate) => (value: string) => void;
     handleSaveAction: () => void;
     handleCancelAction: () => void;
 }
@@ -20,6 +21,7 @@ const renderGroceryContent = (
     formData: IPayloadGroceryItemUpdate,
     onStringChange: (field: keyof IPayloadGroceryItemUpdate) => (value: string) => void,
     onNumberChange: (field: keyof IPayloadGroceryItemUpdate) => (value: string) => void,
+    onBooleanChange: (field: keyof IPayloadGroceryItemUpdate) => (value: string) => void,
     handleSaveAction: () => void,
     handleCancelAction: () => void,
 ) => (
@@ -70,10 +72,11 @@ const renderGroceryContent = (
             label="Quantity In Stock"
             value={formData.quantity_in_stock}
         />
-        <MonthlyGroceryAppInputFieldSmall
-            onChange={onNumberChange('should_include')}
+        <MonthlyGroceryAppSelectFieldSmall
+            options={Object.values(YesNoChoice)}
+            onChange={onBooleanChange('should_include')}
             label="Include?"
-            value={formData.should_include ? 'YES' : 'NO'}
+            value={formData.should_include ? YesNoChoice.YES : YesNoChoice.NO}
         />
         <Stack
             direction="row"
@@ -99,7 +102,7 @@ function GroceryUpdate(props: IGroceryUpdateProps) {
             }}
         >
 
-            {renderGroceryContent(props.formData, props.onStringChange, props.onNumberChange, props.handleSaveAction, props.handleCancelAction)}
+            {renderGroceryContent(props.formData, props.onStringChange, props.onNumberChange, props.onBooleanChange, props.handleSaveAction, props.handleCancelAction)}
 
         </Box>
     );

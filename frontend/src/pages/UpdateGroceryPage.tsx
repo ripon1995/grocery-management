@@ -58,6 +58,16 @@ function UpdateGroceryPage() {
         });
     };
 
+    const handleBooleanChange = (field: keyof IPayloadGroceryItemUpdate) => (value: string) => {
+    setFormData(prev => {
+        if (!prev) return null;
+        return {
+            ...prev,
+            [field]: value === 'yes'
+        };
+    });
+};
+
     // Logic: If there is an error, show it
     if (error) {
         return (
@@ -88,6 +98,7 @@ function UpdateGroceryPage() {
                 formData={formData}
                 onStringChange={handleStringChange}
                 onNumberChange={handleNumberChange}
+                onBooleanChange={handleBooleanChange}
                 handleSaveAction={handleSave}
                 handleCancelAction={navigateToBack}
             />

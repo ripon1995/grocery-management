@@ -22,3 +22,9 @@ export const Seller = {
     AGORA: 'agora'
 } as const;
 export type Seller = typeof Seller[keyof typeof Seller];
+
+
+export const YesNoChoice = {
+    YES: 'yes',
+    NO: 'no'
+}
