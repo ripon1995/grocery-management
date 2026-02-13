@@ -39,7 +39,7 @@ function UpdateGroceryPage() {
             console.log(formData)
             await updateGroceryDetail(id, formData);
         }
-        // navigateToBack();
+        navigateToBack();
     };
 
     // Curried handlers with Null-Checks to satisfy TypeScript
@@ -85,7 +85,7 @@ function UpdateGroceryPage() {
             </Typography>
 
             <GroceryUpdate
-                formData={formData} // Pass local editable state
+                formData={formData}
                 onStringChange={handleStringChange}
                 onNumberChange={handleNumberChange}
                 handleSaveAction={handleSave}
