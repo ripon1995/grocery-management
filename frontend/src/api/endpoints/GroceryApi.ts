@@ -49,3 +49,16 @@ export const updateGrocery = async (grocery_id: string, payload: IPayloadGrocery
         throw new BaseError();
     }
 }
+
+export const deleteGrocery = async (grocery_id: string): Promise<void> => {
+    try {
+        await axiosInstance.delete<void>(API_ENDPOINT.GROCERY_DELETE.replace(':id', grocery_id));
+        return;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.data) {
+            throw new BaseError(error.response.data);
+        }
+        // Returns the object with your default fallbacks
+        throw new BaseError();
+    }
+}
