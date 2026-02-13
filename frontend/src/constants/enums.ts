@@ -2,7 +2,9 @@ export const GroceryType = {
     WEIGHT: 'weight',
     SACK: 'sack',
     CAN: 'can',
-    PIECE: 'piece'
+    PIECE: 'piece',
+    PACKET: 'packet',
+    BOTTLE: 'bottle'
 } as const;
 export type GroceryType = typeof GroceryType[keyof typeof GroceryType];
 
@@ -16,6 +18,7 @@ export const Seller = {
     MEENA: 'meena',
     SHWAPNO: 'shwapno',
     LOCAL: 'local',
-    COMILLA: 'comilla'
+    COMILLA: 'comilla',
+    AGORA: 'agora'
 } as const;
 export type Seller = typeof Seller[keyof typeof Seller];
