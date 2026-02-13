@@ -3,7 +3,7 @@ DB structure only
 """
 
 from sqlalchemy import (
-    String, Boolean, Integer, Float,
+    String, Boolean, Integer,
     Enum as SQLEnum,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -29,8 +29,8 @@ class Grocery(Base, BaseModelMixin):
         default=GroceryType.CAN,
         nullable=False
     )
-    current_price: Mapped[float] = mapped_column(
-        Float(precision=2),
+    current_price: Mapped[int] = mapped_column(
+        Integer,
         nullable=False
     )
     current_seller: Mapped[Seller] = mapped_column(
@@ -58,8 +58,8 @@ class Grocery(Base, BaseModelMixin):
         nullable=False,
         default=Seller.DEFAULT
     )
-    best_price: Mapped[float] = mapped_column(
-        Float(precision=2),
+    best_price: Mapped[int] = mapped_column(
+        Integer,
         nullable=True,
         default=0.0
     )
