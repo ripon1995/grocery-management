@@ -1,8 +1,15 @@
 import {create} from "zustand";
 import type {IGroceryListItem} from "../types/IGroceryList.ts";
-import {getGroceries, createGroceries, getGroceryDetail} from "../api/endpoints/GroceryApi.ts";
+import {
+    getGroceries,
+    createGroceries,
+    getGroceryDetail,
+    updateGrocery,
+    deleteGrocery
+} from "../api/endpoints/GroceryApi.ts";
 import type {IGroceryCreateItem} from "../api/types/requests/CreateGroceryItem.ts";
 import type {IGroceryDetail} from "../types/IGroceryDetail.ts";
+import type {IPayloadGroceryItemUpdate} from "../api/types/requests/UpdateGroceryItem.ts";
 
 
 interface IGroceryState {
@@ -15,6 +22,8 @@ interface IGroceryState {
     fetchGroceries: () => Promise<void>;
     addGroceries: (newItem: IGroceryCreateItem) => Promise<void>;
     getGroceryDetail: (grocery_id: string) => Promise<void>;
+    updateGroceryDetail: (grocery_id: string, payload: IPayloadGroceryItemUpdate) => Promise<void>;
+    deleteGroceryItem: (grocery_id: string) => Promise<void>;
 }
 
 
@@ -49,7 +58,27 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             set({grocery: data, isLoading: false});
         } catch (err: any) {
             console.log(err);
-            set({error: err.message, isLoading: false})
+            set({error: err.message, isLoading: false});
+        }
+    },
+    updateGroceryDetail: async (grocery_id: string, payload: IPayloadGroceryItemUpdate) => {
+        set({isLoading: true})
+        try {
+            await updateGrocery(grocery_id, payload);
+            set({isLoading: false});
+        } catch (err: any) {
+            console.log(err);
+            set({error: err.message, isLoading: false});
+        }
+    },
+    deleteGroceryItem: async (grocery_id: string) => {
+        set({isLoading: true});
+        try {
+            await deleteGrocery(grocery_id);
+            set({isLoading: false});
+        } catch (err: any) {
+            console.log(err);
+            set({error: err.message, isLoading: false});
         }
     }
 }));

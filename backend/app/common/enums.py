@@ -6,6 +6,8 @@ class GroceryType(str, Enum):
     SACK = 'sack'
     CAN = 'can'
     PIECE = 'piece'
+    PACKET = 'packet'
+    BOTTLE = 'bottle'
 
 
 class GroceryStockStatus(str, Enum):
@@ -19,3 +21,4 @@ class Seller(str, Enum):
     LOCAL = 'local'
     COMILLA = 'comilla'
     DEFAULT = 'default'
+    AGORA = 'agora'

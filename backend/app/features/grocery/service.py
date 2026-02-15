@@ -43,11 +43,11 @@ class GroceryService:
     # ───────────────────────────────────────────────
     @staticmethod
     def __update_best_price_and_best_seller(
-            new_price: float,
-            best_price: float,
+            new_price: int,
+            best_price: int,
             new_seller: Seller,
             best_seller: Seller,
-    ) -> Tuple[float, Seller]:
+    ) -> Tuple[int, Seller]:
         if best_price is None:
             best_price = new_price
             best_seller = Seller.MEENA
@@ -65,7 +65,7 @@ class GroceryService:
     def __prepare_grocery(data: GroceryCreateSchema) -> Grocery:
         """Map create schema → ORM model + apply business defaults/rules"""
         values = data.model_dump()
-        values["current_price"] = float(data.current_price)
+        values["current_price"] = data.current_price
         values["best_seller"] = values["current_seller"]
         values["best_price"] = values["current_price"]
         return Grocery(**values)

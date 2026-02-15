@@ -1,8 +1,8 @@
-"""create grocery table
+"""initial fresh start - clean DB
 
-Revision ID: 4e98b7e766d0
+Revision ID: 72f31d406fa2
 Revises: 
-Create Date: 2026-02-07 11:01:09.811208
+Create Date: 2026-02-14 00:21:53.612484
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '4e98b7e766d0'
+revision: str = '72f31d406fa2'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,12 +24,14 @@ def upgrade() -> None:
     op.create_table('grocery',
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('brand', sa.String(length=100), nullable=False),
-    sa.Column('type', sa.Enum('WEIGHT', 'SACK', 'CAN', 'PIECE', name='grocerytype'), nullable=False),
-    sa.Column('current_price', sa.Float(precision=2), nullable=False),
-    sa.Column('current_seller', sa.Enum('MEENA', 'SHWAPNO', 'LOCAL', 'COMILLA', name='seller'), nullable=False),
+    sa.Column('type', sa.Enum('WEIGHT', 'SACK', 'CAN', 'PIECE', 'PACKET', 'BOTTLE', name='grocerytype'), nullable=False),
+    sa.Column('current_price', sa.Integer(), nullable=False),
+    sa.Column('current_seller', sa.Enum('MEENA', 'SHWAPNO', 'LOCAL', 'COMILLA', 'DEFAULT', 'AGORA', name='seller'), nullable=False),
     sa.Column('low_stock_threshold', sa.Integer(), nullable=False),
     sa.Column('quantity_in_stock', sa.Integer(), nullable=False),
     sa.Column('should_include', sa.Boolean(), nullable=False),
+    sa.Column('best_seller', sa.Enum('MEENA', 'SHWAPNO', 'LOCAL', 'COMILLA', 'DEFAULT', 'AGORA', name='seller'), nullable=False),
+    sa.Column('best_price', sa.Integer(), nullable=True),
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),

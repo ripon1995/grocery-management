@@ -11,13 +11,13 @@ class GroceryBaseResponseSchema(BaseModel):
     name: str
     brand: str
     type: GroceryType
-    current_price: float
+    current_price: int
     current_seller: Seller
     low_stock_threshold: int
     quantity_in_stock: int
     should_include: bool
     best_seller: Seller
-    best_price: float
+    best_price: int
 
     model_config = ConfigDict(
         from_attributes=True,
