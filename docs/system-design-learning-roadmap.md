@@ -131,9 +131,40 @@ const API_BASE_URL = 'http://api.grocery-local.dev:8000'
 
 ---
 
-## Phase 2: API Design & Security (Weeks 3-4)
+## Phase 2: API Design & Security (Weeks 3-5)
 
-### 5. APIs & REST API Principles ✅ (Partially Implemented)
+### 5. APIs
+
+**Why You Need It**: Before REST or GraphQL, you need to understand what an API is and why it exists. APIs are the foundation of all modern software communication — every feature you add to Grocery Manager relies on them.
+
+**What APIs Are**:
+- A contract defining how software components communicate
+- Abstracts implementation details behind a clean interface
+- Enables frontend and backend to evolve independently
+
+**Types of APIs** (all relevant to your grocery manager):
+| Type | Protocol | Use Case in Grocery Manager |
+|------|----------|----------------------------|
+| REST | HTTP | Main CRUD operations (current) |
+| GraphQL | HTTP | Flexible data fetching (Phase 2) |
+| WebSockets | TCP | Real-time grocery list updates (Phase 6) |
+| Webhooks | HTTP callbacks | External notifications (Phase 6) |
+
+**For Grocery Manager**:
+- **Public API**: GET endpoints — anyone can read grocery data
+- **Private API**: POST/PUT/DELETE — only authorized users
+- **Internal API**: Frontend ↔ Backend communication over HTTP
+
+**Learning Tasks**:
+1. Document every endpoint in your current backend with its HTTP method and purpose
+2. Categorize them: which are public? which should be private?
+3. Draw a flow diagram: Browser → React → FastAPI → Supabase → back
+
+**Success Criteria**: Can explain what an API is, name the 4 types your grocery manager uses, and distinguish public from private endpoints.
+
+---
+
+### 6. REST API Principles ✅ (Partially Implemented)
 
 **Why You Need It**: Your app already uses REST APIs, but they can be optimized and standardized.
 
@@ -185,7 +216,7 @@ const API_BASE_URL = 'http://api.grocery-local.dev:8000'
 
 ---
 
-### 6. GraphQL (Alternative to REST)
+### 7. GraphQL (Alternative to REST)
 
 **Why You Need It**: Solve over-fetching/under-fetching problems. Frontend can request exactly what it needs.
 
@@ -239,9 +270,11 @@ const API_BASE_URL = 'http://api.grocery-local.dev:8000'
 
 ---
 
-### 7. Authentication & Authorization
+### ⚙️ Implementation Requirement: Authentication & Authorization
 
-**Why You Need It**: Currently, anyone can CREATE/UPDATE/DELETE groceries. You need to:
+> **Note**: Authentication & Authorization are not one of the 30 core system design topics but are a **critical practical requirement** before deploying your REST API to production. Complete this implementation during Phase 2 before moving to Phase 3. Without it, anyone can CREATE/UPDATE/DELETE your grocery data.
+
+**Why You Need It**:
 - Identify users (Authentication)
 - Control access (Authorization)
 - Protect sensitive operations
@@ -1206,13 +1239,36 @@ upstream grocery_backend {
 
 ---
 
-### 20. Reverse Proxy
+### 20. Proxy / Reverse Proxy
 
-**Why You Need It**:
+**Why You Need It**: Proxies sit between clients and servers, controlling traffic flow. There are two types — understanding both changes how you think about network architecture.
+
+**Forward Proxy** (client-side):
+- Sits between the client and the internet
+- Client sends all requests through the proxy
+- Use cases: anonymity, content filtering, corporate firewalls
+- Example: A VPN or Squid proxy
+
+```
+[Browser] → [Forward Proxy] → [Internet] → [Server]
+```
+
+**Reverse Proxy** (server-side):
+- Sits between the internet and your backend servers
+- Clients don't know which server actually handles their request
+- Use cases: load balancing, SSL termination, caching, security
+
+```
+[Browser] → [Reverse Proxy (Nginx)] → [Backend Server 1]
+                                     → [Backend Server 2]
+```
+
+**For Grocery Manager** — you will use a **reverse proxy** (Nginx) to:
 - Hide backend servers from public internet
 - SSL termination (encrypt/decrypt HTTPS at proxy)
-- Caching static content
-- Security (rate limiting, DDoS protection)
+- Cache static content
+- Rate limiting and DDoS protection
+- Serve frontend files
 
 **Nginx as Reverse Proxy**:
 
@@ -2552,10 +2608,10 @@ Use this checklist to track your progress:
 - [ ] HTTP/HTTPS Setup
 
 ### Phase 2: API & Security
+- [x] APIs (already implemented)
 - [x] REST API (already implemented)
 - [ ] GraphQL Implementation
-- [ ] Authentication (JWT)
-- [ ] Authorization & Multi-tenancy
+- [ ] ⚙️ Authentication & Authorization (Required implementation — not a system design topic)
 
 ### Phase 3: Data Layer
 - [x] SQL Database (already using)
@@ -2573,8 +2629,8 @@ Use this checklist to track your progress:
 ### Phase 5: Scalability
 - [ ] Vertical Scaling
 - [ ] Horizontal Scaling
-- [ ] Load Balancer
-- [ ] Reverse Proxy
+- [ ] Load Balancers
+- [ ] Proxy / Reverse Proxy
 
 ### Phase 6: Advanced Patterns
 - [ ] Microservices Split
