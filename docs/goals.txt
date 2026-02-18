@@ -1,0 +1,34 @@
+These are the core things I need in future. So to accomplish this along with mastering the System design concept I need bullet proof ideas to figure out the usecase of the following topics. But it should not be randomly. We have to create a plan that will show the real necessity and then what our plan this should be listed as well. The topics are following
+
+1. Client server architecture
+2. IP address
+3. DNS
+4. Proxy / Reverse Proxy
+5. Latency
+6. HTTP / HTTPS
+7. APIs
+8. Rest API
+9. GraphQL
+10. Databases
+11. SQL vs NoSQL
+12. Vertical Scaling
+13. Horizontal Scaling
+14. Load balancers
+15. Database Indexing
+16. Replication
+17. Sharding
+18. Vertical Partitioning
+19. Caching
+20. Denormalization
+21. Cap theorem
+22. Blob storage
+23. CDN
+24. WebSockets
+25. WebHooks
+26. Microservices
+27. Message Queues
+28. Rate Limiting
+29. API gateways
+30. Idempotency
+
+The plan should be step by step zero to pro category covering the mentioned topics
