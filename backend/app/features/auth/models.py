@@ -11,6 +11,7 @@ class User(Base, BaseModelMixin):
 
     username: Mapped[str] = mapped_column(
         String(30),
+        unique=True,
         nullable=False
     )
     email: Mapped[str] = mapped_column(
@@ -19,7 +20,7 @@ class User(Base, BaseModelMixin):
         nullable=False
     )
     password: Mapped[str] = mapped_column(
-        String(60),
+        String(255),
         nullable=False
     )
 
