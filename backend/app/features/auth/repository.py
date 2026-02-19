@@ -13,4 +13,7 @@ class AuthRepository:
         result = await self.session.execute(stmt)
         return result.scalars().one_or_none()
 
-
+    async def create_user(self, user: User) -> User:
+        self.session.add(user)
+        await self.session.commit()
+        return user
