@@ -1,10 +1,16 @@
 import logging
 
-from app.core.exceptions import ConflictException
+from app.core.exceptions import ConflictException, UnauthorizedException
 from app.features.auth.models import User
 from app.features.auth.repository import AuthRepository
-from app.features.auth.schemas import UserCreateRequestSchema, UserCreateResponseSchema
-from app.utils.hashing import hash_password
+from app.features.auth.schemas import (
+    UserCreateRequestSchema,
+    UserCreateResponseSchema,
+    LoginRequestSchema,
+    LoginResponseSchema
+)
+from app.utils.hashing import hash_password, verify_password
+from app.utils.jwt_helper import JWTHelper
 
 logger = logging.getLogger(__name__)
 
@@ -37,3 +43,17 @@ class AuthService:
         user = self.__prepare_user(payload, hashed_password)
         created_user = await self.repo.create_user(user)
         return UserCreateResponseSchema.model_validate(created_user)
+
+    async def authenticate_user(self, payload: LoginRequestSchema) -> LoginResponseSchema:
+        user = await self.repo.get_user_by_email(payload.email)
+        if not user or not verify_password(payload.password, user.password):
+            raise UnauthorizedException()
+        access_token = JWTHelper.create_access_token(user.id)
+        refresh_token = JWTHelper.create_refresh_token(user.id)
+        data = {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user_id": user.id,
+            "user_email": user.email,
+        }
+        return LoginResponseSchema.model_validate(data)

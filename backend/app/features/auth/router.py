@@ -1,7 +1,11 @@
 from fastapi import APIRouter, status, Depends
 
 from app.features.auth.dependencies import get_auth_service
-from app.features.auth.schemas import UserCreateRequestSchema, UserCreateResponseSchema
+from app.features.auth.schemas import (
+    UserCreateRequestSchema,
+    UserCreateResponseSchema,
+    LoginResponseSchema, LoginRequestSchema
+)
 from app.features.auth.service import AuthService
 
 router = APIRouter(
@@ -22,3 +26,16 @@ async def create_user(
 
 ):
     return await auth_service.register_user(data)
+
+
+@router.post(
+    "/login",
+    response_model=LoginResponseSchema,
+    summary='Login a user',
+    status_code=status.HTTP_200_OK
+)
+async def login_user(
+        data: LoginRequestSchema,
+        auth_service: AuthService = Depends(get_auth_service)
+):
+    return await auth_service.authenticate_user(data)
