@@ -28,11 +28,24 @@ class AuthService:
         values['password'] = hashed_password
         return User(**values)
 
+    @staticmethod
+    def __prepare_token(user_id: str, email: str) -> LoginResponseSchema:
+        access_token = JWTHelper.create_access_token(user_id)
+        refresh_token = JWTHelper.create_refresh_token(user_id)
+        data = {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user_id": user_id,
+            "user_email": email,
+        }
+        return LoginResponseSchema.model_validate(data)
+
     # ───────────────────────────────────────────────
     # API methods
     # ───────────────────────────────────────────────
 
     async def register_user(self, payload: UserCreateRequestSchema) -> UserCreateResponseSchema:
+        """User registration api"""
         existing_user = await self.repo.get_user_by_email(payload.email)
         if existing_user:
             # through error
@@ -45,15 +58,9 @@ class AuthService:
         return UserCreateResponseSchema.model_validate(created_user)
 
     async def authenticate_user(self, payload: LoginRequestSchema) -> LoginResponseSchema:
+        """User login api"""
         user = await self.repo.get_user_by_email(payload.email)
         if not user or not verify_password(payload.password, user.password):
             raise UnauthorizedException()
-        access_token = JWTHelper.create_access_token(user.id)
-        refresh_token = JWTHelper.create_refresh_token(user.id)
-        data = {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "user_id": user.id,
-            "user_email": user.email,
-        }
-        return LoginResponseSchema.model_validate(data)
+
+        return self.__prepare_token(user.id, user.email)
