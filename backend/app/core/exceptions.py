@@ -41,3 +41,10 @@ class ConflictException(AppBaseException):
     error_code = 'conflict'
     detail = 'Already exists'
     message = 'Already exists'
+
+
+class UnauthorizedException(AppBaseException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    error_code = 'unauthorized'
+    detail = 'Unauthorized'
+    message = 'Invalid credentials'
