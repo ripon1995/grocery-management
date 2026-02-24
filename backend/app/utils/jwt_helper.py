@@ -2,6 +2,7 @@ import jwt
 from datetime import datetime, timedelta, timezone
 
 from app.core.config import settings
+from app.core.exceptions import UnauthorizedException
 
 
 class JWTHelper:
@@ -19,6 +20,12 @@ class JWTHelper:
 
     @staticmethod
     def verify_token(token: str) -> str:
-        # TODO => need to implement this later
-        print(token)
-        return token
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+            print(payload)
+            user_id: str = payload.get('sub')
+            return user_id
+        except jwt.ExpiredSignatureError:
+            raise UnauthorizedException()
+        except jwt.InvalidTokenError:
+            raise UnauthorizedException()
