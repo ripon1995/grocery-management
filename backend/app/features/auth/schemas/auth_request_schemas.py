@@ -17,3 +17,16 @@ class UserCreateRequestSchema(BaseModel):
         max_length=50,
         description='Password'
     )
+
+
+class LoginRequestSchema(BaseModel):
+    email: str = Field(
+        min_length=6,
+        max_length=50,
+        description='Email'
+    )
+    password: str = Field(
+        min_length=6,
+        max_length=50,
+        description='Password'
+    )

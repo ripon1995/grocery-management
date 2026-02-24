@@ -14,3 +14,10 @@ class UserCreateResponseSchema(BaseModel):
             UUID: lambda x: str(x)
         }
     )
+
+
+class LoginResponseSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    user_id: UUID
+    user_email: str
