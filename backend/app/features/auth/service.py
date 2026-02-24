@@ -29,13 +29,12 @@ class AuthService:
         return User(**values)
 
     @staticmethod
-    def __prepare_token(user_id: str, email: str) -> LoginResponseSchema:
-        access_token = JWTHelper.create_access_token(user_id)
-        refresh_token = JWTHelper.create_refresh_token(user_id)
+    def __prepare_token(email: str) -> LoginResponseSchema:
+        access_token = JWTHelper.create_access_token(email)
+        refresh_token = JWTHelper.create_refresh_token(email)
         data = {
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "user_id": user_id,
             "user_email": email,
         }
         return LoginResponseSchema.model_validate(data)
@@ -63,4 +62,4 @@ class AuthService:
         if not user or not verify_password(payload.password, user.password):
             raise UnauthorizedException()
 
-        return self.__prepare_token(user.id, user.email)
+        return self.__prepare_token(user.email)

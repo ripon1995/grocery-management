@@ -19,5 +19,4 @@ class UserCreateResponseSchema(BaseModel):
 class LoginResponseSchema(BaseModel):
     access_token: str
     refresh_token: str
-    user_id: UUID
     user_email: str

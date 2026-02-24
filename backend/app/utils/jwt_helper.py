@@ -22,9 +22,8 @@ class JWTHelper:
     def verify_token(token: str) -> str:
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-            print(payload)
-            user_id: str = payload.get('sub')
-            return user_id
+            email: str = payload.get('sub')
+            return email
         except jwt.ExpiredSignatureError:
             raise UnauthorizedException()
         except jwt.InvalidTokenError:
