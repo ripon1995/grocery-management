@@ -4,7 +4,9 @@ from app.features.auth.dependencies import get_auth_service
 from app.features.auth.schemas import (
     UserCreateRequestSchema,
     UserCreateResponseSchema,
-    LoginResponseSchema, LoginRequestSchema
+    LoginResponseSchema,
+    LoginRequestSchema,
+    TokenRefreshResponseSchema, TokenRefreshRequestSchema,
 )
 from app.features.auth.service import AuthService
 
@@ -39,3 +41,16 @@ async def login_user(
         auth_service: AuthService = Depends(get_auth_service)
 ):
     return await auth_service.authenticate_user(data)
+
+
+@router.post(
+    '/token-refresh',
+    response_model=TokenRefreshResponseSchema,
+    summary='Token refresh',
+    status_code=status.HTTP_200_OK
+)
+async def token_refresh(
+        data: TokenRefreshRequestSchema,
+        auth_service: AuthService = Depends(get_auth_service)
+):
+    return await auth_service.refresh_token(data)

@@ -1,8 +1,10 @@
 from .auth_request_schemas import (
     UserCreateRequestSchema,
-    LoginRequestSchema
+    LoginRequestSchema,
+    TokenRefreshRequestSchema,
 )
 from .auth_response_schemas import (
     UserCreateResponseSchema,
-    LoginResponseSchema
+    LoginResponseSchema,
+    TokenRefreshResponseSchema,
 )
