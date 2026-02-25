@@ -7,7 +7,7 @@ def custom_openapi(app: FastAPI):
         return app.openapi_schema
 
     openapi_schema = get_openapi(
-        title="Your API",
+        title="Grocery Management API",
         version="1.0.0",
         description="...",
         routes=app.routes,
