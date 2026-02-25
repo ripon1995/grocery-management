@@ -94,6 +94,7 @@ class GroceryService:
 
     async def list_all_groceries(self) -> List[GroceryListResponseSchema]:
         groceries = await self.repo.get_groceries()
+        logger.info('Get groceries')
         return [GroceryListResponseSchema.model_validate(item) for item in groceries]
 
     async def get_grocery_by_id(self, grocery_id) -> GroceryDetailResponseSchema:
