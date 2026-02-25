@@ -7,7 +7,9 @@ from app.features.auth.schemas import (
     UserCreateRequestSchema,
     UserCreateResponseSchema,
     LoginRequestSchema,
-    LoginResponseSchema
+    LoginResponseSchema,
+    TokenRefreshRequestSchema,
+    TokenRefreshResponseSchema,
 )
 from app.utils.hashing import hash_password, verify_password
 from app.utils.jwt_helper import JWTHelper
@@ -39,6 +41,17 @@ class AuthService:
         }
         return LoginResponseSchema.model_validate(data)
 
+    @staticmethod
+    def __prepare_refresh_token(email: str) -> TokenRefreshResponseSchema:
+        access_token = JWTHelper.create_access_token(email)
+        refresh_token = JWTHelper.create_refresh_token(email)
+        data = {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user_email": email,
+        }
+        return TokenRefreshResponseSchema.model_validate(data)
+
     # ───────────────────────────────────────────────
     # API methods
     # ───────────────────────────────────────────────
@@ -63,3 +76,17 @@ class AuthService:
             raise UnauthorizedException()
 
         return self.__prepare_token(user.email)
+
+    async def refresh_token(self, payload: TokenRefreshRequestSchema) -> TokenRefreshResponseSchema:
+        """
+        Validate old refresh token and issue new access + refresh tokens.
+        Uses token rotation (new refresh token each time).
+        """
+        email = JWTHelper.verify_token(payload.refresh_token)
+        if not email:
+            raise UnauthorizedException()
+        user = self.repo.get_user_by_email(email)
+        if not user:
+            raise UnauthorizedException()
+
+        return self.__prepare_refresh_token(email)

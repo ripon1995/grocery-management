@@ -16,7 +16,15 @@ class UserCreateResponseSchema(BaseModel):
     )
 
 
-class LoginResponseSchema(BaseModel):
+class BaseTokenResponseSchema(BaseModel):
     access_token: str
     refresh_token: str
     user_email: str
+
+
+class LoginResponseSchema(BaseTokenResponseSchema):
+    pass
+
+
+class TokenRefreshResponseSchema(BaseTokenResponseSchema):
+    pass

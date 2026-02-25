@@ -8,18 +8,18 @@ class DevLoggerFormatter(logging.Formatter):
 
         self.formatters = {
             logging.DEBUG: logging.Formatter(
-                '[%(levelname)s] | %(asctime)s | %(name)s | %(funcName)s:%(lineno)d → %(message)s',
+                '🐞 [%(levelname)s] | %(asctime)s | %(name)s | %(funcName)s:%(lineno)d → %(message)s',
                 datefmt='%H:%M:%S'
             ),
             logging.INFO: logging.Formatter(
-                '[%(levelname)s] |%(asctime)s | %(name)s | %(funcName)s:%(lineno)d → %(message)s',
+                'ℹ️ [%(levelname)s] |%(asctime)s | %(name)s | %(funcName)s:%(lineno)d → %(message)s',
                 datefmt='%H:%M:%S'
             ),
             logging.WARNING: logging.Formatter(
-                '⚠ [%(levelname)s] | %(asctime)s | %(name)s | %(message)s'
+                '⚠️ [%(levelname)s] | %(asctime)s | %(name)s | %(message)s'
             ),
             logging.ERROR: logging.Formatter(
-                '✗ [%(levelname)s] | %(asctime)s | %(pathname)s:%(lineno)d → %(message)s'
+                '❌ [%(levelname)s] | %(asctime)s | %(pathname)s:%(lineno)d → %(message)s'
             ),
             logging.CRITICAL: logging.Formatter(
                 '⛔ [%(levelname)s] | %(asctime)s | %(pathname)s:%(lineno)d → %(message)s'

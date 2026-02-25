@@ -30,3 +30,9 @@ class LoginRequestSchema(BaseModel):
         max_length=50,
         description='Password'
     )
+
+
+class TokenRefreshRequestSchema(BaseModel):
+    refresh_token: str = Field(
+        description='Refresh token'
+    )
