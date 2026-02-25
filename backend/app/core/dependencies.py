@@ -3,6 +3,7 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import UnauthorizedException
+from app.core.security import oauth2_scheme
 from app.db.session import get_db as _get_db
 from app.features.auth.models import User
 from app.features.auth.repository import AuthRepository
@@ -12,7 +13,7 @@ get_db = _get_db
 
 
 async def get_current_user(
-        token: str,
+        token: str = Depends(oauth2_scheme),
         db: AsyncSession = Depends(get_db),
 ) -> User:
     try:
