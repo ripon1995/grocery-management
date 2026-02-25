@@ -61,6 +61,7 @@ class GroceryUpdateSchema(BaseModel):
         description="Updated current price"
     )
     current_seller: Optional[Seller] = Field(
+        default=None,
         description="Seller of grocery item"
     )
     low_stock_threshold: Optional[PositiveInt] = Field(
@@ -74,5 +75,6 @@ class GroceryUpdateSchema(BaseModel):
         description="Updated required quantity"
     )
     should_include: Optional[bool] = Field(
+        default=None,
         description="Should include grocery item for this time"
     )

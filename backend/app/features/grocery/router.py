@@ -11,11 +11,17 @@ from typing import Annotated, List
 from fastapi import APIRouter, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.dependencies import get_current_user
 from app.db.session import get_db
+from app.features.auth.models import User
 from app.features.grocery.dependencies import get_grocery_service
 from app.features.grocery.schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
-from app.features.grocery.schemas.response_schemas import GroceryListResponseSchema, GroceryDetailResponseSchema, \
-    GroceryCreateResponseSchema, GroceryUpdateResponseSchema
+from app.features.grocery.schemas.response_schemas import (
+    GroceryListResponseSchema,
+    GroceryDetailResponseSchema,
+    GroceryCreateResponseSchema,
+    GroceryUpdateResponseSchema
+)
 from app.features.grocery.service import GroceryService
 
 router = APIRouter(
@@ -58,6 +64,7 @@ async def get_grocery_by_id(
     summary="Create a new grocery item",
 )
 async def create_grocery(
+        current_user: User = Depends(get_current_user),
         data: GroceryCreateSchema = GroceryCreateSchema,
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
@@ -72,6 +79,7 @@ async def create_grocery(
 )
 async def update_grocery(
         grocery_id: str,
+        current_user: User = Depends(get_current_user),
         data: GroceryUpdateSchema = GroceryUpdateSchema,
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
@@ -85,6 +93,7 @@ async def update_grocery(
 )
 async def delete_grocery(
         grocery_id: str,
+        current_user: User = Depends(get_current_user),
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
     return await grocery_service.delete_grocery(grocery_id)

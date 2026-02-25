@@ -34,3 +34,17 @@ class InvalidUUIDException(AppBaseException):
     error_code = 'invalid_uuid'
     detail = 'Invalid UUID'
     message = 'Provided UUID is invalid'
+
+
+class ConflictException(AppBaseException):
+    status_code = status.HTTP_409_CONFLICT
+    error_code = 'conflict'
+    detail = 'Already exists'
+    message = 'Already exists'
+
+
+class UnauthorizedException(AppBaseException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    error_code = 'unauthorized'
+    detail = 'Unauthorized'
+    message = 'Invalid credentials'

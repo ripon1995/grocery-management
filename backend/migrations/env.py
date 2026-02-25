@@ -20,6 +20,7 @@ if config.config_file_name is not None:
 # Import ALL your models here (critical for autogenerate!)
 from app.db.base import Base
 from app.features.grocery.models import Grocery
+from app.features.auth.models import User
 
 target_metadata = Base.metadata
 
