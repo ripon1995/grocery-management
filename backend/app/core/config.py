@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     LOG_LEVEL: str
     ENVIRONMENT: str
+    SHOW_SQL_LOG: bool = False
     # JWT token settings
     ALGORITHM: str = 'HS256'
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 5
