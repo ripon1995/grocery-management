@@ -1,8 +1,5 @@
 # Grocery Management Backend – Setup on Ubuntu (AWS EC2 / similar VPS)
 
-Last tested: March 2025  
-Environment: Fresh Ubuntu (likely 22.04 / 24.04) on cloud instance
-
 ## Goal
 
 Run a FastAPI (or similar) backend project located at:
@@ -39,16 +36,10 @@ pip install --upgrade pip
 # (make sure the file is really named requirements.txt – not requirement.txt)
 pip install -r requirements.txt
 
-# 6. Create .env file (very important!)
-# Example minimal content – adjust values!
-cat > .env << 'EOF'
-# .env
-DATABASE_URL=postgresql://user:password@localhost:5432/grocery_db
-SECRET_KEY=your-very-long-random-secret-key-here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-# Add any other required variables from config.py
-EOF
+# 6 Create .env file (very important!) from the template (.env.sample):
+cp .env.sample .env
+# edit the file using vim
+vim .env
 
 # 7. Check/alter config if needed (sometimes hard-coded values are there)
 # vim app/core/config.py
@@ -65,7 +56,6 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 # Recommended production flags (without --reload):
 # uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
-
 
 # Final step to run the service in detouch mode using nohup(instead of 9) 
 # Recommended (redirects output to file so you can see logs later)
