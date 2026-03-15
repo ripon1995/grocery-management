@@ -13,11 +13,6 @@ from app.middleware.request_logger import RequestLoggerMiddleware
 # step logger
 configure_logging(level=settings.LOG_LEVEL, environment=settings.ENVIRONMENT)
 
-# ── CORS origins ────────────────────────────────────────────────────────────
-origins = [
-    "http://localhost:5173",
-]
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,7 +42,7 @@ app.add_middleware(RequestLoggerMiddleware, env_name=settings.ENVIRONMENT)
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Which domains can talk to the API
+    allow_origins=settings.ALLOW_ORIGINS,  # Which domains can talk to the API
     allow_credentials=True,  # Allow cookies/auth headers
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers

@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     LOG_LEVEL: str
     ENVIRONMENT: str
     SHOW_SQL_LOG: bool = False
+    # Default to localhost for safety, but allow override via .env
+    ALLOW_ORIGINS: list[str] = ["http://localhost:5173"]
+
     # JWT token settings
     ALGORITHM: str = 'HS256'
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 5
