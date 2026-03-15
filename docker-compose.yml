@@ -1,6 +1,7 @@
 services:
   backend:
     build: ./backend
+    container_name: grocery-api
     ports:
       - "8000:8000"
     env_file:
@@ -8,6 +9,7 @@ services:
 
   frontend:
     build: ./frontend
+    container_name: grocery-frontend
     ports:
       - "3000:3000"
     env_file:
