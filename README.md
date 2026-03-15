@@ -1,85 +1,97 @@
-
-```markdown
 # 🛒 Monthly Grocery Helper
 
+```markdown
 A full-stack monorepo application designed to manage monthly groceries efficiently.
 
 ## 🏗 Project Structure
 
 - **`/backend`**: FastAPI (Python 3.14.2)
 - **`/frontend`**: React + TypeScript + SWC (Vite)
+- **`databse`**: supabase (free tier)
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - [pyenv](https://github.com/pyenv/pyenv) (for Python version management)
-- [Node.js](https://nodejs.org/) (v18 or higher)
+- [fnm] (for Node version manager)
 - [npm](https://www.npmjs.com/) or [pnpm](https://pnpm.io/)
 
 ```
 
+---
+
 ### 🐍 Backend Setup
-1. Navigate to the backend:
+
+- Navigate to the backend:
+
 ```bash
    cd backend
 
 ```
 
-1. Ensure the correct Python version is active:
+- Ensure the correct Python version is active:
+
 ```bash
 pyenv local 3.14.2
 
 ```
 
+- Create and activate the virtual environment:
 
-1. Create and activate the virtual environment:
 ```bash
 python -m venv .grocery-helper-venv
 source .grocery-helper-venv/bin/activate
 
 ```
 
+- Install dependencies:
 
-1. Install dependencies:
 ```bash
 pip install -r requirements.txt
 
 ```
 
+- Run the server:
 
-1. Run the server:
 ```bash
 uvicorn main:app --reload
 
 ```
 
-
+---
 
 ### ⚛️ Frontend Setup
 
-1. Navigate to the frontend:
+- Navigate to the frontend:
+
 ```bash
 cd frontend
 
 ```
 
+- Ensure the correct Python version is active:
 
-1. Install dependencies:
+```bash
+fnm local 25
+
+```
+
+- Install dependencies:
+
 ```bash
 npm install
 
 ```
 
+- Start the development server:
 
-1. Start the development server:
 ```bash
 npm run dev
 
 ```
-
-
 
 ---
 
@@ -87,27 +99,6 @@ npm run dev
 
 * **Backend:** FastAPI, Pydantic, uvicorn
 * **Frontend:** React, TypeScript, Vite, SWC
-* **Version Management:** Pyenv (Python), NPM (Node)
+* **Version Management:** Pyenv (Python), fnm(Node)
 
 ---
-
-## 📜 License
-
-MIT
-
-```
-
----
-
-### How to add this to your project:
-
-1.  Open your existing `README.md` in the root folder.
-2.  Paste the content above into it.
-3.  **Pro-tip:** As you install new Python libraries (like `sqlalchemy` or `motor`), remember to run `pip freeze > backend/requirements.txt` so other people can follow the "Backend Setup" instructions successfully.
-
-### 💡 A Note on Automation
-In a true monorepo, you usually don't want to open two terminal tabs. 
-
-**Would you like me to show you how to add a "Super Script" to your root `package.json` so that typing one command (like `npm run dev`) starts both the Python backend and the React frontend at the same time?**
-
-```
