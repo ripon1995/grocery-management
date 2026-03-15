@@ -26,7 +26,7 @@ docker ps -a
 git clone https://github.com/ripon1995/grocery-management.git
 ```
 
-## 2. Build docker image
+## 3. Build docker image
 
 ```bash
 # navigate to frontend
@@ -35,11 +35,11 @@ cd frontend
 docker build -t grocery-frontend .
 ```
 
-## 3. Run the container
+## 4. Run the container
 
 ```bash
 # option 1 : not dtouch mode
 docker run -p 3000:3000 grocery-frontend
 # option 2 : dtouch mode
-docker run -d --rm -p 3000:3000 grocery-frontend
+docker run -d --rm -p 3000:5173 grocery-frontend
 ```
