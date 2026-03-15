@@ -1,11 +1,13 @@
 services:
   backend:
-    build: ./backend
-    container_name: grocery-api
+    build: ./backend # Location of the backend Dockerfile (terminology -> context file)
+    container_name: grocery-api # Custom container name
     ports:
-      - "8000:8000"
+      - "8000:8000" # Port mapping for host:container
     env_file:
-      - ./backend/.env
+      - ./backend/.env # Location of the .env file
+    networks:
+      - grocery-net # Connects backend to the custom network
 
   frontend:
     build: ./frontend
@@ -14,5 +16,12 @@ services:
       - "3000:3000"
     env_file:
       - ./frontend/.env
-    depends_on:
+    depends_on: # by this it will tell to build backend first cause it depend on backend
       - backend
+    networks:
+      - grocery-net
+
+
+networks:
+  grocery-net: # Custom network name
+    driver: bridge
