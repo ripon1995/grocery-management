@@ -58,7 +58,10 @@ docker rmi <image_id>
 # <container_port> -> refers the port of the container. Generally in Dockerfile ex -> EXPOSE xxxx
 docker run -d --rm --name <container_name> -p <host_port>:<container_port> <image_name>
 ```
-
+## Stop a docker container
+```bash
+  docker stop <container_name>
+```
 ---
 
 # 4. Docker compose related commands
