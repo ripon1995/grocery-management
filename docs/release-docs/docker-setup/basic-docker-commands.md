@@ -58,10 +58,13 @@ docker rmi <image_id>
 # <container_port> -> refers the port of the container. Generally in Dockerfile ex -> EXPOSE xxxx
 docker run -d --rm --name <container_name> -p <host_port>:<container_port> <image_name>
 ```
+
 ## Stop a docker container
+
 ```bash
   docker stop <container_name>
 ```
+
 ---
 
 # 4. Docker compose related commands
@@ -71,12 +74,12 @@ docker run -d --rm --name <container_name> -p <host_port>:<container_port> <imag
 - Automatically handles internal networking between services.
 
 ## Install docker compose
+
 ```bash
 sudo apt install docker-compose -y
 # check installation completed
 docker-compose --version
 ```
-
 
 ## Run a docker compose
 
@@ -128,4 +131,15 @@ docker-compose down
 # OPTION 2: Stop/Pause (Keeps containers in 'Exited' state)
 docker-compose stop
 
+```
+
+---
+
+# Inspect Network
+
+```bash
+# network list
+docker network ls
+# specific detail of a network
+docker network inspect grocery-management_grocery-net
 ```
