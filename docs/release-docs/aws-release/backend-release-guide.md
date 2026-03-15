@@ -103,3 +103,12 @@ Option - 4
 ```bash
 nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4 &
 ```
+
+## 10. Stop the process ran using nohup
+
+```bash
+# get the process id from here
+ps aux | grep uvicorn
+# kill the process id
+kill <process_id>
+```
