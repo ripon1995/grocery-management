@@ -32,6 +32,8 @@ jobs:
             echo "SHOW_SQL_LOG=${{ secrets.SHOW_SQL_LOG }}" >> backend/.env
             echo "ALLOW_ORIGINS=[\"http://$REMOTE_HOST:3000\"]" >> backend/.env
             echo "VITE_API_BASE_URL=http://$REMOTE_HOST:8000/" > frontend/.env
-          
+            
+            docker compose down
             docker-compose up -d --build
+            docker image prune -f
           EOF
