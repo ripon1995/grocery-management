@@ -7,7 +7,7 @@ function MonthlyGroceryAppBar() {
     return (
         <Box sx={{width: '100%', mt: 2, mb: 4}}>
             <Box sx={{display: 'flex', alignItems: 'center'}}>
-                <ShoppingCartSharpIcon fontSize={"large"}></ShoppingCartSharpIcon>
+                <ShoppingCartSharpIcon fontSize={"large"} sx={{ color: 'mediumpurple' }}></ShoppingCartSharpIcon>
                 <Typography variant="h4" sx={{fontWeight: 'bold', letterSpacing: 1, fontFamily: 'ui-rounded'}}>
                     Monthly Grocery Manager
                 </Typography>
