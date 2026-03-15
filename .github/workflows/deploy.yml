@@ -19,7 +19,11 @@ jobs:
           
           ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }} \
           "REMOTE_HOST=${{ secrets.AWS_HOST }}" 'bash -s'<< 'EOF'
-            cd ~/grocery-management
+            if [ ! -d "~/grocery-management" ]; then
+              echo "Project folder not found. Cloning..."
+              git clone https://github.com/ripon1995/grocery-management.git ~/grocery-management
+            fi
+            cd ~/grocery-management || exit
             git pull origin main
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > backend/.env
             echo "LOG_LEVEL=${{ secrets.LOG_LEVEL }}" >> backend/.env
