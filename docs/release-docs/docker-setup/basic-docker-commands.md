@@ -82,7 +82,7 @@ docker-compose --version
 
 ```bash
 # Starts everything in the background (Detached)
-docker compose up -d
+docker-compose up -d
 # Force a rebuild of images before starting (Use after code changes/git pull)
 docker-compose up -d --build
 ```
@@ -90,31 +90,31 @@ docker-compose up -d --build
 # View status of all services in the project
 
 ```bash
-docker compose ps
+docker-compose ps
 ```
 
 # View live logs of all services
 
 ```bash
-docker compose logs -f
+docker-compose logs -f
 ```
 
 # View only backend logs
 
 ```bash
 # option 1 : snapshot
-docker compose logs backend
+docker-compose logs backend
 # option 2 : will follow the logs
-docker compose logs -f backend
+docker-compose logs -f backend
 ```
 
 # View only frontend logs
 
 ```bash
 # option 1 : snapshot
-docker compose logs frontend
+docker-compose logs frontend
 # option 2 : will follow the logs
-docker compose logs -f frontend
+docker-compose logs -f frontend
 ```
 
 ---
@@ -123,9 +123,9 @@ docker compose logs -f frontend
 
 ```bash
 # OPTION 1: Stop and REMOVE containers + networks (Cleanest)
-docker compose down
+docker-compose down
 
 # OPTION 2: Stop/Pause (Keeps containers in 'Exited' state)
-docker compose stop
+docker-compose stop
 
 ```
