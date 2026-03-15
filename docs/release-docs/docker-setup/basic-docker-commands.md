@@ -70,6 +70,14 @@ docker run -d --rm --name <container_name> -p <host_port>:<container_port> <imag
 - Orchestrates multiple containers as a single system.
 - Automatically handles internal networking between services.
 
+## Install docker compose
+```bash
+sudo apt install docker-compose -y
+# check installation completed
+docker-compose --version
+```
+
+
 ## Run a docker compose
 
 ```bash
