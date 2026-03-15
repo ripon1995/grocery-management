@@ -12,6 +12,8 @@ services:
   frontend:
     build: ./frontend
     container_name: grocery-frontend
+    tty: true
+    stdin_open: true
     ports:
       - "3000:3000"
     env_file:
