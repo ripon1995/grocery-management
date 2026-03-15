@@ -41,5 +41,8 @@ docker build -t grocery-frontend .
 # option 1 : not dtouch mode
 docker run -p 3000:3000 grocery-frontend
 # option 2 : dtouch mode
-docker run -d --rm -p 3000:5173 grocery-frontend
+# 3000(host machine port : ec2 port):3000(docker container port : Expose 3000)
+docker run -d --rm -p 3000:3000 grocery-frontend
+# option 3: with a custom container name : --name grocery-frontend
+docker run -d --rm --name grocery-frontend -p 3000:3000 grocery-frontend
 ```
