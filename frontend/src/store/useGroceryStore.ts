@@ -10,6 +10,8 @@ import {
 import type {IGroceryCreateItem} from "../api/types/requests/CreateGroceryItem.ts";
 import type {IGroceryDetail} from "../types/IGroceryDetail.ts";
 import type {IPayloadGroceryItemUpdate} from "../api/types/requests/UpdateGroceryItem.ts";
+import {BaseError} from "../api/types/common.ts";
+import {toast} from "react-toastify";
 
 
 interface IGroceryState {
@@ -77,8 +79,15 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             await deleteGrocery(grocery_id);
             set({isLoading: false});
         } catch (err: any) {
-            console.log(err);
-            set({error: err.message, isLoading: false});
+            if (err instanceof BaseError) {
+                console.log(`Getting error ${err.detail} ${err.status}`);
+                toast.error(`${err.error_code}: ${err.message}`, {
+                    position: "bottom-right",
+                    autoClose: 5000,
+                });
+            }
+
+            set({isLoading: false});
         }
     }
 }));

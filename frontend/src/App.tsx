@@ -1,4 +1,6 @@
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import {ToastContainer} from 'react-toastify'; // 1. Import the container
+import 'react-toastify/dist/ReactToastify.css';  // 2. Import the CSS
 import './App.css'
 import HomePage from "./pages/HomePage.tsx";
 import AboutPage from "./pages/AboutPage.tsx";
@@ -13,6 +15,20 @@ function App() {
     return (
         <BrowserRouter>
             <MonthlyGroceryAppBar></MonthlyGroceryAppBar>
+
+            <ToastContainer
+                position="bottom-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="colored" // Or "light"/"dark" based on your MUI theme
+            />
+
             <Routes>
                 <Route path={PATHS.HOME} element={<HomePage/>}/>
                 <Route path={PATHS.ADD_GROCERY} element={<AddGroceryPage/>}/>
