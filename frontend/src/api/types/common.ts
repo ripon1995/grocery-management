@@ -1,21 +1,21 @@
 export interface BaseErrorResponse {
-    error_code: string;
+    status_code: number;
+    error_code: string
     message: string;
-    details: string;
-    status: 'error';
+    detail: string;
 }
 
 
 export class BaseError implements BaseErrorResponse {
-    error_code: string;
-    message: string;
-    details: string;
-    status: 'error';
+    status_code: number = 500;
+    error_code: string = 'INTERNAL_SERVER_ERROR';
+    message: string = 'Something went wrong on our end.';
+    detail: string = 'No additional details provided.';
 
-    constructor(data?: Partial<BaseErrorResponse>) {
-        this.error_code = data?.error_code || 'INTERNAL_SERVER_ERROR';
-        this.message = data?.message || 'Something went wrong on our end.';
-        this.details = data?.details || 'No additional details provided.';
-        this.status = 'error';
+    constructor(data: BaseErrorResponse) {
+        this.status_code = data.status_code;
+        this.error_code = data.error_code;
+        this.message = data.message;
+        this.detail = data.detail;
     }
 }
