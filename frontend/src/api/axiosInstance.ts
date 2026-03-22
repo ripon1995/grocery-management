@@ -1,5 +1,6 @@
 import axios from 'axios';
 import log from 'loglevel';
+import {BaseError, type BaseErrorResponse} from "./types/common.ts";
 
 
 log.setLevel(import.meta.env.DEV ? 'debug' : 'warn');
@@ -41,8 +42,14 @@ axiosInstance.interceptors.response.use(
         return response
     },
     (error) => {
-        log.debug('API Error:', error.response?.data || error.message);
-        return Promise.reject(error);
+        log.debug(error.response.data)
+        const error_params: BaseErrorResponse = {
+            status: error.response.data.status,
+            error_code: error.response.data.error_code,
+            message: error.response.data.message,
+            detail: error.response.data.detail
+        }
+        return Promise.reject(new BaseError(error_params));
     }
 );
 
