@@ -3,7 +3,7 @@ import {useState} from "react";
 import {Container, Typography} from '@mui/material';
 import CreateGroceryForm from "../components/grocery_components/CreateGroceryForm.tsx";
 import PATHS from "../constants/paths.ts";
-import type {IGroceryCreateItem} from "../api/types/requests/CreateGroceryItem.ts";
+import type {IGroceryCreateItem} from "../api/types/requests/grocery/CreateGroceryItem.ts";
 import {GroceryType, Seller} from "../constants/enums.ts";
 import useGroceryStore from "../store/useGroceryStore.ts";
 

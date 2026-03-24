@@ -9,6 +9,7 @@ import MonthlyGroceryAppBar from "./components/common/MonthlyGroceryAppBar.tsx";
 import AddGroceryPage from "./pages/AddGroceryPage.tsx";
 import UpdateGroceryPage from "./pages/UpdateGroceryPage.tsx";
 import GroceryDetailPage from "./pages/DetailGroceryPage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
 
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
                 <Route path={PATHS.DETAIL_GROCERY} element={<GroceryDetailPage/>}/>
                 <Route path={PATHS.EDIT_GROCERY} element={<UpdateGroceryPage/>}/>
                 <Route path={PATHS.ABOUT} element={<AboutPage/>}/>
+                <Route path={PATHS.LOGIN} element={<LoginPage/>}/>
             </Routes>
         </BrowserRouter>
     );

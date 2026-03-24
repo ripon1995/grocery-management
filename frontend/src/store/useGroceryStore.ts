@@ -7,9 +7,9 @@ import {
     updateGrocery,
     deleteGrocery
 } from "../api/endpoints/GroceryApi.ts";
-import type {IGroceryCreateItem} from "../api/types/requests/CreateGroceryItem.ts";
+import type {IGroceryCreateItem} from "../api/types/requests/grocery/CreateGroceryItem.ts";
 import type {IGroceryDetail} from "../types/IGroceryDetail.ts";
-import type {IPayloadGroceryItemUpdate} from "../api/types/requests/UpdateGroceryItem.ts";
+import type {IPayloadGroceryItemUpdate} from "../api/types/requests/grocery/UpdateGroceryItem.ts";
 import {BaseError} from "../api/types/common.ts";
 import {toast} from "react-toastify";
 

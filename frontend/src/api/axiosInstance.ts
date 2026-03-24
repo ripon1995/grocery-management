@@ -13,20 +13,23 @@ const axiosInstance = axios.create({
     },
 });
 
-
+// TODO -> IMPLEMENT RETRY MECHANISM FOR 401
 axiosInstance.interceptors.request.use(
     function (config) {
-        const token = localStorage.getItem('token');
-
+        // 1. Get the string from localStorage
+        const authStorage = localStorage.getItem('auth-storage');
+        if (authStorage) {
+            // 2. Parse the JSON (Zustand wraps it in a 'state' object)
+            const parsedStorage = JSON.parse(authStorage);
+            const token = parsedStorage.state.token?.access_token;
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        }
         // --- LOGGING WITH LOGLEVEL ---
         log.info(`%c[API REQUEST] ${config.method?.toUpperCase()} -> ${config.url}`, "color: #00ff00; font-weight: bold;");
         log.debug("Headers:", config.headers);
         if (config.data) log.debug("Body:", config.data);
-        // ------------------------------
-        // TODO => Add interceptors to handle error or auth token
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
 
         return config;
     },
