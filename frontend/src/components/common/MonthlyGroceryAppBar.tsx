@@ -42,7 +42,6 @@ function MonthlyGroceryAppBar() {
                     </Typography>
                 </Box>
 
-                {/* Right Side: Login Button */}
                 {/* Right Side: Conditional Rendering */}
                 <Box sx={{display: 'flex', alignItems: 'center'}}>
                     {token ? (
