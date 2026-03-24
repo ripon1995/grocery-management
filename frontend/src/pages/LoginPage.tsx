@@ -34,9 +34,7 @@ function UserLoginPage() {
         await login(formData)
     };
 
-    // TODO -> Add later
-    const handleRegistration = async () => {
-        // await addGroceries(formData)
+    const handleCancelAction = async () => {
         navigateToBack();
     };
 
@@ -62,7 +60,7 @@ function UserLoginPage() {
                 formData={formData}
                 onStringChange={handleStringChange}
                 handleLoginAction={handleLogin}
-                handleRegisterAction={handleRegistration}>
+                handleCancelAction={handleCancelAction}>
             </UserLoginForm>
         </Container>
     );

@@ -114,31 +114,3 @@ export function MonthlyGroceryAppLoginButton({onClick}: IButtonProps) {
         </Stack>
     );
 }
-
-export function MonthlyGroceryAppRegistrationButton({onClick}: IButtonProps) {
-    return (
-        <Stack direction="row" spacing={2}>
-            <Button
-                variant="outlined"
-                // startIcon={<AddIcon/>}
-                onClick={onClick}
-                sx={{
-                    color: 'purple',          // Uses MUI's theme green
-                    borderColor: 'purple',    // Matches the border to the text
-                    borderWidth: '2px',
-                    fontWeight: 'bold',             // Makes text bold
-                    padding: '10px 30px',           // Increases the size (vertical/horizontal)
-                    fontSize: '1.1rem',             // Makes the text slightly larger
-                    borderRadius: '4px',
-                    '&:hover': {
-                        borderColor: 'success.dark',
-                        backgroundColor: 'rgba(46, 125, 50, 0.04)',
-                        borderWidth: '2px'
-                    }
-                }}
-            >
-                Register
-            </Button>
-        </Stack>
-    );
-}

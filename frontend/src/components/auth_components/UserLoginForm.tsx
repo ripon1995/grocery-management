@@ -1,10 +1,7 @@
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import MonthlyGroceryAppInputField from "../common/MonthlyGroceryAppInputField.tsx";
-import {
-    MonthlyGroceryAppLoginButton,
-    MonthlyGroceryAppRegistrationButton,
-} from "../common/MonthlyGroceryAppButton.tsx";
+import {MonthlyGroceryAppCancelButton, MonthlyGroceryAppLoginButton} from "../common/MonthlyGroceryAppButton.tsx";
 import Stack from "@mui/material/Stack";
 import type {IUserLoginPayload} from "../../api/types/requests/auth/UserLoginPayload.ts";
 
@@ -13,7 +10,7 @@ interface IUserLoginFormProps {
     formData: IUserLoginPayload;
     onStringChange: (field: keyof IUserLoginPayload) => (value: string) => void;
     handleLoginAction: () => void;
-    handleRegisterAction: () => void;
+    handleCancelAction: () => void;
 }
 
 
@@ -22,7 +19,7 @@ function UserLoginForm(
         formData,
         onStringChange,
         handleLoginAction,
-        handleRegisterAction,
+        handleCancelAction,
     }: IUserLoginFormProps
 ) {
 
@@ -62,8 +59,7 @@ function UserLoginForm(
                     sx={{mt: 4, width: '100%', justifyContent: 'center'}}
                 >
                     <MonthlyGroceryAppLoginButton onClick={handleLoginAction}></MonthlyGroceryAppLoginButton>
-                    <MonthlyGroceryAppRegistrationButton
-                        onClick={handleRegisterAction}></MonthlyGroceryAppRegistrationButton>
+                    <MonthlyGroceryAppCancelButton onClick={handleCancelAction}></MonthlyGroceryAppCancelButton>
                 </Stack>
             </Paper>
         </Box>
