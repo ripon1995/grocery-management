@@ -1,10 +1,12 @@
 import type {IUserLoginPayload} from "../api/types/requests/auth/UserLoginPayload.ts";
 import {create} from "zustand";
 import {login} from "../api/endpoints/AuthApi.ts";
+import log from "loglevel";
+import type {IToken} from "../types/IToken.ts";
+import {BaseError} from "../api/types/common.ts";
 
 interface IUserAuthState {
-    access_token: string | null;
-    refresh_token: string | null;
+    token: IToken | null
     isLoading: boolean;
     error: string | null;
     // actions
@@ -13,17 +15,21 @@ interface IUserAuthState {
 
 
 const useAuthStore = create<IUserAuthState>((set) => ({
-    access_token: null,
-    refresh_token: null,
+    token: null,
     isLoading: false,
     error: null,
     login: async (payload: IUserLoginPayload) => {
         try {
-            await login(payload);
-            set({isLoading: false});
+            const tokenData = await login(payload);
+            set({
+                token: tokenData,
+                isLoading: false
+            });
         } catch (err) {
-            // TODO -> add error handler like delete grocery
-            console.log(err);
+            if (err instanceof BaseError) {
+                set({error: err.message})
+            }
+            log.debug(`error getting here : ${err}`);
             set({isLoading: false});
         }
     }

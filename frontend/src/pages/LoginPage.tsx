@@ -5,6 +5,7 @@ import PATHS from "../constants/paths.ts";
 import UserLoginForm from "../components/auth_components/UserLoginForm.tsx";
 import type {IUserLoginPayload} from "../api/types/requests/auth/UserLoginPayload.ts";
 import useAuthStore from "../store/useAuthStore.ts";
+import MonthlyGroceryAppError from "../components/common/MonthlyGroceryAppError.tsx";
 
 const INITIAL_LOGIN_STATE: IUserLoginPayload = {
     email: '',
@@ -15,7 +16,7 @@ const INITIAL_LOGIN_STATE: IUserLoginPayload = {
 function UserLoginPage() {
 
     const navigate = useNavigate();
-    const {login} = useAuthStore();
+    const {login, error} = useAuthStore();
 
     // Initial state for all fields
     const [formData, setFormData] = useState<IUserLoginPayload>(INITIAL_LOGIN_STATE);
@@ -27,7 +28,6 @@ function UserLoginPage() {
 
     const handleLogin = async () => {
         await login(formData)
-        navigateToBack();
     };
 
     // TODO -> Add later
@@ -39,6 +39,16 @@ function UserLoginPage() {
     const navigateToBack = () => {
         navigate(PATHS.HOME);
     };
+
+    // 1. If there's an error and no grocery data, show Error
+    if (error) {
+        return (
+            <Container>
+                <Typography variant="h4" sx={{mb: 2}}>Monthly Grocery Detail</Typography>
+                <MonthlyGroceryAppError message={error}/>
+            </Container>
+        );
+    }
 
 
     return (
