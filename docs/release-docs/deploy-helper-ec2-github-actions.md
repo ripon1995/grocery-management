@@ -30,3 +30,5 @@ docker compose version
 ```
 
 ## Create PR on Branch Main
+
+## Update AWS_KEY & AWS_HOST
