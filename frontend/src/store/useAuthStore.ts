@@ -11,6 +11,7 @@ interface IUserAuthState {
     error: string | null;
     // actions
     login: (payload: IUserLoginPayload) => Promise<void>;
+    resetError: () => void;
 }
 
 
@@ -32,7 +33,8 @@ const useAuthStore = create<IUserAuthState>((set) => ({
             log.debug(`error getting here : ${err}`);
             set({isLoading: false});
         }
-    }
+    },
+    resetError: () => set({error: null})
 }));
 
 export default useAuthStore;

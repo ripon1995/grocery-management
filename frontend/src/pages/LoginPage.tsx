@@ -1,5 +1,5 @@
 import {useNavigate} from 'react-router-dom';
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Container, Typography} from '@mui/material';
 import PATHS from "../constants/paths.ts";
 import UserLoginForm from "../components/auth_components/UserLoginForm.tsx";
@@ -16,7 +16,11 @@ const INITIAL_LOGIN_STATE: IUserLoginPayload = {
 function UserLoginPage() {
 
     const navigate = useNavigate();
-    const {login, error} = useAuthStore();
+    const {login, error, resetError} = useAuthStore();
+
+    useEffect(() => {
+        resetError();
+    }, [resetError]);
 
     // Initial state for all fields
     const [formData, setFormData] = useState<IUserLoginPayload>(INITIAL_LOGIN_STATE);
