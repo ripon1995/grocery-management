@@ -14,14 +14,21 @@
 ```bash
 sudo apt update
 sudo apt upgrade -y
+# install docker
 sudo apt install docker.io
 sudo usermod -aG docker $USER
 sudo reboot
-sudo apt install docker-compose -y
+
+# install docker compose
+sudo apt-get update
+sudo apt-get install docker-compose-plugin -y
+mkdir -p ~/.docker/cli-plugins/
+curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+chmod +x ~/.docker/cli-plugins/docker-compose
 
 # check docker and docker-compose
 docker --version
-docker-compose --version
+docker compose version
 
 ```
 
