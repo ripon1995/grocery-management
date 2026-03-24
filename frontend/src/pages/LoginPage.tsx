@@ -1,5 +1,5 @@
 import {useNavigate} from 'react-router-dom';
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {Container, Typography} from '@mui/material';
 import PATHS from "../constants/paths.ts";
 import UserLoginForm from "../components/auth_components/UserLoginForm.tsx";
@@ -16,11 +16,18 @@ const INITIAL_LOGIN_STATE: IUserLoginPayload = {
 function UserLoginPage() {
 
     const navigate = useNavigate();
-    const {login, error, resetError} = useAuthStore();
+    const {login, error, resetError, token} = useAuthStore();
+
+    const navigateToBack = useCallback(() => {
+        navigate(PATHS.HOME);
+    }, [navigate]);
 
     useEffect(() => {
-        resetError();
-    }, [resetError]);
+        if (token) {
+            navigateToBack();
+        }
+        return () => resetError();
+    }, [token, navigateToBack, resetError]);
 
     // Initial state for all fields
     const [formData, setFormData] = useState<IUserLoginPayload>(INITIAL_LOGIN_STATE);
@@ -36,10 +43,6 @@ function UserLoginPage() {
 
     const handleCancelAction = async () => {
         navigateToBack();
-    };
-
-    const navigateToBack = () => {
-        navigate(PATHS.HOME);
     };
 
     // 1. If there's an error and no grocery data, show Error
