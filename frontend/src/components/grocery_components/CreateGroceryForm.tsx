@@ -4,7 +4,7 @@ import MonthlyGroceryAppInputField from "../common/MonthlyGroceryAppInputField.t
 import {MonthlyGroceryAppSaveButton} from "../common/MonthlyGroceryAppButton.tsx";
 import {MonthlyGroceryAppCancelButton} from "../common/MonthlyGroceryAppButton.tsx";
 import Stack from "@mui/material/Stack";
-import type {IGroceryCreateItem} from "../../api/types/requests/CreateGroceryItem.ts";
+import type {IGroceryCreateItem} from "../../api/types/requests/grocery/CreateGroceryItem.ts";
 import {GroceryType, Seller} from "../../constants/enums.ts";
 import MonthlyGroceryAppSelectField from "../common/MonthlyGroceryAppSelectField.tsx";
 
