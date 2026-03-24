@@ -31,7 +31,6 @@ function HomePage() {
     };
     const handleOnDeleteAction = async (grocery_id: string) => {
         await deleteGroceryItem(grocery_id);
-        await fetchGroceries();
     };
 
 
