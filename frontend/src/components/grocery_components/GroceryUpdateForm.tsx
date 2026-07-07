@@ -1,7 +1,7 @@
 import {Box, Paper} from '@mui/material';
 import Stack from "@mui/material/Stack";
 import {MonthlyGroceryAppCancelButton, MonthlyGroceryAppSaveButton} from "../common/MonthlyGroceryAppButton.tsx";
-import type {IPayloadGroceryItemUpdate} from "../../api/types/requests/UpdateGroceryItem.ts";
+import type {IPayloadGroceryItemUpdate} from "../../api/types/requests/grocery/UpdateGroceryItem.ts";
 import MonthlyGroceryAppInputFieldSmall from "../common/MonthlyGroceryAppInputFieldSmall.tsx";
 import MonthlyGroceryAppSelectFieldSmall from "../common/MonthlyGroceryAppSelectFieldSmall.tsx";
 import {GroceryType, Seller, YesNoChoice} from "../../constants/enums.ts";
