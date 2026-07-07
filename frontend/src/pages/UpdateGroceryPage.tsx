@@ -5,7 +5,7 @@ import useGroceryStore from "../store/useGroceryStore.ts";
 import MonthlyGroceryAppError from "../components/common/MonthlyGroceryAppError.tsx";
 import MonthlyGroceryAppLoader from "../components/common/MonthlyGroceryAppLoader.tsx";
 import GroceryUpdate from "../components/grocery_components/GroceryUpdateForm.tsx";
-import type {IPayloadGroceryItemUpdate} from "../api/types/requests/UpdateGroceryItem.ts";
+import type {IPayloadGroceryItemUpdate} from "../api/types/requests/grocery/UpdateGroceryItem.ts";
 import PATHS from "../constants/paths.ts";
 
 function UpdateGroceryPage() {
