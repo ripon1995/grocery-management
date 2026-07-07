@@ -1,4 +1,4 @@
-import type {GroceryType, Seller} from "../../../constants/enums.ts";
+import type {GroceryType, Seller} from "../../../../constants/enums.ts";
 
 
 export interface IPayloadGroceryItemUpdate {
