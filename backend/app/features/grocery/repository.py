@@ -6,6 +6,7 @@ No FASTAPI no HTTP concepts
 from sqlalchemy import select, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import ResourceNotFoundException
 from app.features.grocery.models import Grocery
 
 
@@ -20,9 +21,12 @@ class GroceryRepository:
         return result.scalars().all()
 
     async def get_by_id(self, grocery_id: str) -> Grocery | None:
-        stmt = select(Grocery).where(Grocery.id == grocery_id)
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        try:
+            stmt = select(Grocery).where(Grocery.id == grocery_id)
+            result = await self.session.execute(stmt)
+            return result.scalar_one_or_none()
+        except :
+            raise ResourceNotFoundException(f"Grocery not found")
 
     async def add_grocery(self, grocery: Grocery) -> Grocery:
         self.session.add(grocery)
