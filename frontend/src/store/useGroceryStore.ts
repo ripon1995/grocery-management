@@ -77,7 +77,10 @@ const useGroceryStore = create<IGroceryState>((set) => ({
         set({isLoading: true});
         try {
             await deleteGrocery(grocery_id);
-            set({isLoading: false});
+            set((state) => ({
+                groceries: state.groceries.filter((item) => item.id !== grocery_id),
+                isLoading: false,
+            }));
         } catch (err: any) {
             if (err instanceof BaseError) {
                 console.log(`Getting error ${err.detail} ${err.status}`);
