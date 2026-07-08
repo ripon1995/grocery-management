@@ -1,6 +1,8 @@
 import axios from 'axios';
 import log from 'loglevel';
 import {BaseError, type BaseErrorResponse} from "./types/common.ts";
+import useAuthStore from "../store/useAuthStore.ts";
+import {StatusCodes} from 'http-status-codes';
 
 
 log.setLevel(import.meta.env.DEV ? 'debug' : 'warn');
@@ -13,7 +15,6 @@ const axiosInstance = axios.create({
     },
 });
 
-// TODO -> IMPLEMENT RETRY MECHANISM FOR 401
 axiosInstance.interceptors.request.use(
     function (config) {
         // 1. Get the string from localStorage
@@ -46,6 +47,12 @@ axiosInstance.interceptors.response.use(
     },
     (error) => {
         log.debug(error.response.data)
+
+        // No retry on 401: clear auth state so the UI falls back to the Login button.
+        if (error.response.status === StatusCodes.UNAUTHORIZED) {
+            useAuthStore.getState().logout();
+        }
+
         const error_params: BaseErrorResponse = {
             status: error.response.data.status,
             error_code: error.response.data.error_code,

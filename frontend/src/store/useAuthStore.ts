@@ -13,6 +13,7 @@ interface IUserAuthState {
     // actions
     login: (payload: IUserLoginPayload) => Promise<void>;
     resetError: () => void;
+    logout: () => void;
 }
 
 
@@ -33,7 +34,8 @@ const useAuthStore = create<IUserAuthState>()(
                     set({isLoading: false});
                 }
             },
-            resetError: () => set({error: null})
+            resetError: () => set({error: null}),
+            logout: () => set({token: null, isLoading: false, error: null})
         }),
         {
             name: 'auth-storage', // Key name in localStorage
