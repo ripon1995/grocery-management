@@ -20,6 +20,7 @@ class BaseTokenResponseSchema(BaseModel):
     access_token: str
     refresh_token: str
     user_email: str
+    username: str
 
 
 class LoginResponseSchema(BaseTokenResponseSchema):
