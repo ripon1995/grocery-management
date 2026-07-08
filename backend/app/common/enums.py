@@ -22,3 +22,4 @@ class Seller(str, Enum):
     COMILLA = 'comilla'
     DEFAULT = 'default'
     AGORA = 'agora'
+    ONLINE = 'online'
