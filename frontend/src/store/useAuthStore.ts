@@ -3,11 +3,11 @@ import {create} from "zustand";
 import {persist, createJSONStorage} from 'zustand/middleware';
 import {login} from "../api/endpoints/AuthApi.ts";
 import log from "loglevel";
-import type {IToken} from "../types/IToken.ts";
+import type {IUserLoginResponse} from "../api/types/responses/UserLoginResponse.ts";
 import {BaseError} from "../api/types/common.ts";
 
 interface IUserAuthState {
-    token: IToken | null
+    token: IUserLoginResponse | null
     isLoading: boolean;
     error: string | null;
     // actions

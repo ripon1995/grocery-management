@@ -1,4 +1,3 @@
-import {Avatar, Tooltip, IconButton} from "@mui/material"; // Add these imports
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import {Divider} from "@mui/material";
@@ -8,7 +7,6 @@ import {MonthlyGroceryAppLoginButton} from "./MonthlyGroceryAppButton.tsx";
 import PATHS from "../../constants/paths.ts";
 import {useNavigate} from "react-router-dom";
 import useAuthStore from "../../store/useAuthStore.ts"; // Import your store
-import log from "loglevel";
 
 function MonthlyGroceryAppBar() {
 
@@ -20,11 +18,6 @@ function MonthlyGroceryAppBar() {
     const handleLoginButtonOnClick = () => {
         navigate(PATHS.LOGIN);
     };
-
-    const handleProfileClick = () => {
-        log.debug('Profile icon clicked');
-    }
-
 
     return (
         <Box sx={{width: '100%', mt: 2, mb: 4}}>
@@ -45,14 +38,10 @@ function MonthlyGroceryAppBar() {
                 {/* Right Side: Conditional Rendering */}
                 <Box sx={{display: 'flex', alignItems: 'center'}}>
                     {token ? (
-                        /* Show Avatar if token exists */
-                        <Tooltip title={token.user_email}>
-                            <IconButton onClick={handleProfileClick} sx={{p: 0}}>
-                                <Avatar sx={{color: 'mediumpurple', fontWeight: 'bold'}}>
-                                    {token.user_email.charAt(0).toUpperCase()}
-                                </Avatar>
-                            </IconButton>
-                        </Tooltip>
+                        /* Show greeting if token exists */
+                        <Typography sx={{fontWeight: 'bold', color: 'mediumpurple'}}>
+                            Hi, {token.username}
+                        </Typography>
                     ) : (
                         /* Show Login Button if token is null */
                         <MonthlyGroceryAppLoginButton onClick={handleLoginButtonOnClick}/>
