@@ -24,29 +24,37 @@ class GroceryRepository:
             return result.scalars().all()
 
         if filters.has_conditions():
-            filter_fields = ["type", "current_seller", "best_seller", "category", "should_include"]
-            conditions = [
-                getattr(Grocery, field) == getattr(filters, field)
-                for field in filter_fields
-                if getattr(filters, field) is not None
-            ]
-            stmt = stmt.where(and_(*conditions))
+            stmt = stmt.where(self._build_filter_conditions(filters))
 
         if filters.search:
-            term = f"%{filters.search}%"
-            text_fields = [Grocery.name, Grocery.brand]
-            cast_fields = [
-                Grocery.type, Grocery.current_seller, Grocery.best_seller, Grocery.category,
-                Grocery.current_price, Grocery.quantity_in_stock, Grocery.low_stock_threshold, Grocery.best_price,
-            ]
-            search_conditions = (
-                [field.ilike(term) for field in text_fields]
-                + [cast(field, String).ilike(term) for field in cast_fields]
-            )
-            stmt = stmt.where(or_(*search_conditions))
+            stmt = stmt.where(self._build_search_conditions(filters.search))
 
         result = await self.session.execute(stmt)
         return result.scalars().all()
+
+    @staticmethod
+    def _build_filter_conditions(filters: GroceryFilterParams):
+        filter_fields = ["type", "current_seller", "best_seller", "category", "should_include"]
+        conditions = [
+            getattr(Grocery, field) == getattr(filters, field)
+            for field in filter_fields
+            if getattr(filters, field) is not None
+        ]
+        return and_(*conditions)
+
+    @staticmethod
+    def _build_search_conditions(search: str):
+        term = f"%{search}%"
+        text_fields = [Grocery.name, Grocery.brand]
+        cast_fields = [
+            Grocery.type, Grocery.current_seller, Grocery.best_seller, Grocery.category,
+            Grocery.current_price, Grocery.quantity_in_stock, Grocery.low_stock_threshold, Grocery.best_price,
+        ]
+        search_conditions = (
+            [field.ilike(term) for field in text_fields]
+            + [cast(field, String).ilike(term) for field in cast_fields]
+        )
+        return or_(*search_conditions)
 
     async def get_by_id(self, grocery_id: str) -> Grocery | None:
         try:
