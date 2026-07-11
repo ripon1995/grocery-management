@@ -8,7 +8,7 @@ import Paper from '@mui/material/Paper';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import {Chip, IconButton, Tooltip} from "@mui/material";
+import {Checkbox, Chip, IconButton, Tooltip} from "@mui/material";
 import type {IGroceryListItem} from "../../types/IGroceryList.ts";
 import {GroceryStockStatus} from "../../constants/enums.ts";
 import '../../styles/GroceryList.css';
@@ -22,10 +22,17 @@ interface IGroceryTableProps {
     onView: (grocery_id: string) => void;
     onEdit: (grocery_id: string) => void;
     onDelete: (grocery_id: string) => void;
+    selectedIds: string[];
+    onToggleSelect: (grocery_id: string) => void;
+    onToggleSelectAll: (checked: boolean) => void;
 }
 
 
-const GroceryTableHeader = () => (
+const GroceryTableHeader = ({allSelected, someSelected, onToggleSelectAll}: {
+    allSelected: boolean;
+    someSelected: boolean;
+    onToggleSelectAll: (checked: boolean) => void;
+}) => (
     <TableHead className="grocery-header">
         <TableRow sx={{
             backgroundColor: 'purple', '& .MuiTableCell-head': {
@@ -33,6 +40,14 @@ const GroceryTableHeader = () => (
                 fontWeight: 'bold'
             }
         }}>
+            <TableCell padding="checkbox">
+                <Checkbox
+                    sx={{color: 'white'}}
+                    checked={allSelected}
+                    indeterminate={someSelected && !allSelected}
+                    onChange={(e) => onToggleSelectAll(e.target.checked)}
+                />
+            </TableCell>
             <TableCell sx={{fontWeight: 'bold'}}>SL</TableCell>
             <TableCell sx={{fontWeight: 'bold'}}>Name</TableCell>
             <TableCell>Brand</TableCell>
@@ -51,18 +66,27 @@ const GroceryTableHeader = () => (
 );
 
 
-const GroceryTableRow = ({row, index, onView, onEdit, onDelete}: {
+const GroceryTableRow = ({row, index, onView, onEdit, onDelete, selected, onToggleSelect}: {
     row: IGroceryListItem;
     index: number,
     onView: (grocery_id: string) => void;
     onEdit: (grocery_id: string) => void;
     onDelete: (grocery_id: string) => void;
+    selected: boolean;
+    onToggleSelect: (grocery_id: string) => void;
 }) => (
     <TableRow
         key={row.id}
         className="grocery-row"
+        selected={selected}
         sx={{'&:last-child td, &:last-child th': {border: 0}}}
     >
+        <TableCell padding="checkbox">
+            <Checkbox
+                checked={selected}
+                onChange={() => onToggleSelect(row.id)}
+            />
+        </TableCell>
         <TableCell component="th" scope="row" sx={{fontWeight: 500}}>
             {index + 1}
         </TableCell>
@@ -123,12 +147,19 @@ const GroceryTableRow = ({row, index, onView, onEdit, onDelete}: {
 )
 
 
-function GroceryTable({groceries, onView, onEdit, onDelete}: IGroceryTableProps) {
+function GroceryTable({groceries, onView, onEdit, onDelete, selectedIds, onToggleSelect, onToggleSelectAll}: IGroceryTableProps) {
+    const allSelected = groceries.length > 0 && groceries.every((row) => selectedIds.includes(row.id));
+    const someSelected = groceries.some((row) => selectedIds.includes(row.id));
+
     return (
         <Paper elevation={10} sx={{borderRadius: 1, overflow: 'hidden'}}>
             <TableContainer>
                 <Table sx={{minWidth: 650}} aria-label="grocery inventory table">
-                    <GroceryTableHeader></GroceryTableHeader>
+                    <GroceryTableHeader
+                        allSelected={allSelected}
+                        someSelected={someSelected}
+                        onToggleSelectAll={onToggleSelectAll}
+                    />
                     <TableBody>
                         {(
                             groceries.map((row, index) => (
@@ -139,6 +170,8 @@ function GroceryTable({groceries, onView, onEdit, onDelete}: IGroceryTableProps)
                                     onView={onView}
                                     onEdit={onEdit}
                                     onDelete={onDelete}
+                                    selected={selectedIds.includes(row.id)}
+                                    onToggleSelect={onToggleSelect}
                                 />
                             ))
                         )}

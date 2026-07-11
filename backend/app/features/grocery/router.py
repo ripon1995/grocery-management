@@ -16,7 +16,11 @@ from app.db.session import get_db
 from app.features.auth.models import User
 from app.features.grocery.dependencies import get_grocery_service, get_grocery_filters
 from app.features.grocery.filters import GroceryFilterParams
-from app.features.grocery.schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
+from app.features.grocery.schemas.request_schemas import (
+    GroceryCreateSchema,
+    GroceryUpdateSchema,
+    GroceryBulkUpdateSchema,
+)
 from app.features.grocery.schemas.response_schemas import (
     GroceryListResponseSchema,
     GroceryDetailResponseSchema,
@@ -45,6 +49,20 @@ async def list_groceries(
 ):
     items = await grocery_service.list_all_groceries(filters)
     return items
+
+
+@router.patch(
+    "/bulk/should-include",
+    response_model=List[GroceryUpdateResponseSchema],
+    status_code=status.HTTP_200_OK,
+    summary="Bulk update should_include for multiple grocery items",
+)
+async def bulk_update_should_include(
+        current_user: User = Depends(get_current_user),
+        data: GroceryBulkUpdateSchema = GroceryBulkUpdateSchema,
+        grocery_service: GroceryService = Depends(get_grocery_service)
+):
+    return await grocery_service.bulk_update_should_include(data)
 
 
 @router.get(

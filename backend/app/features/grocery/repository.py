@@ -3,7 +3,9 @@ TALKS TO DB ONLY
 No FASTAPI no HTTP concepts
 """
 
-from sqlalchemy import select, Sequence, and_, or_, cast, String
+from uuid import UUID
+
+from sqlalchemy import select, update, Sequence, and_, or_, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ResourceNotFoundException
@@ -77,3 +79,17 @@ class GroceryRepository:
     async def delete_grocery(self, grocery: Grocery) -> None:
         await self.session.delete(grocery)
         await self.session.commit()
+
+    async def bulk_update_should_include(
+            self, grocery_ids: Sequence[UUID], should_include: bool
+    ) -> Sequence[Grocery]:
+        stmt = (
+            update(Grocery)
+            .where(Grocery.id.in_(grocery_ids))
+            .values(should_include=should_include)
+            .returning(Grocery)
+        )
+        result = await self.session.execute(stmt)
+        updated_groceries = result.scalars().all()
+        await self.session.commit()
+        return updated_groceries

@@ -5,7 +5,8 @@ import {
     createGroceries,
     getGroceryDetail,
     updateGrocery,
-    deleteGrocery
+    deleteGrocery,
+    bulkUpdateShouldInclude
 } from "../api/endpoints/GroceryApi.ts";
 import type {IGroceryCreateItem} from "../api/types/requests/grocery/CreateGroceryItem.ts";
 import type {IGroceryDetail} from "../types/IGroceryDetail.ts";
@@ -27,6 +28,7 @@ interface IGroceryState {
     getGroceryDetail: (grocery_id: string) => Promise<void>;
     updateGroceryDetail: (grocery_id: string, payload: IPayloadGroceryItemUpdate) => Promise<void>;
     deleteGroceryItem: (grocery_id: string) => Promise<void>;
+    bulkUpdateShouldIncludeItems: (grocery_ids: string[], should_include: boolean) => Promise<void>;
 }
 
 
@@ -91,6 +93,26 @@ const useGroceryStore = create<IGroceryState>((set) => ({
                 });
             }
 
+            set({isLoading: false});
+        }
+    },
+    bulkUpdateShouldIncludeItems: async (grocery_ids: string[], should_include: boolean) => {
+        set({isLoading: true});
+        try {
+            const updated_items = await bulkUpdateShouldInclude({grocery_ids, should_include});
+            const updated_by_id = new Map(updated_items.map((item) => [item.id, item]));
+            set((state) => ({
+                groceries: state.groceries.map((item) => updated_by_id.get(item.id) ?? item),
+                isLoading: false,
+            }));
+        } catch (err: any) {
+            if (err instanceof BaseError) {
+                console.log(`Getting error ${err.detail} ${err.status}`);
+                toast.error(`${err.error_code}: ${err.message}`, {
+                    position: "bottom-right",
+                    autoClose: 5000,
+                });
+            }
             set({isLoading: false});
         }
     }

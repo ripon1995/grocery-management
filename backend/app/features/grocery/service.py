@@ -22,7 +22,7 @@ from app.common.enums import Seller
 from .filters import GroceryFilterParams
 from .models import Grocery
 from .repository import GroceryRepository
-from .schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
+from .schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema, GroceryBulkUpdateSchema
 from .schemas.response_schemas import (
     GroceryListResponseSchema,
     GroceryDetailResponseSchema,
@@ -124,3 +124,18 @@ class GroceryService:
         if grocery is None:
             raise ResourceNotFoundException(message=GROCERY_NOT_FOUND.format(grocery_id=grocery_id))
         await self.repo.delete_grocery(grocery)
+
+    async def bulk_update_should_include(
+            self, data: GroceryBulkUpdateSchema
+    ) -> List[GroceryUpdateResponseSchema]:
+        updated_groceries = await self.repo.bulk_update_should_include(
+            data.grocery_ids, data.should_include
+        )
+        found_ids = {grocery.id for grocery in updated_groceries}
+        missing_ids = [str(gid) for gid in data.grocery_ids if gid not in found_ids]
+        if missing_ids:
+            logger.error(GROCERY_NOT_FOUND.format(grocery_id=", ".join(missing_ids)))
+            raise ResourceNotFoundException(
+                message=GROCERY_NOT_FOUND.format(grocery_id=", ".join(missing_ids))
+            )
+        return [GroceryUpdateResponseSchema.model_validate(grocery) for grocery in updated_groceries]

@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import List, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field, PositiveInt
 
@@ -85,4 +86,14 @@ class GroceryUpdateSchema(BaseModel):
     category: Optional[GroceryCategory] = Field(
         default=None,
         description="Updated category of grocery item"
+    )
+
+
+class GroceryBulkUpdateSchema(BaseModel):
+    grocery_ids: List[UUID] = Field(
+        min_length=1,
+        description="Ids of the grocery items to update"
+    )
+    should_include: bool = Field(
+        description="New should_include value to apply to all selected items"
     )

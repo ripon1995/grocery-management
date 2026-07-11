@@ -87,6 +87,33 @@ export function MonthlyGroceryAppAddButton({onClick}: IButtonProps) {
     );
 }
 
+interface IIncludeSelectedButtonProps {
+    onClick: () => void;
+    disabled?: boolean;
+    count: number;
+}
+
+export function MonthlyGroceryAppIncludeSelectedButton({onClick, disabled, count}: IIncludeSelectedButtonProps) {
+    return (
+        <Button
+            variant="contained"
+            onClick={onClick}
+            disabled={disabled}
+            sx={{
+                backgroundColor: 'purple',
+                fontWeight: 'bold',
+                padding: '6px 20px',
+                borderRadius: '4px',
+                '&:hover': {
+                    backgroundColor: '#4a0072',
+                }
+            }}
+        >
+            {`Include these? (${count})`}
+        </Button>
+    );
+}
+
 export function MonthlyGroceryAppLoginButton({onClick}: IButtonProps) {
     return (
         <Stack direction="row" spacing={2}>
