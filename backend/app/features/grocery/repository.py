@@ -19,37 +19,31 @@ class GroceryRepository:
         """Get all groceries, optionally filtered/searched — no pagination for now"""
         stmt = select(Grocery)
 
-        if filters:
-            if filters.has_conditions():
-                conditions = []
-                if filters.type is not None:
-                    conditions.append(Grocery.type == filters.type)
-                if filters.current_seller is not None:
-                    conditions.append(Grocery.current_seller == filters.current_seller)
-                if filters.best_seller is not None:
-                    conditions.append(Grocery.best_seller == filters.best_seller)
-                if filters.category is not None:
-                    conditions.append(Grocery.category == filters.category)
-                if filters.should_include is not None:
-                    conditions.append(Grocery.should_include == filters.should_include)
-                stmt = stmt.where(and_(*conditions))
+        if not filters:
+            result = await self.session.execute(stmt)
+            return result.scalars().all()
 
-            if filters.search:
-                term = f"%{filters.search}%"
-                stmt = stmt.where(
-                    or_(
-                        Grocery.name.ilike(term),
-                        Grocery.brand.ilike(term),
-                        cast(Grocery.type, String).ilike(term),
-                        cast(Grocery.current_seller, String).ilike(term),
-                        cast(Grocery.best_seller, String).ilike(term),
-                        cast(Grocery.category, String).ilike(term),
-                        cast(Grocery.current_price, String).ilike(term),
-                        cast(Grocery.quantity_in_stock, String).ilike(term),
-                        cast(Grocery.low_stock_threshold, String).ilike(term),
-                        cast(Grocery.best_price, String).ilike(term),
-                    )
-                )
+        if filters.has_conditions():
+            filter_fields = ["type", "current_seller", "best_seller", "category", "should_include"]
+            conditions = [
+                getattr(Grocery, field) == getattr(filters, field)
+                for field in filter_fields
+                if getattr(filters, field) is not None
+            ]
+            stmt = stmt.where(and_(*conditions))
+
+        if filters.search:
+            term = f"%{filters.search}%"
+            text_fields = [Grocery.name, Grocery.brand]
+            cast_fields = [
+                Grocery.type, Grocery.current_seller, Grocery.best_seller, Grocery.category,
+                Grocery.current_price, Grocery.quantity_in_stock, Grocery.low_stock_threshold, Grocery.best_price,
+            ]
+            search_conditions = (
+                [field.ilike(term) for field in text_fields]
+                + [cast(field, String).ilike(term) for field in cast_fields]
+            )
+            stmt = stmt.where(or_(*search_conditions))
 
         result = await self.session.execute(stmt)
         return result.scalars().all()
