@@ -19,6 +19,7 @@ Never skip this layer in large apps.
 from typing import Tuple, List
 import logging
 from app.common.enums import Seller
+from .filters import GroceryFilterParams
 from .models import Grocery
 from .repository import GroceryRepository
 from .schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
@@ -92,8 +93,8 @@ class GroceryService:
     # Public API methods
     # ───────────────────────────────────────────────
 
-    async def list_all_groceries(self) -> List[GroceryListResponseSchema]:
-        groceries = await self.repo.get_groceries()
+    async def list_all_groceries(self, filters: GroceryFilterParams | None = None) -> List[GroceryListResponseSchema]:
+        groceries = await self.repo.get_groceries(filters)
         logger.info('Get groceries')
         return [GroceryListResponseSchema.model_validate(item) for item in groceries]
 

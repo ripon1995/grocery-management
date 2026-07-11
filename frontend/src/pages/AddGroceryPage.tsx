@@ -4,7 +4,7 @@ import {Container, Typography} from '@mui/material';
 import CreateGroceryForm from "../components/grocery_components/CreateGroceryForm.tsx";
 import PATHS from "../constants/paths.ts";
 import type {IGroceryCreateItem} from "../api/types/requests/grocery/CreateGroceryItem.ts";
-import {GroceryType, Seller} from "../constants/enums.ts";
+import {GroceryType, Seller, GroceryCategory} from "../constants/enums.ts";
 import useGroceryStore from "../store/useGroceryStore.ts";
 
 const INITIAL_GROCERY_STATE: IGroceryCreateItem = {
@@ -14,7 +14,8 @@ const INITIAL_GROCERY_STATE: IGroceryCreateItem = {
     current_price: 0,
     current_seller: Seller.MEENA,
     low_stock_threshold: 1,
-    quantity_in_stock: 1
+    quantity_in_stock: 1,
+    category: GroceryCategory.OTHER
 };
 
 

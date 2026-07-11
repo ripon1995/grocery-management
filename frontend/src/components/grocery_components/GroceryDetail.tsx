@@ -25,6 +25,7 @@ const renderGroceryContent = (data: IGroceryDetail) => (
         <MonthlyGroceryAppDisplayField label="Low Stock Threshold" value={data.low_stock_threshold}/>
         <MonthlyGroceryAppDisplayField label="Quantity In Stock" value={data.quantity_in_stock}/>
         <MonthlyGroceryAppDisplayField label="Include?" value={data.should_include ? 'YES' : 'NO'}/>
+        <MonthlyGroceryAppDisplayField label="Category" value={data.category.toUpperCase()}/>
         <MonthlyGroceryAppDisplayField label="Best Seller" value={data.best_seller.toUpperCase()}/>
         <MonthlyGroceryAppDisplayField label="Best Price" value={`${data.best_price.toFixed(0)} BDT`}/>
         <MonthlyGroceryAppDisplayField label="Stock Status" value={data.stock_status.toUpperCase()}/>

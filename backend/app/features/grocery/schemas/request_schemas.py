@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, PositiveInt
 
-from app.common.enums import GroceryType, Seller
+from app.common.enums import GroceryType, Seller, GroceryCategory
 
 
 class GroceryCreateSchema(BaseModel):
@@ -34,6 +34,10 @@ class GroceryCreateSchema(BaseModel):
     quantity_in_stock: PositiveInt = Field(
         ge=0,
         description="Stock quantity in grocery item"
+    )
+    category: GroceryCategory = Field(
+        default=GroceryCategory.OTHER,
+        description="Category of grocery item"
     )
 
 
@@ -77,4 +81,8 @@ class GroceryUpdateSchema(BaseModel):
     should_include: Optional[bool] = Field(
         default=None,
         description="Should include grocery item for this time"
+    )
+    category: Optional[GroceryCategory] = Field(
+        default=None,
+        description="Updated category of grocery item"
     )

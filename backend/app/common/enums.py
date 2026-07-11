@@ -15,6 +15,14 @@ class GroceryStockStatus(str, Enum):
     BELOW_STOCK = 'below_stock'
 
 
+class GroceryCategory(str, Enum):
+    TOILETRIES = 'toiletries'
+    FOOD = 'food'
+    COOKIES = 'cookies'
+    OIL = 'oil'
+    OTHER = 'other'
+
+
 class Seller(str, Enum):
     MEENA = 'meena'
     SHWAPNO = 'shwapno'

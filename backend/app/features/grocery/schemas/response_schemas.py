@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, computed_field
 
-from app.common.enums import GroceryType, Seller, GroceryStockStatus
+from app.common.enums import GroceryType, Seller, GroceryStockStatus, GroceryCategory
 
 
 class GroceryBaseResponseSchema(BaseModel):
@@ -16,6 +16,7 @@ class GroceryBaseResponseSchema(BaseModel):
     low_stock_threshold: int
     quantity_in_stock: int
     should_include: bool
+    category: GroceryCategory
     best_seller: Seller
     best_price: int
 
@@ -24,6 +25,7 @@ class GroceryBaseResponseSchema(BaseModel):
         json_encoders={
             GroceryType: lambda v: v.value,
             Seller: lambda v: v.value,
+            GroceryCategory: lambda v: v.value,
             UUID: lambda v: str(v)
         }
     )

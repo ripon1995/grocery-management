@@ -10,6 +10,7 @@ import {
 import type {IGroceryCreateItem} from "../api/types/requests/grocery/CreateGroceryItem.ts";
 import type {IGroceryDetail} from "../types/IGroceryDetail.ts";
 import type {IPayloadGroceryItemUpdate} from "../api/types/requests/grocery/UpdateGroceryItem.ts";
+import type {IGroceryFilterParams} from "../api/types/requests/grocery/GroceryFilterParams.ts";
 import {BaseError} from "../api/types/common.ts";
 import {toast} from "react-toastify";
 
@@ -21,7 +22,7 @@ interface IGroceryState {
     error: string | null;
 
     // actions
-    fetchGroceries: () => Promise<void>;
+    fetchGroceries: (filters?: IGroceryFilterParams) => Promise<void>;
     addGroceries: (newItem: IGroceryCreateItem) => Promise<void>;
     getGroceryDetail: (grocery_id: string) => Promise<void>;
     updateGroceryDetail: (grocery_id: string, payload: IPayloadGroceryItemUpdate) => Promise<void>;
@@ -34,10 +35,10 @@ const useGroceryStore = create<IGroceryState>((set) => ({
     isLoading: false,
     grocery: null,
     error: null,
-    fetchGroceries: async () => {
+    fetchGroceries: async (filters?: IGroceryFilterParams) => {
         set({isLoading: true, error: null});
         try {
-            const data = await getGroceries();
+            const data = await getGroceries(filters);
             set({groceries: data, isLoading: false});
         } catch (err) {
             console.log(err);

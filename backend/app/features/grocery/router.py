@@ -14,7 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.dependencies import get_current_user
 from app.db.session import get_db
 from app.features.auth.models import User
-from app.features.grocery.dependencies import get_grocery_service
+from app.features.grocery.dependencies import get_grocery_service, get_grocery_filters
+from app.features.grocery.filters import GroceryFilterParams
 from app.features.grocery.schemas.request_schemas import GroceryCreateSchema, GroceryUpdateSchema
 from app.features.grocery.schemas.response_schemas import (
     GroceryListResponseSchema,
@@ -38,8 +39,11 @@ DbDep = Annotated[AsyncSession, Depends(get_db)]
     status_code=status.HTTP_200_OK,
     summary="Get all groceries",
 )
-async def list_groceries(grocery_service: GroceryService = Depends(get_grocery_service)):
-    items = await grocery_service.list_all_groceries()
+async def list_groceries(
+        filters: GroceryFilterParams = Depends(get_grocery_filters),
+        grocery_service: GroceryService = Depends(get_grocery_service)
+):
+    items = await grocery_service.list_all_groceries(filters)
     return items
 
 

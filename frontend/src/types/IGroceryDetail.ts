@@ -1,4 +1,4 @@
-import type {GroceryStockStatus, GroceryType, Seller} from "../constants/enums.ts";
+import type {GroceryStockStatus, GroceryType, Seller, GroceryCategory} from "../constants/enums.ts";
 
 
 export interface IGroceryDetail {
@@ -11,6 +11,7 @@ export interface IGroceryDetail {
     low_stock_threshold: number;
     quantity_in_stock: number;
     should_include: boolean;
+    category: GroceryCategory;
     best_price: number;
     best_seller: Seller;
     stock_status: GroceryStockStatus;

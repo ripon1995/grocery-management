@@ -1,12 +1,14 @@
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {useNavigate} from 'react-router-dom';
-import {Container, Typography} from '@mui/material';
+import {Typography} from '@mui/material';
 import GroceryTable from "../components/grocery_components/GroceryList.tsx";
+import GroceryFilterBar from "../components/grocery_components/GroceryFilterBar.tsx";
 import Box from "@mui/material/Box";
 import {MonthlyGroceryAppAddButton} from "../components/common/MonthlyGroceryAppButton.tsx";
 import PATHS from "../constants/paths.ts";
 import useGroceryStore from "../store/useGroceryStore.ts";
 import MonthlyGroceryAppLoader from "../components/common/MonthlyGroceryAppLoader.tsx";
+import type {IGroceryFilterParams} from "../api/types/requests/grocery/GroceryFilterParams.ts";
 
 
 function HomePage() {
@@ -14,11 +16,12 @@ function HomePage() {
 
     // 1. Hook into the store at the Page level
     const {groceries, fetchGroceries, isLoading, deleteGroceryItem} = useGroceryStore();
+    const [filters, setFilters] = useState<IGroceryFilterParams>({});
 
-    // 2. Trigger the fetch when the page mounts
+    // 2. Trigger the fetch when the page mounts or filters change
     useEffect(() => {
-        fetchGroceries().then();
-    }, [fetchGroceries]);
+        fetchGroceries(filters).then();
+    }, [fetchGroceries, filters]);
 
     const handleSave = () => {
         navigate(PATHS.ADD_GROCERY);
@@ -32,17 +35,6 @@ function HomePage() {
     const handleOnDeleteAction = async (grocery_id: string) => {
         await deleteGroceryItem(grocery_id);
     };
-
-
-    // 2. Handle Loading State (Moved from Child to Page)
-    if (isLoading || !groceries) {
-        return (
-            <Container>
-                <Typography variant="h4" sx={{mb: 2}}>Monthly Grocery Detail</Typography>
-                <MonthlyGroceryAppLoader message="Fetching list..."/>
-            </Container>
-        );
-    }
 
 
     return (
@@ -67,12 +59,17 @@ function HomePage() {
                     <MonthlyGroceryAppAddButton onClick={handleSave}/>
                 </Box>
             </Box>
-            <GroceryTable
-                groceries={groceries}
-                onView={handleOnViewAction}
-                onEdit={handleOnEditAction}
-                onDelete={handleOnDeleteAction}>
-            </GroceryTable>
+            <GroceryFilterBar onFilterChange={setFilters}/>
+            {isLoading || !groceries ? (
+                <MonthlyGroceryAppLoader message="Fetching list..."/>
+            ) : (
+                <GroceryTable
+                    groceries={groceries}
+                    onView={handleOnViewAction}
+                    onEdit={handleOnEditAction}
+                    onDelete={handleOnDeleteAction}>
+                </GroceryTable>
+            )}
         </Box>
     );
 }

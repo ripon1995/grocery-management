@@ -19,9 +19,20 @@ export const Seller = {
     SHWAPNO: 'shwapno',
     LOCAL: 'local',
     COMILLA: 'comilla',
-    AGORA: 'agora'
+    DEFAULT: 'default',
+    AGORA: 'agora',
+    ONLINE: 'online'
 } as const;
 export type Seller = typeof Seller[keyof typeof Seller];
+
+export const GroceryCategory = {
+    TOILETRIES: 'toiletries',
+    FOOD: 'food',
+    COOKIES: 'cookies',
+    OIL: 'oil',
+    OTHER: 'other'
+} as const;
+export type GroceryCategory = typeof GroceryCategory[keyof typeof GroceryCategory];
 
 
 export const YesNoChoice = {

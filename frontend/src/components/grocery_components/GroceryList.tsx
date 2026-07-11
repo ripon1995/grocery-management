@@ -39,7 +39,7 @@ const GroceryTableHeader = () => (
             <TableCell align="center">Type</TableCell>
             <TableCell align="center">Price</TableCell>
             <TableCell align="center">Seller</TableCell>
-            <TableCell align="center">Threshold</TableCell>
+            <TableCell align="center">Category</TableCell>
             <TableCell align="center">Stock</TableCell>
             <TableCell align="center">Include?</TableCell>
             <TableCell align="center">Best Price</TableCell>
@@ -75,7 +75,7 @@ const GroceryTableRow = ({row, index, onView, onEdit, onDelete}: {
         </TableCell>
         <TableCell align="center">{row.current_price.toFixed(0)} BDT</TableCell>
         <TableCell align="center" sx={{textTransform: 'uppercase'}}>{row.current_seller}</TableCell>
-        <TableCell align="center">{row.low_stock_threshold}</TableCell>
+        <TableCell align="center" sx={{textTransform: 'capitalize'}}>{row.category}</TableCell>
         <TableCell align="center">{row.quantity_in_stock}</TableCell>
         <TableCell align="center">
             {row.should_include}

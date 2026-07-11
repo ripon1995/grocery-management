@@ -8,7 +8,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.common.enums import GroceryType, Seller
+from app.common.enums import GroceryType, Seller, GroceryCategory
 from app.db.base import Base
 from app.db.mixins import BaseModelMixin
 
@@ -49,6 +49,12 @@ class Grocery(Base, BaseModelMixin):
     should_include: Mapped[bool] = mapped_column(
         Boolean,
         default=False
+    )
+    category: Mapped[GroceryCategory] = mapped_column(
+        SQLEnum(GroceryCategory),
+        default=GroceryCategory.OTHER,
+        server_default=GroceryCategory.OTHER.name,
+        nullable=False
     )
     # computed field
     # following field will be computed everytime when an instance is created

@@ -4,7 +4,7 @@ import {MonthlyGroceryAppCancelButton, MonthlyGroceryAppSaveButton} from "../com
 import type {IPayloadGroceryItemUpdate} from "../../api/types/requests/grocery/UpdateGroceryItem.ts";
 import MonthlyGroceryAppInputFieldSmall from "../common/MonthlyGroceryAppInputFieldSmall.tsx";
 import MonthlyGroceryAppSelectFieldSmall from "../common/MonthlyGroceryAppSelectFieldSmall.tsx";
-import {GroceryType, Seller, YesNoChoice} from "../../constants/enums.ts";
+import {GroceryType, Seller, YesNoChoice, GroceryCategory} from "../../constants/enums.ts";
 
 
 interface IGroceryUpdateProps {
@@ -77,6 +77,12 @@ const renderGroceryContent = (
             onChange={onBooleanChange('should_include')}
             label="Include?"
             value={formData.should_include ? YesNoChoice.YES : YesNoChoice.NO}
+        />
+        <MonthlyGroceryAppSelectFieldSmall
+            options={Object.values(GroceryCategory)}
+            onChange={onStringChange('category')}
+            label="Category"
+            value={formData.category}
         />
         <Stack
             direction="row"
