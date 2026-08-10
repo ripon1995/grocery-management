@@ -30,7 +30,7 @@ from app.features.grocery.schemas.response_schemas import (
 from app.features.grocery.service import GroceryService
 
 router = APIRouter(
-    prefix="/groceries",
+    prefix="/v1/groceries",
     tags=["grocery"],
 )
 
