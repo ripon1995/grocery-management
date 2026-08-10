@@ -6,12 +6,13 @@ from app.features.auth.schemas import (
     UserCreateResponseSchema,
     LoginResponseSchema,
     LoginRequestSchema,
-    TokenRefreshResponseSchema, TokenRefreshRequestSchema,
+    TokenRefreshResponseSchema,
+    TokenRefreshRequestSchema,
 )
 from app.features.auth.service import AuthService
 
 router = APIRouter(
-    prefix="/auth",
+    prefix="/v1/auth",
     tags=["auth"]
 )
 
