@@ -133,7 +133,7 @@ const API_BASE_URL = 'http://api.grocery-local.dev:8000'
 
 ## Phase 2: API Design & Security (Weeks 3-5)
 
-### 5. APIs
+### 5. APIs ✅ (Completed)
 
 **Why You Need It**: Before REST or GraphQL, you need to understand what an API is and why it exists. APIs are the foundation of all modern software communication — every feature you add to Grocery Manager relies on them.
 
