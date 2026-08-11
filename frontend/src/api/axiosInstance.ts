@@ -15,16 +15,23 @@ const axiosInstance = axios.create({
     },
 });
 
+function isAuthStorageShape(value: unknown): value is { state: { token?: { access_token?: string } } } {
+    return typeof value === 'object' && value != null && 'state' in value;
+}
+
+
 axiosInstance.interceptors.request.use(
     function (config) {
         // 1. Get the string from localStorage
         const authStorage = localStorage.getItem('auth-storage');
         if (authStorage) {
             // 2. Parse the JSON (Zustand wraps it in a 'state' object)
-            const parsedStorage = JSON.parse(authStorage);
-            const token = parsedStorage.state.token?.access_token;
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
+            const parsed: unknown = JSON.parse(authStorage);
+            if (isAuthStorageShape(parsed)) {
+                const token = parsed.state.token?.access_token;
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
             }
         }
         // --- LOGGING WITH LOGLEVEL ---
