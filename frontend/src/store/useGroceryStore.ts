@@ -61,9 +61,11 @@ const useGroceryStore = create<IGroceryState>((set) => ({
         try {
             const data = await getGroceryDetail(grocery_id);
             set({grocery: data, isLoading: false});
-        } catch (err: any) {
-            console.log(err);
-            set({error: err.message, isLoading: false});
+        } catch (err: unknown) {
+            if (err instanceof  BaseError) {
+                console.log(err);
+                set({error: err.message, isLoading: false});
+            }
         }
     },
     updateGroceryDetail: async (grocery_id: string, payload: IPayloadGroceryItemUpdate) => {
@@ -71,9 +73,11 @@ const useGroceryStore = create<IGroceryState>((set) => ({
         try {
             await updateGrocery(grocery_id, payload);
             set({isLoading: false});
-        } catch (err: any) {
-            console.log(err);
-            set({error: err.message, isLoading: false});
+        } catch (err: unknown) {
+            if(err instanceof BaseError) {
+                console.log(err);
+                set({error: err.message, isLoading: false});
+            }
         }
     },
     deleteGroceryItem: async (grocery_id: string) => {
@@ -84,7 +88,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
                 groceries: state.groceries.filter((item) => item.id !== grocery_id),
                 isLoading: false,
             }));
-        } catch (err: any) {
+        } catch (err: unknown) {
             if (err instanceof BaseError) {
                 console.log(`Getting error ${err.detail} ${err.status}`);
                 toast.error(`${err.error_code}: ${err.message}`, {
@@ -105,7 +109,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
                 groceries: state.groceries.map((item) => updated_by_id.get(item.id) ?? item),
                 isLoading: false,
             }));
-        } catch (err: any) {
+        } catch (err: unknown) {
             if (err instanceof BaseError) {
                 console.log(`Getting error ${err.detail} ${err.status}`);
                 toast.error(`${err.error_code}: ${err.message}`, {
