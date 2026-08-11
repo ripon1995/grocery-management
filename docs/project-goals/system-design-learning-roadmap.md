@@ -207,9 +207,11 @@ const API_BASE_URL = 'http://api.grocery-local.dev:8000'
 
 ---
 
-### 7. GraphQL (Alternative to REST)
+### 7. GraphQL (Alternative to REST) ⏭️ Skipped
 
-**Why You Need It**: Solve over-fetching/under-fetching problems. Frontend can request exactly what it needs.
+> **Decision**: Not pursuing GraphQL for this project. REST already covers the CRUD needs of the single first-party frontend, and adding a second API paradigm isn't worth the added complexity right now. Revisit only if a client with genuinely different data-shape needs (e.g. a separate mobile app) shows up.
+
+**Why You Need It** *(kept for reference)*: Solve over-fetching/under-fetching problems. Frontend can request exactly what it needs.
 
 **Use Case for Grocery Manager**:
 - Mobile app needs: `{ id, name, price }` (minimal data)
@@ -257,13 +259,19 @@ const API_BASE_URL = 'http://api.grocery-local.dev:8000'
 - Measure response sizes
 - Compare frontend code complexity
 
-**Success Criteria**: GraphQL API runs alongside REST, frontend can choose either.
+**Success Criteria**: ⏭️ Skipped — N/A. GraphQL deliberately out of scope for this project.
 
 ---
 
-### ⚙️ Implementation Requirement: Authentication & Authorization
+### ⚙️ Implementation Requirement: Authentication & Authorization 🟡 (Register/Login implemented — known bugs to fix)
 
 > **Note**: Authentication & Authorization are not one of the 30 core system design topics but are a **critical practical requirement** before deploying your REST API to production. Complete this implementation during Phase 2 before moving to Phase 3. Without it, anyone can CREATE/UPDATE/DELETE your grocery data.
+
+**Current State**: Register, login, token-refresh, and route protection (`get_current_user`) are implemented in `backend/app/features/auth/` and `backend/app/core/dependencies.py`. Password hashing uses argon2, error responses follow the standard `ApiResponseSchema` format, and grocery CRUD routes are protected. Reviewed on 2026-08-11 — 3 bugs found, not yet fixed:
+
+1. 🐛 **`backend/app/features/auth/service.py:89`** — `refresh_token()` calls `self.repo.get_user_by_email(email)` without `await`. The coroutine object is always truthy, so the "user still exists" check silently never runs.
+2. 🐛 **`backend/app/utils/jwt_helper.py:17`** — `create_refresh_token` does `timedelta(days=settings.REFRESH_TOKEN_EXPIRE_MINUTES)`. `REFRESH_TOKEN_EXPIRE_MINUTES` defaults to `24 * 60` (intended as "1 day in minutes"), so refresh tokens actually live ~1440 days (~3.9 years) instead of 1 day.
+3. 🔒 **`backend/app/utils/hashing.py:11`** — `hash_password` logs the plaintext password at debug level (`logger.debug(f'Hashing password : {plain_password}')`). Cleartext credentials end up in logs whenever `LOG_LEVEL=DEBUG`.
 
 **Why You Need It**:
 - Identify users (Authentication)
@@ -342,8 +350,9 @@ async def list_groceries(current_user: User = Depends(get_current_user)):
 ```
 
 **Success Criteria**:
-- Users can register and login
-- JWT tokens protect CREATE/UPDATE/DELETE
+- ✅ Users can register and login
+- ✅ JWT tokens protect CREATE/UPDATE/DELETE
+- ⚠️ Fix the 3 bugs listed above before considering this item fully done
 - Users only see their own groceries
 
 ---
