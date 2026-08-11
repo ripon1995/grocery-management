@@ -86,7 +86,7 @@ class AuthService:
         email = JWTHelper.verify_token(payload.refresh_token)
         if not email:
             raise UnauthorizedException()
-        user = self.repo.get_user_by_email(email)
+        user = await self.repo.get_user_by_email(email)
         if not user:
             raise UnauthorizedException()
 
