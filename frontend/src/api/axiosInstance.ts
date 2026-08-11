@@ -1,6 +1,6 @@
 import axios from 'axios';
 import log from 'loglevel';
-import {BaseError, type BaseErrorResponse} from "./types/common.ts";
+import {BaseError} from "./types/common.ts";
 import useAuthStore from "../store/useAuthStore.ts";
 import {StatusCodes} from 'http-status-codes';
 
@@ -45,21 +45,17 @@ axiosInstance.interceptors.response.use(
         log.debug(response)
         return response
     },
-    (error) => {
-        log.debug(error.response.data)
+    (error: unknown) => {
+        if (axios.isAxiosError(error)) {
+            log.debug("API Error Response: ", error.response?.data)
 
-        // No retry on 401: clear auth state so the UI falls back to the Login button.
-        if (error.response.status === StatusCodes.UNAUTHORIZED) {
-            useAuthStore.getState().logout();
+            // No retry on 401: clear auth state so the UI falls back to the Login button.
+            if (error.response?.status === StatusCodes.UNAUTHORIZED) {
+                useAuthStore.getState().logout();
+            }
+            return Promise.reject(new BaseError(error.response?.data));
         }
-
-        const error_params: BaseErrorResponse = {
-            status: error.response.data.status,
-            error_code: error.response.data.error_code,
-            message: error.response.data.message,
-            detail: error.response.data.detail
-        }
-        return Promise.reject(new BaseError(error_params));
+        return Promise.reject(error);
     }
 );
 
