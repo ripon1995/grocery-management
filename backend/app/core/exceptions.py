@@ -10,9 +10,9 @@ class AppBaseException(Exception):
 
     def __init__(
             self,
-            error_code: str = None,
-            detail: str = None,
-            message: str = None,
+            error_code: str | None = None,
+            detail: str | None = None,
+            message: str | None = None,
     ):
         if error_code is not None:
             self.error_code = error_code

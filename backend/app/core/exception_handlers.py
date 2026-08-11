@@ -11,13 +11,16 @@ def register_exception_handlers(app: FastAPI):
     """
 
     @app.exception_handler(AppBaseException)
-    async def app_base_exception_handler(request: Request, exc: AppBaseException):
+    async def app_base_exception_handler(_request: Request, exc: AppBaseException):
         return JSONResponse(
             status_code=exc.status_code,
             content={
-                'error_code': exc.error_code,
-                'message': exc.message,
-                'detail': exc.detail,
-                'status': exc.status,
+                'success': False,
+                "error": {
+                    'error_code': exc.error_code,
+                    'message': exc.message,
+                    'detail': exc.detail,
+                    'status': exc.status,
+                }
             }
         )

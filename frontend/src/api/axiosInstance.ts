@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import log from 'loglevel';
-import {BaseError} from "./types/common.ts";
+import {BaseError, type IApiErrorResponse} from "./types/common.ts";
 import useAuthStore from "../store/useAuthStore.ts";
 import {StatusCodes} from 'http-status-codes';
 
@@ -19,7 +19,7 @@ function isAuthStorageShape(value: unknown): value is { state: { token?: { acces
     return typeof value === 'object' && value != null && 'state' in value;
 }
 
-
+// --- REQUEST INTERCEPTOR ---
 axiosInstance.interceptors.request.use(
     function (config) {
         // 1. Get the string from localStorage
@@ -46,7 +46,7 @@ axiosInstance.interceptors.request.use(
     }
 );
 
-
+// --- RESPONSE INTERCEPTOR ---
 axiosInstance.interceptors.response.use(
     (response) => {
         log.debug(response)
@@ -54,13 +54,15 @@ axiosInstance.interceptors.response.use(
     },
     (error: unknown) => {
         if (axios.isAxiosError(error)) {
+            const typedError = error as AxiosError<IApiErrorResponse>;
             log.debug("API Error Response: ", error.response?.data)
 
             // No retry on 401: clear auth state so the UI falls back to the Login button.
-            if (error.response?.status === StatusCodes.UNAUTHORIZED) {
+            if (typedError.response?.status === StatusCodes.UNAUTHORIZED) {
                 useAuthStore.getState().logout();
             }
-            return Promise.reject(new BaseError(error.response?.data));
+            const backendErrorPayload = typedError.response?.data?.error;
+            return Promise.reject(new BaseError(backendErrorPayload));
         }
         return Promise.reject(error);
     }
