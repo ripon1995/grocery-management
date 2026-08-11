@@ -8,15 +8,16 @@ import type {IGroceryDetailApiResponse} from "../types/responses/GroceryDetailRe
 import type {IPayloadGroceryItemUpdate} from "../types/requests/grocery/UpdateGroceryItem.ts";
 import type {IGroceryFilterParams} from "../types/requests/grocery/GroceryFilterParams.ts";
 import type {IGroceryBulkUpdatePayload} from "../types/requests/grocery/BulkUpdateGroceryItem.ts";
+import type {IApiResponse} from "../../types/IApiResponse.ts";
 
 
 const toGroceryListItem = (item: GroceryListResponse): IGroceryListItem => ({...item});
 
 export const getGroceries = async (filters?: IGroceryFilterParams): Promise<IGroceryListItem[]> => {
-    const response = await axiosInstance.get<GroceryListResponse[]>(API_ENDPOINTS.GROCERY.GROCERY_LIST, {
+    const response = await axiosInstance.get<IApiResponse<GroceryListResponse[]>>(API_ENDPOINTS.GROCERY.GROCERY_LIST, {
         params: filters
     });
-    return response.data.map(item => (toGroceryListItem(item)));
+    return response.data.data.map(item => (toGroceryListItem(item)));
 }
 
 export const createGroceries = async (newItem: IGroceryCreateItem): Promise<void> => {
@@ -25,8 +26,8 @@ export const createGroceries = async (newItem: IGroceryCreateItem): Promise<void
 }
 
 export const getGroceryDetail = async (grocery_id: string): Promise<IGroceryDetail> => {
-    const response = await axiosInstance.get<IGroceryDetailApiResponse>(API_ENDPOINTS.GROCERY.GROCERY_DETAIL.replace(':id', grocery_id));
-    return response.data;
+    const response = await axiosInstance.get<IApiResponse<IGroceryDetailApiResponse>>(API_ENDPOINTS.GROCERY.GROCERY_DETAIL.replace(':id', grocery_id));
+    return response.data.data;
 }
 
 export const updateGrocery = async (grocery_id: string, payload: IPayloadGroceryItemUpdate): Promise<void> => {
@@ -40,6 +41,6 @@ export const deleteGrocery = async (grocery_id: string): Promise<void> => {
 }
 
 export const bulkUpdateShouldInclude = async (payload: IGroceryBulkUpdatePayload): Promise<IGroceryListItem[]> => {
-    const response = await axiosInstance.patch<GroceryListResponse[]>(API_ENDPOINTS.GROCERY.GROCERY_BULK_SHOULD_INCLUDE, payload);
-    return response.data.map(item => (toGroceryListItem(item)));
+    const response = await axiosInstance.patch<IApiResponse<GroceryListResponse[]>>(API_ENDPOINTS.GROCERY.GROCERY_BULK_SHOULD_INCLUDE, payload);
+    return response.data.data.map(item => (toGroceryListItem(item)));
 }

@@ -19,6 +19,7 @@ from app.features.grocery.dependencies import (
     get_grocery_filters,
 )
 from app.features.grocery.filters import GroceryFilterParams
+from app.core.api_response_schema import ApiResponseSchema
 from app.features.grocery.schemas.request_schemas import (
     GroceryCreateSchema,
     GroceryUpdateSchema,
@@ -42,7 +43,7 @@ DbDep = Annotated[AsyncSession, Depends(get_db)]
 
 @router.get(
     "/",
-    response_model=List[GroceryListResponseSchema],
+    response_model=ApiResponseSchema[List[GroceryListResponseSchema]],
     status_code=status.HTTP_200_OK,
     summary="Get all groceries",
 )
@@ -51,12 +52,16 @@ async def list_groceries(
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
     items = await grocery_service.list_all_groceries(filters)
-    return items
+    return ApiResponseSchema(
+        success=True,
+        data=items,
+        message='Grocery list fetched successfully',
+    )
 
 
 @router.patch(
     "/bulk/should-include",
-    response_model=List[GroceryUpdateResponseSchema],
+    response_model=ApiResponseSchema[List[GroceryUpdateResponseSchema]],
     status_code=status.HTTP_200_OK,
     summary="Bulk update should_include for multiple grocery items",
 )
@@ -65,12 +70,17 @@ async def bulk_update_should_include(
         data: GroceryBulkUpdateSchema = type[GroceryBulkUpdateSchema],
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
-    return await grocery_service.bulk_update_should_include(data)
+    item = await grocery_service.bulk_update_should_include(data)
+    return ApiResponseSchema(
+        success=True,
+        data=item,
+        message='Bulk update should_include fetched successfully',
+    )
 
 
 @router.get(
     "/{grocery_id}",
-    response_model=GroceryDetailResponseSchema,
+    response_model=ApiResponseSchema[GroceryDetailResponseSchema],
     status_code=status.HTTP_200_OK,
     summary="Get grocery details",
 )
@@ -79,12 +89,16 @@ async def get_grocery_by_id(
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
     item = await grocery_service.get_grocery_by_id(grocery_id)
-    return item
+    return ApiResponseSchema(
+        success=True,
+        data=item,
+        message='Grocery details fetched successfully',
+    )
 
 
 @router.post(
     "/",
-    response_model=GroceryCreateResponseSchema,
+    response_model=ApiResponseSchema[GroceryCreateResponseSchema],
     status_code=status.HTTP_201_CREATED,
     summary="Create a new grocery item",
 )
@@ -93,12 +107,17 @@ async def create_grocery(
         data: GroceryCreateSchema = type[GroceryCreateSchema],
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
-    return await grocery_service.create_grocery(data)
+    item = await grocery_service.create_grocery(data)
+    return ApiResponseSchema(
+        success=True,
+        data=item,
+        message='Grocery item created successfully',
+    )
 
 
 @router.put(
     "/{grocery_id}",
-    response_model=GroceryUpdateResponseSchema,
+    response_model=ApiResponseSchema[GroceryUpdateResponseSchema],
     status_code=status.HTTP_200_OK,
     summary="Update a grocery item",
 )
@@ -108,12 +127,18 @@ async def update_grocery(
         data: GroceryUpdateSchema = type[GroceryUpdateSchema],
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
-    return await grocery_service.update_grocery(grocery_id, data)
+    item = await grocery_service.update_grocery(grocery_id, data)
+    return ApiResponseSchema(
+        success=True,
+        data=item,
+        message='Grocery item updated successfully',
+    )
 
 
 @router.delete(
     "/{grocery_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_200_OK,
+    response_model=ApiResponseSchema[None],
     summary="Delete a grocery item",
 )
 async def delete_grocery(
@@ -121,4 +146,9 @@ async def delete_grocery(
         _current_user: User = Depends(get_current_user),
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
-    return await grocery_service.delete_grocery(grocery_id)
+    item = await grocery_service.delete_grocery(grocery_id)
+    return ApiResponseSchema(
+        success=True,
+        data=item,
+        message='Grocery item deleted successfully',
+    )
