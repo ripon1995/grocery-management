@@ -28,6 +28,11 @@ interface IGroceryTableProps {
     onToggleSelectAll: (checked: boolean) => void;
 }
 
+interface IGroceryTableRowProps extends Pick<IGroceryTableProps, 'onView' | 'onEdit' | 'onDelete' | 'onToggleSelect'> {
+    row: IGroceryListItem;
+    index: number;
+    selected: boolean;
+}
 
 function getStockStatusView(status: GroceryStockStatus): Pick<ChipProps, 'icon' | 'label' | 'color'> {
     switch (status) {
@@ -84,15 +89,7 @@ const GroceryTableHeader = ({allSelected, someSelected, onToggleSelectAll}: {
 );
 
 
-const GroceryTableRow = ({row, index, onView, onEdit, onDelete, selected, onToggleSelect}: {
-    row: IGroceryListItem;
-    index: number,
-    onView: (grocery_id: string) => void;
-    onEdit: (grocery_id: string) => void;
-    onDelete: (grocery_id: string) => void;
-    selected: boolean;
-    onToggleSelect: (grocery_id: string) => void;
-}) => (
+const GroceryTableRow = ({row, index, onView, onEdit, onDelete, selected, onToggleSelect}: IGroceryTableRowProps) => (
     <TableRow
         key={row.id}
         className="grocery-row"
@@ -159,7 +156,15 @@ const GroceryTableRow = ({row, index, onView, onEdit, onDelete, selected, onTogg
 )
 
 
-function GroceryTable({groceries, onView, onEdit, onDelete, selectedIds, onToggleSelect, onToggleSelectAll}: IGroceryTableProps) {
+function GroceryTable({
+                          groceries,
+                          onView,
+                          onEdit,
+                          onDelete,
+                          selectedIds,
+                          onToggleSelect,
+                          onToggleSelectAll
+                      }: IGroceryTableProps) {
     const allSelected = groceries.length > 0 && groceries.every((row) => selectedIds.includes(row.id));
     const someSelected = groceries.some((row) => selectedIds.includes(row.id));
 
