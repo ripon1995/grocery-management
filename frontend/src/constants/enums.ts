@@ -8,6 +8,11 @@ export const GroceryType = {
 } as const;
 export type GroceryType = typeof GroceryType[keyof typeof GroceryType];
 
+export function isGroceryType(v: string): v is GroceryType {
+    return (Object.values(GroceryType) as string[]).includes(v);
+}
+
+
 export const GroceryStockStatus = {
     IN_STOCK: 'in_stock',
     BELOW_STOCK: 'below_stock'
@@ -25,6 +30,10 @@ export const Seller = {
 } as const;
 export type Seller = typeof Seller[keyof typeof Seller];
 
+export function isSeller(value: string): value is Seller {
+    return (Object.values(Seller) as string[]).includes(value);
+}
+
 export const GroceryCategory = {
     TOILETRIES: 'toiletries',
     FOOD: 'food',
@@ -34,6 +43,10 @@ export const GroceryCategory = {
 } as const;
 export type GroceryCategory = typeof GroceryCategory[keyof typeof GroceryCategory];
 
+
+export function isGroceryCategory(value: string): value is GroceryCategory {
+    return (Object.values(GroceryCategory) as string[]).includes(value);
+}
 
 export const YesNoChoice = {
     YES: 'yes',

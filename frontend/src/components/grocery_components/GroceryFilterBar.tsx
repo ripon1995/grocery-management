@@ -6,7 +6,14 @@ import InputLabel from "@mui/material/InputLabel";
 import Select, {type SelectChangeEvent} from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
-import {GroceryType, Seller, GroceryCategory} from "../../constants/enums.ts";
+import {
+    GroceryType,
+    Seller,
+    GroceryCategory,
+    isGroceryType,
+    isSeller,
+    isGroceryCategory
+} from "../../constants/enums.ts";
 import type {IGroceryFilterParams} from "../../api/types/requests/grocery/GroceryFilterParams.ts";
 
 const ALL = '';
@@ -41,10 +48,10 @@ function GroceryFilterBar({onFilterChange}: IGroceryFilterBarProps) {
     const emitFilters = () => {
         const filters: IGroceryFilterParams = {};
         if (search.trim()) filters.search = search.trim();
-        if (type) filters.type = type as GroceryType;
-        if (currentSeller) filters.current_seller = currentSeller as Seller;
-        if (bestSeller) filters.best_seller = bestSeller as Seller;
-        if (category) filters.category = category as GroceryCategory;
+        if (type && isGroceryType(type)) filters.type = type;
+        if (currentSeller && isSeller(currentSeller)) filters.current_seller = currentSeller;
+        if (bestSeller && isSeller(bestSeller)) filters.best_seller = bestSeller;
+        if (category && isGroceryCategory(category)) filters.category = category;
         if (shouldInclude) filters.should_include = shouldInclude === 'yes';
         onFilterChange(filters);
     };
