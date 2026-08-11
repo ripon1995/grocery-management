@@ -14,6 +14,7 @@ import {GroceryStockStatus} from "../../constants/enums.ts";
 import '../../styles/GroceryList.css';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import type {ChipProps} from '@mui/material';
 import Stack from "@mui/material/Stack";
 
 
@@ -27,6 +28,23 @@ interface IGroceryTableProps {
     onToggleSelectAll: (checked: boolean) => void;
 }
 
+
+function getStockStatusView(status: GroceryStockStatus): Pick<ChipProps, 'icon' | 'label' | 'color'> {
+    switch (status) {
+        case GroceryStockStatus.IN_STOCK:
+            return {
+                icon: <ArrowUpwardIcon sx={{fontSize: '15px !important'}}/>,
+                label: 'In Stock',
+                color: 'success',
+            }
+        default:
+            return {
+                icon: <ArrowDownwardIcon sx={{fontSize: '15px !important'}}/>,
+                label: 'Low Stock',
+                color: 'error',
+            };
+    }
+}
 
 const GroceryTableHeader = ({allSelected, someSelected, onToggleSelectAll}: {
     allSelected: boolean;
@@ -114,13 +132,7 @@ const GroceryTableRow = ({row, index, onView, onEdit, onDelete, selected, onTogg
         <TableCell align="center" sx={{textTransform: 'uppercase'}}>{row.best_seller}</TableCell>
         <TableCell align="center">
             <Chip
-                icon={
-                    row.stock_status === GroceryStockStatus.IN_STOCK
-                        ? <ArrowUpwardIcon sx={{fontSize: '15px !important'}}/>
-                        : <ArrowDownwardIcon sx={{fontSize: '15px !important'}}/>
-                }
-                label={row.stock_status === GroceryStockStatus.IN_STOCK ? 'In Stock' : 'Low Stock'}
-                color={row.stock_status === GroceryStockStatus.IN_STOCK ? 'success' : 'error'}
+                {...getStockStatusView(row.stock_status)}
                 variant="outlined"
             />
         </TableCell>
