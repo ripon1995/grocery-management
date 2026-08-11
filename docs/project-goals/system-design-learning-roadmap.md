@@ -164,55 +164,46 @@ const API_BASE_URL = 'http://api.grocery-local.dev:8000'
 
 ---
 
-### 6. REST API Principles ✅ (Partially Implemented)
+### 6. REST API Principles ✅ (Implemented, except HATEOAS)
 
 **Why You Need It**: Your app already uses REST APIs, but they can be optimized and standardized.
 
-**Current State**: RESTful endpoints exist but need refinement.
+**Current State**: API versioning, standardized response format, and structured error responses are implemented. HATEOAS is intentionally skipped.
 
-**Implementation Plan**:
-1. **API Versioning**:
+1. **API Versioning** ✅ — routes are versioned under `/api/v1/...`:
    ```python
-   # Add version to routes
-   app.include_router(api_router, prefix='/api/v1')
+   # backend/app/api/router.py
+   from app.features.grocery.routers.v1.router import router as grocery_router
+   from app.features.auth.routers.v1.router import router as auth_router
+   # backend/app/main.py
+   app.include_router(api_router, prefix='/api')  # + /v1/... on each sub-router
    ```
 
-2. **HATEOAS (Hypermedia)**:
-   ```json
-   {
-     "id": "123",
-     "name": "Milk",
-     "links": {
-       "self": "/api/v1/groceries/123",
-       "update": "/api/v1/groceries/123",
-       "delete": "/api/v1/groceries/123"
-     }
-   }
+2. **HATEOAS (Hypermedia)** ⏭️ Skipped — not needed for this project's client (single first-party frontend, not a public hypermedia-driven API). Revisit only if third-party API consumers are added later.
+
+3. **Standardize Response Format** ✅ — `backend/app/core/api_response_schema.py`:
+   ```python
+   class ApiResponseSchema(BaseModel, Generic[T]):
+       success: bool = True
+       message: str = "Operation completed successfully"
+       timestamp: datetime = Field(default_factory=...)
+       data: Optional[T] = None
    ```
 
-3. **Standardize Response Format**:
-   ```json
-   {
-     "success": true,
-     "data": { ... },
-     "message": "Grocery item created successfully",
-     "timestamp": "2024-02-16T10:30:00Z"
-   }
-   ```
-
-4. **Implement Proper Error Responses**:
+4. **Implement Proper Error Responses** ✅ — `backend/app/core/exception_handlers.py` registers a global handler for `AppBaseException` returning:
    ```json
    {
      "success": false,
      "error": {
-       "code": "GROCERY_NOT_FOUND",
+       "error_code": "GROCERY_NOT_FOUND",
        "message": "Grocery item with ID 123 not found",
-       "details": {}
+       "detail": "...",
+       "status": 404
      }
    }
    ```
 
-**Success Criteria**: All APIs follow consistent REST principles and return standardized responses.
+**Success Criteria**: ✅ All APIs follow consistent REST principles (versioning, standardized success/error responses). HATEOAS deliberately out of scope.
 
 ---
 
