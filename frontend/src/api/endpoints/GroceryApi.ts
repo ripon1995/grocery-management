@@ -10,14 +10,13 @@ import type {IGroceryFilterParams} from "../types/requests/grocery/GroceryFilter
 import type {IGroceryBulkUpdatePayload} from "../types/requests/grocery/BulkUpdateGroceryItem.ts";
 
 
+const toGroceryListItem = (item: GroceryListResponse): IGroceryListItem => ({...item});
+
 export const getGroceries = async (filters?: IGroceryFilterParams): Promise<IGroceryListItem[]> => {
     const response = await axiosInstance.get<GroceryListResponse[]>(API_ENDPOINTS.GROCERY.GROCERY_LIST, {
         params: filters
     });
-    const grocery_list: IGroceryListItem[] = response.data.map(item => ({
-        ...item
-    }));
-    return grocery_list;
+    return response.data.map(item => (toGroceryListItem(item)));
 }
 
 export const createGroceries = async (newItem: IGroceryCreateItem): Promise<void> => {
@@ -42,8 +41,5 @@ export const deleteGrocery = async (grocery_id: string): Promise<void> => {
 
 export const bulkUpdateShouldInclude = async (payload: IGroceryBulkUpdatePayload): Promise<IGroceryListItem[]> => {
     const response = await axiosInstance.patch<GroceryListResponse[]>(API_ENDPOINTS.GROCERY.GROCERY_BULK_SHOULD_INCLUDE, payload);
-    const updated_items: IGroceryListItem[] = response.data.map(item => ({
-        ...item
-    }));
-    return updated_items;
+    return response.data.map(item => (toGroceryListItem(item)));
 }
