@@ -14,7 +14,7 @@ interface ISelectProps {
 function MonthlyGroceryAppSelectField({label, value, onChange, options}: ISelectProps) {
 
     const handleChange = (event: SelectChangeEvent) => {
-        onChange(event.target.value as string);
+        onChange(event.target.value);
     };
 
     return (
