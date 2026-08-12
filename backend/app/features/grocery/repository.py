@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import select, update, Sequence, and_, or_, cast, String
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ResourceNotFoundException
+from app.core.exceptions import ResourceNotFoundException, DatabaseException
 from app.features.grocery.filters import GroceryFilterParams
 from app.features.grocery.models import Grocery
 
@@ -53,43 +53,65 @@ class GroceryRepository:
             Grocery.current_price, Grocery.quantity_in_stock, Grocery.low_stock_threshold, Grocery.best_price,
         ]
         search_conditions = (
-            [field.ilike(term) for field in text_fields]
-            + [cast(field, String).ilike(term) for field in cast_fields]
+                [field.ilike(term) for field in text_fields]
+                + [cast(field, String).ilike(term) for field in cast_fields]
         )
         return or_(*search_conditions)
 
     async def get_by_id(self, grocery_id: str) -> Grocery | None:
+        """Fetch a single grocery item by ID. Returns None if not found."""
         try:
             stmt = select(Grocery).where(Grocery.id == grocery_id)
             result = await self.session.execute(stmt)
             return result.scalar_one_or_none()
-        except :
+        except:
             raise ResourceNotFoundException(f"Grocery not found")
 
     async def add_grocery(self, grocery: Grocery) -> Grocery:
-        self.session.add(grocery)
-        await self.session.commit()
-        return grocery
+        """Add a new grocery item with explicit transaction rollback on error."""
+        try:
+            self.session.add(grocery)
+            await self.session.commit()
+            await self.session.refresh(grocery)
+            return grocery
+        except Exception:
+            await self.session.rollback()
+            raise DatabaseException('Failed to add grocery from database')
 
     async def update_grocery(self, grocery: Grocery) -> Grocery:
-        await self.session.commit()
-        await self.session.refresh(grocery)
-        return grocery
+        """Update an existing grocery item with explicit transaction rollback on error."""
+        try:
+            await self.session.commit()
+            await self.session.refresh(grocery)
+            return grocery
+        except Exception:
+            await self.session.rollback()
+            raise DatabaseException('Failed to update grocery from database')
 
     async def delete_grocery(self, grocery: Grocery) -> None:
-        await self.session.delete(grocery)
-        await self.session.commit()
+        """Delete a grocery item with explicit transaction rollback on error."""
+        try:
+            await self.session.delete(grocery)
+            await self.session.commit()
+        except Exception:
+            await self.session.rollback()
+            raise DatabaseException('Failed to delete grocery from database')
 
     async def bulk_update_should_include(
             self, grocery_ids: Sequence[UUID], should_include: bool
     ) -> Sequence[Grocery]:
-        stmt = (
-            update(Grocery)
-            .where(Grocery.id.in_(grocery_ids))
-            .values(should_include=should_include)
-            .returning(Grocery)
-        )
-        result = await self.session.execute(stmt)
-        updated_groceries = result.scalars().all()
-        await self.session.commit()
-        return updated_groceries
+        """Bulk update 'should_include' with explicit transaction rollback on error."""
+        try:
+            stmt = (
+                update(Grocery)
+                .where(Grocery.id.in_(grocery_ids))
+                .values(should_include=should_include)
+                .returning(Grocery)
+            )
+            result = await self.session.execute(stmt)
+            updated_groceries = result.scalars().all()
+            await self.session.commit()
+            return updated_groceries
+        except Exception:
+            await self.session.rollback()
+            raise DatabaseException('Failed to bulk update should_include from database')

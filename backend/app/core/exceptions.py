@@ -48,3 +48,9 @@ class UnauthorizedException(AppBaseException):
     error_code = 'unauthorized'
     detail = 'Unauthorized'
     message = 'Invalid credentials'
+
+class DatabaseException(AppBaseException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    error_code = 'database_error'
+    detail = 'Database error'
+    message = 'Database error'
