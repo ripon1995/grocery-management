@@ -25,11 +25,7 @@ jobs:
             fi
             cd ~/grocery-management || exit
             git pull origin main
-            echo "DB_USER=${{ secrets.DB_USER }}" > backend/.env
-            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> backend/.env
-            echo "DB_HOST=${{ secrets.DB_HOST }}" >> backend/.env
-            echo "DB_PORT=${{ secrets.DB_PORT }}" >> backend/.env
-            echo "DB_NAME=${{ secrets.DB_NAME }}" >> backend/.env
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > backend/.env
             echo "LOG_LEVEL=${{ secrets.LOG_LEVEL }}" >> backend/.env
             echo "ENVIRONMENT=${{ secrets.ENVIRONMENT }}" >> backend/.env
             echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> backend/.env
