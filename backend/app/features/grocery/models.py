@@ -27,7 +27,8 @@ class Grocery(Base, BaseModelMixin):
     type: Mapped[GroceryType] = mapped_column(
         SQLEnum(GroceryType),
         default=GroceryType.CAN,
-        nullable=False
+        nullable=False,
+        index=True
     )
     current_price: Mapped[int] = mapped_column(
         Integer,
