@@ -1,9 +1,5 @@
 # alembic/env.py
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 import asyncio
 from logging.config import fileConfig
 
@@ -18,6 +14,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Import ALL your models here (critical for autogenerate!)
+from app.core.config import settings
 from app.db.base import Base
 from app.features.grocery.models import Grocery
 from app.features.auth.models import User
@@ -54,7 +51,7 @@ def do_run_migrations(connection):
 
 async def run_async_migrations_online():
     config_section = config.get_section(config.config_ini_section)
-    config_section["sqlalchemy.url"] = os.getenv("DATABASE_URL")
+    config_section["sqlalchemy.url"] = settings.DATABASE_URL
 
     connectable = async_engine_from_config(
         config_section,
