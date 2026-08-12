@@ -1,4 +1,4 @@
-These are the core things I need in future. So to accomplish this along with mastering the System design concept I need bullet proof ideas to figure out the usecase of the following topics. But it should not be randomly. We have to create a plan that will show the real necessity and then what our plan this should be listed as well. The topics are following
+## These are the core things I need in the future. So to accomplish this along with mastering the System design concept I need bullet proof ideas to figure out the use case of the following topics. But it should not be randomly. We have to create a plan that will show the real necessity and then what our plan this should be listed as well. The topics are following.
 
 1. Client server architecture
 2. IP address
