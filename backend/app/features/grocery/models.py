@@ -37,7 +37,8 @@ class Grocery(Base, BaseModelMixin):
     current_seller: Mapped[Seller] = mapped_column(
         SQLEnum(Seller),
         default=Seller.MEENA,
-        nullable=False
+        nullable=False,
+        index=True
     )
     low_stock_threshold: Mapped[int] = mapped_column(
         Integer,
@@ -55,7 +56,8 @@ class Grocery(Base, BaseModelMixin):
         SQLEnum(GroceryCategory),
         default=GroceryCategory.OTHER,
         server_default=GroceryCategory.OTHER.name,
-        nullable=False
+        nullable=False,
+        index=True
     )
     # computed field
     # following field will be computed everytime when an instance is created
