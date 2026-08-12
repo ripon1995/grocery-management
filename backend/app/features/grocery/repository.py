@@ -60,12 +60,9 @@ class GroceryRepository:
 
     async def get_by_id(self, grocery_id: str) -> Grocery | None:
         """Fetch a single grocery item by ID. Returns None if not found."""
-        try:
-            stmt = select(Grocery).where(Grocery.id == grocery_id)
-            result = await self.session.execute(stmt)
-            return result.scalar_one_or_none()
-        except:
-            raise ResourceNotFoundException(f"Grocery not found")
+        stmt = select(Grocery).where(Grocery.id == grocery_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
 
     async def add_grocery(self, grocery: Grocery) -> Grocery:
         """Add a new grocery item with explicit transaction rollback on error."""
