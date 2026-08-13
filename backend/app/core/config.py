@@ -5,16 +5,22 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     SECRET_KEY: str
+    LOG_LEVEL: str
+    ENVIRONMENT: str
+    SHOW_SQL_LOG: bool = False
+    # DB configs
     DB_USER: str
     DB_PASSWORD: str
     DB_HOST: str
     DB_PORT: str
     DB_NAME: str
-    LOG_LEVEL: str
-    ENVIRONMENT: str
-    SHOW_SQL_LOG: bool = False
+    # DB pool configs
+    POOL_SIZE: int
+    MAX_OVERFLOW: int
+    POOL_TIMEOUT: int
+
     # Default to localhost for safety, but allow override via .env
-    ALLOW_ORIGINS: list[str] = ["http://localhost:5174"]
+    ALLOW_ORIGINS: list[str] = ["http://localhost:5173"]
 
     # JWT token settings
     ALGORITHM: str = 'HS256'

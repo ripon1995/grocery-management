@@ -8,6 +8,9 @@ engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.SHOW_SQL_LOG,
     future=True,
+    pool_size=settings.POOL_SIZE,
+    max_overflow=settings.MAX_OVERFLOW,
+    pool_timeout=settings.POOL_TIMEOUT,
     connect_args={
         "prepared_statement_cache_size": 0,
         "statement_cache_size": 0
