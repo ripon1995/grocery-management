@@ -366,9 +366,10 @@ async def list_groceries(current_user: User = Depends(get_current_user)):
 **Current State**: Using Supabase (managed PostgreSQL).
 
 **Deep Dive Tasks**:
-1. **Understand ACID Properties**:
+1. **Understand ACID Properties**: ✅ Done (2026-08-13)
    - Test transactions with multiple grocery items
    - Implement rollback on failure
+   - `add_grocery`/`update_grocery`/`delete_grocery`/`bulk_update_should_include` in `backend/app/features/grocery/repository.py` now wrap each write in `try/except` → `session.rollback()`, raising `DatabaseException` on failure. See `phase-3-databases-sql-review.md` Topic 2.1 (no automated regression test forcing a mid-transaction failure yet).
 
 2. **Schema Design Review**:
    ```sql
@@ -447,6 +448,8 @@ async def list_groceries(current_user: User = Depends(get_current_user)):
 ---
 
 ### 10. Database Indexing
+
+**Status**: 🟡 Partial (2026-08-13) — `index=True` added to `grocery.type`, `grocery.category`, `grocery.current_seller` (migrations `85ef98a7301c`, `41ab5277874e`). No composite index, no `EXPLAIN ANALYZE` benchmarking, no `user_id`/`expiry_date` indexes (those columns don't exist yet — see Topic 1.4 / 1.2 in `phase-3-databases-sql-review.md`). Section 3.1 of that review is closed at current scope.
 
 **Why You Need It**: As grocery list grows (1000s of items), queries slow down. Indexes speed up lookups.
 
@@ -1005,6 +1008,9 @@ async def get_grocery(id: str, include_details: bool = False):
 ```
 
 #### 4. Connection Pooling
+
+**Status**: 🟡 Partial (2026-08-13) — `backend/app/db/session.py` now sets `pool_size`, `max_overflow`, `pool_timeout` from settings (was previously using SQLAlchemy defaults entirely). `pool_recycle`/`pool_pre_ping` still unset — see Topic 4.1 in `phase-3-databases-sql-review.md`.
+
 ```python
 # Bad: New connection per request
 async def get_grocery():
