@@ -4,7 +4,7 @@ import {persist, createJSONStorage} from 'zustand/middleware';
 import {login} from "../api/endpoints/AuthApi.ts";
 import log from "loglevel";
 import type {IUserLoginResponse} from "../api/types/responses/UserLoginResponse.ts";
-import {BaseError} from "../api/types/common.ts";
+import {BaseError} from "../api/exceptions/baseExceptions.ts";
 
 interface IUserAuthState {
     token: IUserLoginResponse | null
