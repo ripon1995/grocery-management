@@ -19,7 +19,7 @@ class JWTHelper:
         return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
     @staticmethod
-    def verify_token(token: str) -> str:
+    def verify_token(token: str) -> str | None:
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
             email: str = payload.get('sub')

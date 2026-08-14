@@ -9,6 +9,7 @@ Router should be thin.
 from typing import Annotated, List
 
 from fastapi import APIRouter, status, Depends
+from fastapi import Body
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user
@@ -66,8 +67,8 @@ async def list_groceries(
     summary="Bulk update should_include for multiple grocery items",
 )
 async def bulk_update_should_include(
+        data: Annotated[GroceryBulkUpdateSchema, Body()],
         _current_user: User = Depends(get_current_user),
-        data: GroceryBulkUpdateSchema = type[GroceryBulkUpdateSchema],
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
     item = await grocery_service.bulk_update_should_include(data)
@@ -103,8 +104,8 @@ async def get_grocery_by_id(
     summary="Create a new grocery item",
 )
 async def create_grocery(
+        data: Annotated[GroceryCreateSchema, Body()],
         _current_user: User = Depends(get_current_user),
-        data: GroceryCreateSchema = type[GroceryCreateSchema],
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
     item = await grocery_service.create_grocery(data)
@@ -123,8 +124,8 @@ async def create_grocery(
 )
 async def update_grocery(
         grocery_id: str,
+        data: Annotated[GroceryUpdateSchema, Body()],
         _current_user: User = Depends(get_current_user),
-        data: GroceryUpdateSchema = type[GroceryUpdateSchema],
         grocery_service: GroceryService = Depends(get_grocery_service)
 ):
     item = await grocery_service.update_grocery(grocery_id, data)

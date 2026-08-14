@@ -1,4 +1,7 @@
+from typing import Annotated
+
 from fastapi import APIRouter, status, Depends
+from fastapi import Body
 
 from app.core.api_response_schema import ApiResponseSchema
 from app.features.auth.dependencies import get_auth_service
@@ -25,7 +28,7 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED
 )
 async def create_user(
-        data: UserCreateRequestSchema,
+        data: Annotated[UserCreateRequestSchema, Body()],
         auth_service: AuthService = Depends(get_auth_service),
 
 ):
@@ -44,7 +47,7 @@ async def create_user(
     status_code=status.HTTP_200_OK
 )
 async def login_user(
-        data: LoginRequestSchema,
+        data: Annotated[LoginRequestSchema, Body()],
         auth_service: AuthService = Depends(get_auth_service)
 ):
     response = await auth_service.authenticate_user(data)
@@ -62,7 +65,7 @@ async def login_user(
     status_code=status.HTTP_200_OK
 )
 async def token_refresh(
-        data: TokenRefreshRequestSchema,
+        data: Annotated[TokenRefreshRequestSchema, Body()],
         auth_service: AuthService = Depends(get_auth_service)
 ):
     response = await auth_service.refresh_token(data)
