@@ -13,11 +13,11 @@ export interface IApiErrorResponse {
 export class BaseError extends Error implements BaseErrorPayload {
     status: string = 'Fail';
     error_code: string = 'INTERNAL_SERVER_ERROR';
-    message: string = 'Something went wrong on our end.';
+    message: string = 'Something went wrong.';
     detail: string = 'No additional details provided.';
 
     constructor(data?: Partial<BaseErrorPayload>) {
-        super(data?.message || 'Something went wrong on our end.');
+        super(data?.message || 'Something went wrong.');
         this.name = 'BaseError';
         if (data) {
             this.status = data?.status || this.status;

@@ -55,9 +55,9 @@ axiosInstance.interceptors.response.use(
     },
     (error: unknown) => {
         if (axios.isAxiosError(error)) {
-            const typedError = error as AxiosError<IApiErrorResponse>;
             log.debug("API Error Response: ", error.response?.data)
 
+            const typedError = error as AxiosError<IApiErrorResponse>;
             // No retry on 401: clear auth state so the UI falls back to the Login button.
             if (typedError.response?.status === StatusCodes.UNAUTHORIZED) {
                 useAuthStore.getState().logout();

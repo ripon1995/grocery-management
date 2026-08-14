@@ -55,8 +55,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             await createGroceries(newItem);
             set({isLoading: false});
         } catch (err) {
-            logger.error(err as string);
-            set({isLoading: false});
+            handleGroceryStoreException(err, set);
         }
     },
     getGroceryDetail: async (grocery_id: string) => {
