@@ -13,7 +13,7 @@ import type {IGroceryDetail} from "../types/IGroceryDetail.ts";
 import type {IPayloadGroceryItemUpdate} from "../api/types/requests/grocery/UpdateGroceryItem.ts";
 import type {IGroceryFilterParams} from "../api/types/requests/grocery/GroceryFilterParams.ts";
 import {AppToast} from "../components/common/AppToast.tsx";
-import {BaseError} from "../api/exceptions/baseExceptions.ts";
+import {BaseException} from "../api/exceptions/baseExceptions.ts";
 import {Logger} from "../utility/logger.ts";
 import {handleGroceryStoreException} from "../api/exceptions/handleGroceryStoreExceptions.ts";
 
@@ -98,7 +98,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
                 isLoading: false,
             }));
         } catch (err: unknown) {
-            if (err instanceof BaseError) {
+            if (err instanceof BaseException) {
                 logger.error(`Getting error ${err.detail} ${err.status}`);
                 AppToast.error(err.message);
             }

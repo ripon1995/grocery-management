@@ -32,10 +32,10 @@ if (isAuthStorageShape(parsed)) {
 }
 ```
 
-### 1.2 Axios error payload passed to `BaseError` without validation
+### 1.2 Axios error payload passed to `BaseException` without validation
 **File:** `frontend/src/api/axiosInstance.ts:56`, constructor at `frontend/src/api/types/common.ts:15-19`
 
-`error.response?.data` is Axios's `any`-typed field, handed straight to `new BaseError(...)`. `BaseError`'s constructor trusts whatever shape it receives.
+`error.response?.data` is Axios's `any`-typed field, handed straight to `new BaseError(...)`. `BaseException`'s constructor trusts whatever shape it receives.
 
 **Fix:** add `isBaseErrorResponse(data: unknown): data is Partial<BaseErrorResponse>` (an `isObject` + per-field `typeof` check, same pattern as day-3 Exercise 4's `isObject`/`safeAccess`) and narrow `error.response?.data` before constructing the error.
 
@@ -71,7 +71,7 @@ and use `if (type && isGroceryType(type)) filters.type = type;` — same for `Se
 }
 ```
 
-`err` is typed `any` and `.message` is read with no check. The sibling handlers in the very same file (lines 87-97 and 108-116) correctly do `if (err instanceof BaseError)` first — these two are inconsistent and unsafe if a non-`BaseError` value is thrown (e.g. a network `TypeError`, where `.message` may still exist but `.error_code`/`.detail` won't).
+`err` is typed `any` and `.message` is read with no check. The sibling handlers in the very same file (lines 87-97 and 108-116) correctly do `if (err instanceof BaseError)` first — these two are inconsistent and unsafe if a non-`BaseException` value is thrown (e.g. a network `TypeError`, where `.message` may still exist but `.error_code`/`.detail` won't).
 
 **Fix:** change to `catch (err: unknown)` and mirror the `instanceof BaseError` narrowing already used elsewhere in the file (Day 3 `instanceof`-based narrowing).
 

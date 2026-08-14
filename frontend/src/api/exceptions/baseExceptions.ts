@@ -10,7 +10,7 @@ export interface IApiErrorResponse {
     error: IBaseError;
 }
 
-export class BaseError extends Error implements IBaseError {
+export class BaseException extends Error implements IBaseError {
     status: string = 'Fail';
     error_code: string = 'INTERNAL_SERVER_ERROR';
     message: string = 'Something went wrong.';

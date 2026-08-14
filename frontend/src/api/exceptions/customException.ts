@@ -1,9 +1,9 @@
 // --- Specific Error Subclasses ---
 
 
-import {BaseError, type IBaseError} from "./baseExceptions.ts";
+import {BaseException, type IBaseError} from "./baseExceptions.ts";
 
-export class NotFoundError extends BaseError {
+export class NotFoundError extends BaseException {
     constructor(data?: Partial<IBaseError>) {
         super(data);
         this.name = 'NotFoundError';
@@ -11,7 +11,7 @@ export class NotFoundError extends BaseError {
 }
 
 
-export class InvalidUUIDError extends BaseError {
+export class InvalidUUIDError extends BaseException {
     constructor(data?: Partial<IBaseError>) {
         super(data);
         this.name = 'InvalidUUIDError';
@@ -19,7 +19,7 @@ export class InvalidUUIDError extends BaseError {
 }
 
 
-export class UnauthorizedException extends BaseError {
+export class UnauthorizedException extends BaseException {
     constructor(data?: Partial<IBaseError>) {
         super(data);
         this.name = 'UnauthorizedException';

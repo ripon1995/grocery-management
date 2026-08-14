@@ -1,12 +1,12 @@
 // --- Factory Function ---
-import {BaseError, type IBaseError} from "./baseExceptions.ts";
+import {BaseException, type IBaseError} from "./baseExceptions.ts";
 import {InvalidUUIDError, NotFoundError, UnauthorizedException} from "./customException.ts";
 import ERROR_CODES from "../../constants/errorCodes.ts";
 
 
-export function toBaseError(payload?: IBaseError): BaseError {
+export function toBaseError(payload?: IBaseError): BaseException {
     if (!payload) {
-        return new BaseError();
+        return new BaseException();
     }
 
     const code = payload?.error_code?.toLocaleLowerCase()
@@ -18,6 +18,6 @@ export function toBaseError(payload?: IBaseError): BaseError {
         case ERROR_CODES.UNAUTHORIZED:
             return new UnauthorizedException(payload);
         default:
-            return new BaseError(payload);
+            return new BaseException(payload);
     }
 }

@@ -1,5 +1,5 @@
 import {InvalidUUIDError, NotFoundError} from "./customException.ts";
-import {BaseError} from "./baseExceptions.ts";
+import {BaseException} from "./baseExceptions.ts";
 import {Logger} from "../../utility/logger.ts";
 import {AppToast} from "../../components/common/AppToast.tsx";
 
@@ -12,7 +12,7 @@ const handleGroceryStoreException = (err: unknown, set: (state: any) => void) =>
     if (
         err instanceof NotFoundError ||
         err instanceof InvalidUUIDError ||
-        err instanceof BaseError
+        err instanceof BaseException
     ) {
         message = err.message;
     } else if (err instanceof Error) {

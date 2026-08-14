@@ -1,4 +1,4 @@
-import {BaseError} from "./baseExceptions.ts";
+import {BaseException} from "./baseExceptions.ts";
 import {Logger} from "../../utility/logger.ts";
 import {AppToast} from "../../components/common/AppToast.tsx";
 import {UnauthorizedException} from "./customException.ts";
@@ -11,7 +11,7 @@ const handleAuthStoreException = (err: unknown, set: (state: any) => void) => {
 
     if (
         err instanceof UnauthorizedException ||
-        err instanceof BaseError
+        err instanceof BaseException
     ) {
         message = err.message;
     } else if (err instanceof Error) {
