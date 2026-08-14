@@ -26,9 +26,4 @@ export class BaseError extends Error implements BaseErrorPayload {
             this.detail = data?.detail || this.detail;
         }
     }
-
-    // Helper method to create directly from the backend envelope
-    // static fromApiResponse(responseData?: IApiErrorResponse): BaseError {
-    //     return new BaseError(responseData?.error);
-    // }
 }
