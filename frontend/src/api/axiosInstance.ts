@@ -1,8 +1,9 @@
 import axios, {AxiosError} from 'axios';
 import log from 'loglevel';
-import {BaseError, type IApiErrorResponse} from "./types/common.ts";
 import useAuthStore from "../store/useAuthStore.ts";
 import {StatusCodes} from 'http-status-codes';
+import type {BaseErrorPayload, IApiErrorResponse} from "./exceptions/baseExceptions.ts";
+import {toBaseError} from "./exceptions/exceptionFactory.ts";
 
 
 log.setLevel(import.meta.env.DEV ? 'debug' : 'warn');
@@ -61,8 +62,8 @@ axiosInstance.interceptors.response.use(
             if (typedError.response?.status === StatusCodes.UNAUTHORIZED) {
                 useAuthStore.getState().logout();
             }
-            const backendErrorPayload = typedError.response?.data?.error;
-            return Promise.reject(new BaseError(backendErrorPayload));
+            const backendErrorPayload: BaseErrorPayload | undefined = typedError.response?.data?.error;
+            return Promise.reject(toBaseError(backendErrorPayload));
         }
         return Promise.reject(error);
     }
