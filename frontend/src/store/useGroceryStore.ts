@@ -12,8 +12,9 @@ import type {IGroceryCreateItem} from "../api/types/requests/grocery/CreateGroce
 import type {IGroceryDetail} from "../types/IGroceryDetail.ts";
 import type {IPayloadGroceryItemUpdate} from "../api/types/requests/grocery/UpdateGroceryItem.ts";
 import type {IGroceryFilterParams} from "../api/types/requests/grocery/GroceryFilterParams.ts";
-import {BaseError} from "../api/types/common.ts";
-import {toast} from "react-toastify";
+import {AppToast} from "../components/common/AppToast.tsx";
+import {NotFoundError} from "../api/exceptions/customException.ts";
+import {BaseError} from "../api/exceptions/baseExceptions.ts";
 
 
 interface IGroceryState {
@@ -62,8 +63,9 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             const data = await getGroceryDetail(grocery_id);
             set({grocery: data, isLoading: false});
         } catch (err: unknown) {
-            if (err instanceof  BaseError) {
+            if (err instanceof  NotFoundError) {
                 console.log(err);
+                AppToast.error(err.message);
                 set({error: err.message, isLoading: false});
             }
         }
@@ -91,10 +93,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
         } catch (err: unknown) {
             if (err instanceof BaseError) {
                 console.log(`Getting error ${err.detail} ${err.status}`);
-                toast.error(`${err.error_code}: ${err.message}`, {
-                    position: "bottom-right",
-                    autoClose: 5000,
-                });
+                AppToast.error(err.message);
             }
 
             set({isLoading: false});
@@ -112,10 +111,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
         } catch (err: unknown) {
             if (err instanceof BaseError) {
                 console.log(`Getting error ${err.detail} ${err.status}`);
-                toast.error(`${err.error_code}: ${err.message}`, {
-                    position: "bottom-right",
-                    autoClose: 5000,
-                });
+                AppToast.error(err.message);
             }
             set({isLoading: false});
         }
