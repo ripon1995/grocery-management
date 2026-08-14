@@ -15,7 +15,9 @@ import type {IGroceryFilterParams} from "../api/types/requests/grocery/GroceryFi
 import {AppToast} from "../components/common/AppToast.tsx";
 import {NotFoundError} from "../api/exceptions/customException.ts";
 import {BaseError} from "../api/exceptions/baseExceptions.ts";
+import {Logger} from "../utility/logger.ts";
 
+const logger = new Logger("UserService");
 
 interface IGroceryState {
     groceries: IGroceryListItem[];
@@ -44,7 +46,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             const data = await getGroceries(filters);
             set({groceries: data, isLoading: false});
         } catch (err) {
-            console.log(err);
+            logger.error(err as string);
             set({isLoading: false});
         }
     },
@@ -53,7 +55,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             await createGroceries(newItem);
             set({isLoading: false});
         } catch (err) {
-            console.log(err);
+            logger.error(err as string);
             set({isLoading: false});
         }
     },
@@ -63,11 +65,12 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             const data = await getGroceryDetail(grocery_id);
             set({grocery: data, isLoading: false});
         } catch (err: unknown) {
+            logger.error(err as string);
             if (err instanceof  NotFoundError) {
-                console.log(err);
                 AppToast.error(err.message);
                 set({error: err.message, isLoading: false});
             }
+            set({error: 'Not working', isLoading: false});
         }
     },
     updateGroceryDetail: async (grocery_id: string, payload: IPayloadGroceryItemUpdate) => {
@@ -77,7 +80,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             set({isLoading: false});
         } catch (err: unknown) {
             if(err instanceof BaseError) {
-                console.log(err);
+                logger.error(err.message);
                 set({error: err.message, isLoading: false});
             }
         }
@@ -92,7 +95,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             }));
         } catch (err: unknown) {
             if (err instanceof BaseError) {
-                console.log(`Getting error ${err.detail} ${err.status}`);
+                logger.error(`Getting error ${err.detail} ${err.status}`);
                 AppToast.error(err.message);
             }
 
@@ -110,7 +113,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             }));
         } catch (err: unknown) {
             if (err instanceof BaseError) {
-                console.log(`Getting error ${err.detail} ${err.status}`);
+                logger.error(`Getting error ${err.detail} ${err.status}`);
                 AppToast.error(err.message);
             }
             set({isLoading: false});
