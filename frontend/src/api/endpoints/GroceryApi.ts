@@ -13,21 +13,27 @@ import type {IApiResponse} from "../../types/IApiResponse.ts";
 
 const toGroceryListItem = (item: GroceryListResponse): IGroceryListItem => ({...item});
 
-export const getGroceries = async (filters?: IGroceryFilterParams): Promise<IGroceryListItem[]> => {
-    const response = await axiosInstance.get<IApiResponse<GroceryListResponse[]>>(API_ENDPOINTS.GROCERY.GROCERY_LIST, {
-        params: filters
-    });
-    return response.data.data.map(item => (toGroceryListItem(item)));
+//  --------------- GENERIC for get request ---------------------
+async function apiGet<T>(url: string, params?: object): Promise<T> {
+    const response = await axiosInstance.get<IApiResponse<T>>(url, {params});
+    return response.data.data;
 }
+
+// ---------------- GENERICS -------------------------------------
+export const getGroceries = async (filters?: IGroceryFilterParams): Promise<IGroceryListItem[]> => {
+    const response = await apiGet<GroceryListResponse[]>(API_ENDPOINTS.GROCERY.GROCERY_LIST, filters);
+    return response.map(item => (toGroceryListItem(item)));
+}
+
+export const getGroceryDetail = async (grocery_id: string): Promise<IGroceryDetail> => {
+    return await apiGet<IGroceryDetailApiResponse>(API_ENDPOINTS.GROCERY.GROCERY_DETAIL.replace(':id', grocery_id))
+}
+
+
 
 export const createGroceries = async (newItem: IGroceryCreateItem): Promise<void> => {
     await axiosInstance.post<void>(API_ENDPOINTS.GROCERY.GROCERY_ADD, newItem);
     return;
-}
-
-export const getGroceryDetail = async (grocery_id: string): Promise<IGroceryDetail> => {
-    const response = await axiosInstance.get<IApiResponse<IGroceryDetailApiResponse>>(API_ENDPOINTS.GROCERY.GROCERY_DETAIL.replace(':id', grocery_id));
-    return response.data.data;
 }
 
 export const updateGrocery = async (grocery_id: string, payload: IPayloadGroceryItemUpdate): Promise<void> => {
