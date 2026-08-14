@@ -17,3 +17,12 @@ export class InvalidUUIDError extends BaseError {
         this.name = 'InvalidUUIDError';
     }
 }
+
+
+export class UnauthorizedException extends BaseError {
+    constructor(data?: Partial<BaseErrorPayload>) {
+        super(data);
+        this.name = 'UnauthorizedException';
+    }
+
+}

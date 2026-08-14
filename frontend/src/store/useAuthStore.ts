@@ -2,9 +2,8 @@ import type {IUserLoginPayload} from "../api/types/requests/auth/UserLoginPayloa
 import {create} from "zustand";
 import {persist, createJSONStorage} from 'zustand/middleware';
 import {login} from "../api/endpoints/AuthApi.ts";
-import log from "loglevel";
 import type {IUserLoginResponse} from "../api/types/responses/UserLoginResponse.ts";
-import {BaseError} from "../api/exceptions/baseExceptions.ts";
+import {handleAuthStoreException} from "../api/exceptions/handleAuthStoreExceptions.ts";
 
 interface IUserAuthState {
     token: IUserLoginResponse | null
@@ -28,10 +27,8 @@ const useAuthStore = create<IUserAuthState>()(
                 try {
                     const tokenData = await login(payload);
                     set({token: tokenData, isLoading: false});
-                } catch (err) {
-                    if (err instanceof BaseError) set({error: err.message});
-                    log.debug(`error getting here : ${err}`);
-                    set({isLoading: false});
+                } catch (err: unknown) {
+                    handleAuthStoreException(err, set);
                 }
             },
             resetError: () => set({error: null}),

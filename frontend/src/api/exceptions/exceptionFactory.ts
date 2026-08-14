@@ -1,6 +1,6 @@
 // --- Factory Function ---
 import {BaseError, type BaseErrorPayload} from "./baseExceptions.ts";
-import {InvalidUUIDError, NotFoundError} from "./customException.ts";
+import {InvalidUUIDError, NotFoundError, UnauthorizedException} from "./customException.ts";
 import ERROR_CODES from "../../constants/errorCodes.ts";
 
 
@@ -15,6 +15,8 @@ export function toBaseError(payload?: BaseErrorPayload): BaseError {
             return new NotFoundError(payload);
         case ERROR_CODES.INVALID_UUID:
             return new InvalidUUIDError(payload);
+        case ERROR_CODES.UNAUTHORIZED:
+            return new UnauthorizedException(payload);
         default:
             return new BaseError(payload);
     }
