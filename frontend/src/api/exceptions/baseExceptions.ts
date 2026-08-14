@@ -1,4 +1,4 @@
-export interface IBaseError {
+export interface IBaseException {
     status: string;
     error_code: string
     message: string;
@@ -7,16 +7,16 @@ export interface IBaseError {
 
 export interface IApiErrorResponse {
     success: boolean;
-    error: IBaseError;
+    error: IBaseException;
 }
 
-export class BaseException extends Error implements IBaseError {
+export class BaseException extends Error implements IBaseException {
     status: string = 'Fail';
     error_code: string = 'INTERNAL_SERVER_ERROR';
     message: string = 'Something went wrong.';
     detail: string = 'No additional details provided.';
 
-    constructor(data?: Partial<IBaseError>) {
+    constructor(data?: Partial<IBaseException>) {
         super(data?.message || 'Something went wrong.');
         this.name = 'BaseError';
         if (data) {

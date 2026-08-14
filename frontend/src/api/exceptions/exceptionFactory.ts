@@ -1,10 +1,10 @@
 // --- Factory Function ---
-import {BaseException, type IBaseError} from "./baseExceptions.ts";
+import {BaseException, type IBaseException} from "./baseExceptions.ts";
 import {InvalidUUIDError, NotFoundError, UnauthorizedException} from "./customException.ts";
 import ERROR_CODES from "../../constants/errorCodes.ts";
 
 
-export function toBaseError(payload?: IBaseError): BaseException {
+export function toBaseError(payload?: IBaseException): BaseException {
     if (!payload) {
         return new BaseException();
     }
