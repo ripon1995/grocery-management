@@ -6,9 +6,10 @@ No FASTAPI no HTTP concepts
 from uuid import UUID
 
 from sqlalchemy import select, update, Sequence, and_, or_, cast, String
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ResourceNotFoundException, DatabaseException
+from app.core.exceptions import DatabaseException
 from app.features.grocery.filters import GroceryFilterParams
 from app.features.grocery.models import Grocery
 
@@ -71,9 +72,9 @@ class GroceryRepository:
             await self.session.commit()
             await self.session.refresh(grocery)
             return grocery
-        except Exception:
+        except SQLAlchemyError as e:
             await self.session.rollback()
-            raise DatabaseException('Failed to add grocery from database')
+            raise DatabaseException('Failed to add grocery from database') from e
 
     async def update_grocery(self, grocery: Grocery) -> Grocery:
         """Update an existing grocery item with explicit transaction rollback on error."""
@@ -81,18 +82,18 @@ class GroceryRepository:
             await self.session.commit()
             await self.session.refresh(grocery)
             return grocery
-        except Exception:
+        except SQLAlchemyError as e:
             await self.session.rollback()
-            raise DatabaseException('Failed to update grocery from database')
+            raise DatabaseException('Failed to update grocery from database') from e
 
     async def delete_grocery(self, grocery: Grocery) -> None:
         """Delete a grocery item with explicit transaction rollback on error."""
         try:
             await self.session.delete(grocery)
             await self.session.commit()
-        except Exception:
+        except SQLAlchemyError as e:
             await self.session.rollback()
-            raise DatabaseException('Failed to delete grocery from database')
+            raise DatabaseException('Failed to delete grocery from database') from e
 
     async def bulk_update_should_include(
             self, grocery_ids: Sequence[UUID], should_include: bool
@@ -109,6 +110,6 @@ class GroceryRepository:
             updated_groceries = result.scalars().all()
             await self.session.commit()
             return updated_groceries
-        except Exception:
+        except SQLAlchemyError as e:
             await self.session.rollback()
-            raise DatabaseException('Failed to bulk update should_include from database')
+            raise DatabaseException('Failed to bulk update should_include from database') from e

@@ -24,7 +24,7 @@ class JWTHelper:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
             email: str = payload.get('sub')
             return email
-        except jwt.ExpiredSignatureError:
-            raise UnauthorizedException()
-        except jwt.InvalidTokenError:
-            raise UnauthorizedException()
+        except jwt.ExpiredSignatureError as e:
+            raise UnauthorizedException(message='Session expired, please login again') from e
+        except jwt.InvalidTokenError as e:
+            raise UnauthorizedException(message='Invalid token, please login again') from e

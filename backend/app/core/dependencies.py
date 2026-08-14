@@ -1,5 +1,4 @@
 from fastapi import Depends
-from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import UnauthorizedException
@@ -16,13 +15,9 @@ async def get_current_user(
         token: str = Depends(oauth2_scheme),
         db: AsyncSession = Depends(get_db),
 ) -> User:
-    try:
-        user_email = JWTHelper.verify_token(token)
-        if user_email is None:
-            raise UnauthorizedException()
-    except (ExpiredSignatureError, InvalidTokenError):
+    user_email = JWTHelper.verify_token(token)
+    if user_email is None:
         raise UnauthorizedException()
-
     # Fetch fresh user from database (recommended)
     user = await AuthRepository(db).get_user_by_email(email=user_email)
     if user is None:
