@@ -1,0 +1,11 @@
+// --- Specific Error Subclasses ---
+
+
+import {BaseError, type BaseErrorPayload} from "./baseExceptions.ts";
+
+export class NotFoundError extends BaseError {
+    constructor(data?: Partial<BaseErrorPayload>) {
+        super(data);
+        this.name = 'NotFoundError';
+    }
+}

@@ -10,7 +10,6 @@ export interface IApiErrorResponse {
     error: BaseErrorPayload;
 }
 
-
 export class BaseError extends Error implements BaseErrorPayload {
     status: string = 'Fail';
     error_code: string = 'INTERNAL_SERVER_ERROR';
@@ -29,7 +28,7 @@ export class BaseError extends Error implements BaseErrorPayload {
     }
 
     // Helper method to create directly from the backend envelope
-    static fromApiResponse(responseData?: IApiErrorResponse): BaseError {
-        return new BaseError(responseData?.error);
-    }
+    // static fromApiResponse(responseData?: IApiErrorResponse): BaseError {
+    //     return new BaseError(responseData?.error);
+    // }
 }
