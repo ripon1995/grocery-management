@@ -13,11 +13,11 @@ import type {IGroceryDetail} from "../types/IGroceryDetail.ts";
 import type {IPayloadGroceryItemUpdate} from "../api/types/requests/grocery/UpdateGroceryItem.ts";
 import type {IGroceryFilterParams} from "../api/types/requests/grocery/GroceryFilterParams.ts";
 import {AppToast} from "../components/common/AppToast.tsx";
-import {NotFoundError} from "../api/exceptions/customException.ts";
+import {InvalidUUIDError, NotFoundError} from "../api/exceptions/customException.ts";
 import {BaseError} from "../api/exceptions/baseExceptions.ts";
 import {Logger} from "../utility/logger.ts";
 
-const logger = new Logger("UserService");
+const logger = new Logger("GroceryStore");
 
 interface IGroceryState {
     groceries: IGroceryListItem[];
@@ -66,11 +66,16 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             set({grocery: data, isLoading: false});
         } catch (err: unknown) {
             logger.error(err as string);
-            if (err instanceof  NotFoundError) {
+            if (err instanceof NotFoundError) {
                 AppToast.error(err.message);
                 set({error: err.message, isLoading: false});
+            } else if (err instanceof InvalidUUIDError) {
+                AppToast.error(err.message);
+                set({error: err.message, isLoading: false});
+            } else {
+                const baseError: BaseError = err as BaseError;
+                set({error: baseError.message, isLoading: false});
             }
-            set({error: 'Not working', isLoading: false});
         }
     },
     updateGroceryDetail: async (grocery_id: string, payload: IPayloadGroceryItemUpdate) => {
@@ -79,7 +84,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             await updateGrocery(grocery_id, payload);
             set({isLoading: false});
         } catch (err: unknown) {
-            if(err instanceof BaseError) {
+            if (err instanceof BaseError) {
                 logger.error(err.message);
                 set({error: err.message, isLoading: false});
             }

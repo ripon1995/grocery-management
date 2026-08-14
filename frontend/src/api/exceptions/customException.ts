@@ -9,3 +9,11 @@ export class NotFoundError extends BaseError {
         this.name = 'NotFoundError';
     }
 }
+
+
+export class InvalidUUIDError extends BaseError {
+    constructor(data?: Partial<BaseErrorPayload>) {
+        super(data);
+        this.name = 'InvalidUUIDError';
+    }
+}
