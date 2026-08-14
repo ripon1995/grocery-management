@@ -75,6 +75,7 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             } else {
                 const baseError: BaseError = err as BaseError;
                 set({error: baseError.message, isLoading: false});
+                AppToast.error(baseError.message);
             }
         }
     },
@@ -84,9 +85,17 @@ const useGroceryStore = create<IGroceryState>((set) => ({
             await updateGrocery(grocery_id, payload);
             set({isLoading: false});
         } catch (err: unknown) {
-            if (err instanceof BaseError) {
-                logger.error(err.message);
+            logger.error(err as string);
+            if (err instanceof NotFoundError) {
+                AppToast.error(err.message);
                 set({error: err.message, isLoading: false});
+            } else if (err instanceof InvalidUUIDError) {
+                AppToast.error(err.message);
+                set({error: err.message, isLoading: false});
+            } else {
+                const baseError: BaseError = err as BaseError;
+                set({error: baseError.message, isLoading: false});
+                AppToast.error(baseError.message);
             }
         }
     },
@@ -99,9 +108,17 @@ const useGroceryStore = create<IGroceryState>((set) => ({
                 isLoading: false,
             }));
         } catch (err: unknown) {
-            if (err instanceof BaseError) {
-                logger.error(`Getting error ${err.detail} ${err.status}`);
+            logger.error(err as string);
+            if (err instanceof NotFoundError) {
                 AppToast.error(err.message);
+                set({error: err.message, isLoading: false});
+            } else if (err instanceof InvalidUUIDError) {
+                AppToast.error(err.message);
+                set({error: err.message, isLoading: false});
+            } else {
+                const baseError: BaseError = err as BaseError;
+                set({error: baseError.message, isLoading: false});
+                AppToast.error(baseError.message);
             }
 
             set({isLoading: false});
