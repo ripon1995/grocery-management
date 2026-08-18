@@ -22,10 +22,7 @@ class GroceryFilterParams:
     search: Optional[str] = None
 
     def has_conditions(self) -> bool:
-        return any([
-            self.type is not None,
-            self.current_seller is not None,
-            self.best_seller is not None,
-            self.category is not None,
-            self.should_include is not None,
-        ])
+        return any(
+            value is not None
+            for value in [self.type, self.current_seller, self.best_seller, self.category, self.should_include]
+        )

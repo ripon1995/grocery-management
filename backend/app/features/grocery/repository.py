@@ -39,9 +39,9 @@ class GroceryRepository:
     def _build_filter_conditions(filters: GroceryFilterParams):
         filter_fields = ["type", "current_seller", "best_seller", "category", "should_include"]
         conditions = [
-            getattr(Grocery, field) == getattr(filters, field)
+            getattr(Grocery, field) == value
             for field in filter_fields
-            if getattr(filters, field) is not None
+            if (value := getattr(filters, field)) is not None
         ]
         return and_(*conditions)
 
