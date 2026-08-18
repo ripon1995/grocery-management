@@ -9,11 +9,11 @@ const GROCERY_APIS = {
     GROCERY_UPDATE: `${GROCERIES}/:id`,
     GROCERY_DELETE: `${GROCERIES}/:id`,
     GROCERY_BULK_SHOULD_INCLUDE: `${GROCERIES}/bulk/should-include`,
-}
+} as const;
 
 const AUTH_APIS = {
     LOGIN: `${AUTH}/login`
-};
+} as const;
 
 
 const API_ENDPOINTS = {

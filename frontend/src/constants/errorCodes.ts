@@ -4,4 +4,6 @@ const ERROR_CODES = {
     UNAUTHORIZED: "unauthorized",
 }
 
-export default ERROR_CODES;
+type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES];
+export {ERROR_CODES};
+export type {ErrorCode};

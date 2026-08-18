@@ -51,4 +51,6 @@ export function isGroceryCategory(value: string): value is GroceryCategory {
 export const YesNoChoice = {
     YES: 'yes',
     NO: 'no'
-}
+} as const;
+
+export type YesNoChoice = typeof YesNoChoice[keyof typeof YesNoChoice];

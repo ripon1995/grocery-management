@@ -18,6 +18,19 @@ import type {ChipProps} from '@mui/material';
 import Stack from "@mui/material/Stack";
 
 
+const STOCK_STATUS_VIEW: Record<GroceryStockStatus, Pick<ChipProps, 'icon' | 'label' | 'color'>> = {
+    [GroceryStockStatus.IN_STOCK]: {
+        icon: <ArrowUpwardIcon sx={{fontSize: '15px !important'}}/>,
+        label: 'In Stock',
+        color: 'success'
+    },
+    [GroceryStockStatus.BELOW_STOCK]: {
+        icon: <ArrowDownwardIcon sx={{fontSize: '15px !important'}}/>,
+        label: 'Low Stock',
+        color: 'error',
+    }
+}
+
 interface IGroceryTableProps {
     groceries: IGroceryListItem[];
     onView: (grocery_id: string) => void;
@@ -34,22 +47,7 @@ interface IGroceryTableRowProps extends Pick<IGroceryTableProps, 'onView' | 'onE
     selected: boolean;
 }
 
-function getStockStatusView(status: GroceryStockStatus): Pick<ChipProps, 'icon' | 'label' | 'color'> {
-    switch (status) {
-        case GroceryStockStatus.IN_STOCK:
-            return {
-                icon: <ArrowUpwardIcon sx={{fontSize: '15px !important'}}/>,
-                label: 'In Stock',
-                color: 'success',
-            }
-        default:
-            return {
-                icon: <ArrowDownwardIcon sx={{fontSize: '15px !important'}}/>,
-                label: 'Low Stock',
-                color: 'error',
-            };
-    }
-}
+const getStockStatusView = (status: GroceryStockStatus) => STOCK_STATUS_VIEW[status];
 
 const GroceryTableHeader = ({allSelected, someSelected, onToggleSelectAll}: {
     allSelected: boolean;
