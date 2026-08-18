@@ -1,11 +1,14 @@
-import type {GroceryType, Seller, GroceryCategory} from "../../../../constants/enums.ts";
+import type {IGroceryDetail} from "../../../../types/IGroceryDetail.ts";
 
 
-export interface IGroceryFilterParams {
-    type?: GroceryType;
-    current_seller?: Seller;
-    best_seller?: Seller;
-    category?: GroceryCategory;
-    should_include?: boolean;
-    search?: string;
-}
+type FilterKeys =
+    | 'type'
+    | 'current_seller'
+    | 'best_seller'
+    | 'category'
+    | 'should_include'
+
+
+type IGroceryFilterParams = Partial<Pick<IGroceryDetail, FilterKeys>> & { search?: string };
+
+export type {IGroceryFilterParams}

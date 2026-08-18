@@ -1,15 +1,13 @@
-import type {GroceryType, Seller, GroceryCategory} from "../../../../constants/enums.ts";
+import type {IGroceryDetail} from "../../../../types/IGroceryDetail.ts";
 
 
-export interface IPayloadGroceryItemUpdate {
-    id: string;
-    name: string;
-    brand: string;
-    type: GroceryType;
-    current_price: number;
-    current_seller: Seller;
-    low_stock_threshold: number;
-    quantity_in_stock: number;
-    should_include: boolean;
-    category: GroceryCategory;
-}
+type ServerGeneratedKeys =
+    | 'best_price'
+    | 'best_seller'
+    | 'stock_status'
+    | 'created_at'
+    | 'updated_at'
+
+type IPayloadGroceryItemUpdate = Omit<IGroceryDetail, ServerGeneratedKeys>
+
+export type {IPayloadGroceryItemUpdate};
