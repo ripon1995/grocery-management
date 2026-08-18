@@ -7,7 +7,6 @@ from app.core.config import settings
 
 class RedisService:
     def __init__(self, redis_client: Redis):
-
         self.redis = redis_client
 
     async def get(self, key: str) -> Any:
