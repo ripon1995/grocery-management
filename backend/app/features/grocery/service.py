@@ -31,6 +31,7 @@ from .schemas.response_schemas import (
 from ...common.constants import GROCERY_NOT_FOUND
 from ...core.exceptions import ResourceNotFoundException
 from ...services.redis_service import RedisService
+from ...utils.redis_key_helper import RedisKeyHelper
 from ...utils.uuid_validation_helper import validate_uuid
 
 logger = logging.getLogger(__name__)
@@ -94,14 +95,9 @@ class GroceryService:
     # ───────────────────────────────────────────────
     # Redis method
     # ───────────────────────────────────────────────
-
-    @staticmethod
-    def get_grocery_list_redis_key() -> str:
-        return f"groceries"
-
     async def add_to_redis(self, result: List[GroceryListResponseSchema]) -> None:
         await self.grocery_cache.set(
-            self.get_grocery_list_redis_key(),
+            RedisKeyHelper.GROCERIES.value,
             [item.model_dump(mode="json") for item in result]
         )
 
@@ -111,7 +107,7 @@ class GroceryService:
 
     async def list_all_groceries(self, filters: GroceryFilterParams | None = None) -> List[GroceryListResponseSchema]:
         # Try cache first
-        grocery_list_cache_key: str = f"groceries"
+        grocery_list_cache_key: str = RedisKeyHelper.GROCERIES.value
         cached = await self.grocery_cache.get(grocery_list_cache_key)
         if cached:
             logger.info('Returning cached groceries')
