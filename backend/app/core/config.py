@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     MAX_OVERFLOW: int
     POOL_TIMEOUT: int
 
+    # REDIS config
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_TTL: int
+
     # Default to localhost for safety, but allow override via .env
     ALLOW_ORIGINS: list[str] = ["http://localhost:5173"]
 

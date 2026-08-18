@@ -9,21 +9,31 @@ Feature-specific DI:
 from typing import Optional
 
 from fastapi import Depends, Query
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.clients.redis_client import get_redis
 from app.common.enums import GroceryType, Seller, GroceryCategory
 from app.db.session import get_db
 from app.features.grocery.filters import GroceryFilterParams
 from app.features.grocery.repository import GroceryRepository  # adjust path
 from app.features.grocery.service import GroceryService
+from app.services.redis_service import RedisService
+
+
+def get_grocery_redis(redis: Redis = Depends(get_redis)) -> RedisService:
+    return RedisService(redis)
 
 
 def get_grocery_repository(db: AsyncSession = Depends(get_db)):
     return GroceryRepository(db)
 
 
-def get_grocery_service(repo: GroceryRepository = Depends(get_grocery_repository)):
-    return GroceryService(repo)
+def get_grocery_service(
+        repo: GroceryRepository = Depends(get_grocery_repository),
+        grocery_cache: RedisService = Depends(get_grocery_redis),
+):
+    return GroceryService(repo, grocery_cache)
 
 
 def get_grocery_filters(

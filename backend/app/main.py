@@ -8,6 +8,7 @@ from app.core.exception_handlers import register_exception_handlers
 from app.core.log_config import configure_logging
 from app.core.openapi_config import custom_openapi
 from app.middleware.request_logger import RequestLoggerMiddleware
+from app.clients.redis_client import init_redis, close_redis
 
 # ── Logging ────────────────────────────────────────────────────────────────
 # step logger
@@ -16,11 +17,11 @@ configure_logging(level=settings.LOG_LEVEL, environment=settings.ENVIRONMENT)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # startup code here if needed
+    await init_redis()
     print("Application startup complete ✓")
     yield
+    await close_redis()
     print("Application shutdown complete ✓")
-    # shutdown code here if needed
 
 
 app = FastAPI(

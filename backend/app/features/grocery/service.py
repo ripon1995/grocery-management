@@ -30,14 +30,16 @@ from .schemas.response_schemas import (
 )
 from ...common.constants import GROCERY_NOT_FOUND
 from ...core.exceptions import ResourceNotFoundException
+from ...services.redis_service import RedisService
 from ...utils.uuid_validation_helper import validate_uuid
 
 logger = logging.getLogger(__name__)
 
 
 class GroceryService:
-    def __init__(self, repo: GroceryRepository):
+    def __init__(self, repo: GroceryRepository, grocery_cache: RedisService):
         self.repo = repo
+        self.grocery_cache = grocery_cache
 
     # ───────────────────────────────────────────────
     # Business rule helpers
@@ -90,13 +92,36 @@ class GroceryService:
         return grocery
 
     # ───────────────────────────────────────────────
+    # Redis method
+    # ───────────────────────────────────────────────
+
+    @staticmethod
+    def get_grocery_list_redis_key() -> str:
+        return f"groceries"
+
+    async def add_to_redis(self, result: List[GroceryListResponseSchema]) -> None:
+        await self.grocery_cache.set(
+            self.get_grocery_list_redis_key(),
+            [item.model_dump(mode="json") for item in result]
+        )
+
+    # ───────────────────────────────────────────────
     # Public API methods
     # ───────────────────────────────────────────────
 
     async def list_all_groceries(self, filters: GroceryFilterParams | None = None) -> List[GroceryListResponseSchema]:
+        # Try cache first
+        grocery_list_cache_key: str = f"groceries"
+        cached = await self.grocery_cache.get(grocery_list_cache_key)
+        if cached:
+            logger.info('Returning cached groceries')
+            return [GroceryListResponseSchema.model_validate(item) for item in cached]
+        # if no cache then get from db
         groceries = await self.repo.get_groceries(filters)
         logger.info('Get groceries')
-        return [GroceryListResponseSchema.model_validate(item) for item in groceries]
+        result = [GroceryListResponseSchema.model_validate(item) for item in groceries]
+        await self.add_to_redis(result)
+        return result
 
     async def get_grocery_by_id(self, grocery_id) -> GroceryDetailResponseSchema:
         validated_id = validate_uuid(grocery_id)
