@@ -95,10 +95,16 @@ class GroceryService:
     # ───────────────────────────────────────────────
     # Redis method
     # ───────────────────────────────────────────────
-    async def add_to_redis(self, result: List[GroceryListResponseSchema]) -> None:
+    async def add_grocery_list_to_redis(self, result: List[GroceryListResponseSchema]) -> None:
         await self.grocery_cache.set(
             RedisKeyHelper.GROCERIES.value,
             [item.model_dump(mode="json") for item in result]
+        )
+
+    async def add_grocery_detail_to_redis(self, grocery: GroceryDetailResponseSchema) -> None:
+        await self.grocery_cache.set(
+            RedisKeyHelper.GROCERY_DETAIL.build_key(grocery_id=grocery.id),
+            grocery.model_dump(mode="json")
         )
 
     # ───────────────────────────────────────────────
@@ -116,15 +122,27 @@ class GroceryService:
         groceries = await self.repo.get_groceries(filters)
         logger.info('Get groceries')
         result = [GroceryListResponseSchema.model_validate(item) for item in groceries]
-        await self.add_to_redis(result)
+        if result:
+            await self.add_grocery_list_to_redis(result)
         return result
 
     async def get_grocery_by_id(self, grocery_id) -> GroceryDetailResponseSchema:
+
+        grocery_detail_cache_key: str = RedisKeyHelper.GROCERY_DETAIL.build_key(grocery_id=grocery_id)
+        cached = await self.grocery_cache.get(grocery_detail_cache_key)
+        if cached:
+            logger.info('Returning cached grocery details')
+            return GroceryDetailResponseSchema.model_validate(cached)
+
         validated_id = validate_uuid(grocery_id)
         grocery = await self.repo.get_by_id(validated_id)
         if grocery is None:
             raise ResourceNotFoundException(message=GROCERY_NOT_FOUND.format(grocery_id=validated_id))
-        return GroceryDetailResponseSchema.model_validate(grocery)
+
+        result = GroceryDetailResponseSchema.model_validate(grocery)
+        await self.add_grocery_detail_to_redis(result)
+
+        return result
 
     async def create_grocery(self, data: GroceryCreateSchema) -> GroceryCreateResponseSchema:
         grocery = self.__prepare_grocery(data)
