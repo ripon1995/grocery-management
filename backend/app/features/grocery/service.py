@@ -107,6 +107,12 @@ class GroceryService:
             grocery.model_dump(mode="json")
         )
 
+    async def remove_grocery_detail_from_redis(self, grocery_id: str) -> None:
+        grocery_detail_cache_key: str = RedisKeyHelper.GROCERY_DETAIL.build_key(grocery_id=grocery_id)
+        await self.grocery_cache.delete(grocery_detail_cache_key)
+        grocery_list_cache_key: str = RedisKeyHelper.GROCERIES.value
+        await self.grocery_cache.delete(grocery_list_cache_key)
+
     # ───────────────────────────────────────────────
     # Public API methods
     # ───────────────────────────────────────────────
@@ -156,7 +162,9 @@ class GroceryService:
             raise ResourceNotFoundException(message=GROCERY_NOT_FOUND.format(grocery_id=grocery_id))
         updated_grocery_data = self.__prepare_grocery_for_update(grocery, data)
         updated_grocery = await self.repo.update_grocery(updated_grocery_data)
-        return GroceryUpdateResponseSchema.model_validate(updated_grocery)
+        result = GroceryUpdateResponseSchema.model_validate(updated_grocery)
+        await self.remove_grocery_detail_from_redis(grocery_id)
+        return result
 
     async def delete_grocery(self, grocery_id: str) -> None:
         grocery = await self.repo.get_by_id(grocery_id)
