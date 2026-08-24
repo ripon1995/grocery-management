@@ -7,6 +7,7 @@ from app.api.router import api_router
 from app.core.exception_handlers import register_exception_handlers
 from app.core.log_config import configure_logging
 from app.core.openapi_config import custom_openapi
+from app.middleware.latency_header import LatencyHeaderMiddleware
 from app.middleware.request_logger import RequestLoggerMiddleware
 from app.clients.redis_client import init_redis, close_redis
 
@@ -39,6 +40,7 @@ app.openapi = lambda: custom_openapi(app=app)
 # ── Middleware ──────────────────────────────────────────────────────────────
 # request logger middleware
 app.add_middleware(RequestLoggerMiddleware, env_name=settings.ENVIRONMENT)
+app.add_middleware(LatencyHeaderMiddleware)
 
 # CORS middleware
 app.add_middleware(

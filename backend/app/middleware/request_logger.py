@@ -19,9 +19,7 @@ class RequestLoggerMiddleware(BaseHTTPMiddleware):
         start_time = time.perf_counter()
 
         # Log the incoming request
-        logger.info(
-            f"START | {timestamp} | {self.env_name.upper()} | {request.method} | {request.url.path}",
-        )
+        logger.info(f"START | {timestamp} | {self.env_name.upper()} | {request.method} | {request.url.path}")
 
         try:
             response: Response = await call_next(request)
