@@ -730,6 +730,8 @@ async def get_grocery_detail(id: str):
 
 ### 14. Caching Strategies
 
+**Status**: 🔴 Partial, not ready to mark done (2026-08-28) — Redis cache-aside implemented for grocery list & detail endpoints (`backend/app/features/grocery/service.py`, `clients/redis_client.py`, `services/redis_service.py`, `utils/redis_key_helper.py`). Review found 4 correctness bugs: the list cache key doesn't vary by filter params (can serve wrong data across filter combinations), and `create_grocery`/`delete_grocery`/`bulk_update_should_include` don't invalidate the cache (only `update_grocery` does). See `phase-4-caching-review.md` for details and fix directions.
+
 **Why You Need It**: Database queries are slow. Caching stores frequently accessed data in memory for instant retrieval.
 
 **Use Cases for Grocery Manager**:
@@ -940,6 +942,8 @@ async def update_category_name(category_id: str, new_name: str):
 ---
 
 ### 16. Latency Optimization
+
+**Status**: 🟡 Partial (2026-08-28) — `X-Response-Time` header middleware added (`backend/app/middleware/latency_header.py`), but uses format spec `.2` (2 significant figures) instead of `.2f`, so any response ≥10ms renders in scientific notation (e.g. `1.2e+02ms`). See `phase-4-caching-review.md` Topic 16.1. Connection pooling sub-item tracked separately in `phase-3-databases-sql-review.md` Topic 4.1.
 
 **Why You Need It**: Users expect instant responses. Every 100ms delay = 1% drop in conversions.
 
