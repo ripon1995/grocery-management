@@ -8,5 +8,5 @@ class LatencyHeaderMiddleware(BaseHTTPMiddleware):
         start_time = time.time()
         response = await call_next(request)
         latency = (time.time() - start_time) * 1000  # ms
-        response.headers["X-Response-Time"] = f"{latency:.2}ms"
+        response.headers["X-Response-Time"] = f"{latency:.2f}ms"
         return response
