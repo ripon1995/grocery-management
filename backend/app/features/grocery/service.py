@@ -124,11 +124,13 @@ class GroceryService:
 
     async def list_all_groceries(self, filters: GroceryFilterParams | None = None) -> List[GroceryListResponseSchema]:
         # Try cache first
+        use_cache = not (filters and (filters.has_conditions() or filters.search))
         grocery_list_cache_key: str = RedisKeyHelper.GROCERIES.value
-        cached = await self.grocery_cache.get(grocery_list_cache_key)
-        if cached:
-            logger.info('Returning cached groceries')
-            return [GroceryListResponseSchema.model_validate(item) for item in cached]
+        if use_cache:
+            cached = await self.grocery_cache.get(grocery_list_cache_key)
+            if cached:
+                logger.info('Returning cached groceries')
+                return [GroceryListResponseSchema.model_validate(item) for item in cached]
         # if no cache then get from db
         groceries = await self.repo.get_groceries(filters)
         logger.info('Get groceries')
@@ -158,6 +160,7 @@ class GroceryService:
     async def create_grocery(self, data: GroceryCreateSchema) -> GroceryCreateResponseSchema:
         grocery = self.__prepare_grocery(data)
         created_grocery = await self.repo.add_grocery(grocery)
+        await self.grocery_cache.delete(RedisKeyHelper.GROCERIES.value)
         return GroceryCreateResponseSchema.model_validate(created_grocery)
 
     async def update_grocery(self, grocery_id: str, data: GroceryUpdateSchema) -> GroceryUpdateResponseSchema:
@@ -176,6 +179,7 @@ class GroceryService:
         if grocery is None:
             raise ResourceNotFoundException(message=GROCERY_NOT_FOUND.format(grocery_id=grocery_id))
         await self.repo.delete_grocery(grocery)
+        await self.remove_grocery_detail_from_redis(grocery_id)
 
     async def bulk_update_should_include(
             self, data: GroceryBulkUpdateSchema
@@ -190,4 +194,8 @@ class GroceryService:
             raise ResourceNotFoundException(
                 message=GROCERY_NOT_FOUND.format(grocery_id=", ".join(missing_ids))
             )
+
+        for grocery in updated_groceries:
+            await self.remove_grocery_detail_from_redis(grocery.id)
+
         return [GroceryUpdateResponseSchema.model_validate(grocery) for grocery in updated_groceries]
