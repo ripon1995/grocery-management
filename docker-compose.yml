@@ -1,5 +1,5 @@
 include:
-  - grocery-management-redis.yml
+  - ./docker/grocery-management-redis.yml
 
 services:
   backend:
