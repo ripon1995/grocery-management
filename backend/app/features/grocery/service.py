@@ -135,7 +135,7 @@ class GroceryService:
         groceries = await self.repo.get_groceries(filters)
         logger.info('Get groceries')
         result = [GroceryListResponseSchema.model_validate(item) for item in groceries]
-        if result:
+        if use_cache and result:
             await self.add_grocery_list_to_redis(result)
         return result
 
