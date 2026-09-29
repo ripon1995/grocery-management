@@ -728,9 +728,9 @@ async def get_grocery_detail(id: str):
 
 ## Phase 4: Performance & Caching (Weeks 7-8)
 
-### 14. Caching Strategies
+### 14. Caching Strategies ✅ (Completed)
 
-**Status**: 🔴 Partial, not ready to mark done (2026-08-28) — Redis cache-aside implemented for grocery list & detail endpoints (`backend/app/features/grocery/service.py`, `clients/redis_client.py`, `services/redis_service.py`, `utils/redis_key_helper.py`). Review found 4 correctness bugs: the list cache key doesn't vary by filter params (can serve wrong data across filter combinations), and `create_grocery`/`delete_grocery`/`bulk_update_should_include` don't invalidate the cache (only `update_grocery` does). See `phase-4-caching-review.md` for details and fix directions.
+**Status**: ✅ Done (2026-09-29) — Redis cache-aside implemented for grocery list & detail endpoints (`backend/app/features/grocery/service.py`, `clients/redis_client.py`, `services/redis_service.py`, `utils/redis_key_helper.py`). All 4 correctness bugs from the 2026-08-28 review are fixed: the list cache is only read/written for unfiltered requests, and every mutation path (create, update, delete, bulk-update) invalidates the affected detail keys and the list key. Cache hit-rate monitoring (`/cache/stats`) not implemented. Non-blocking follow-ups listed in `phase-4-caching-review.md`.
 
 **Why You Need It**: Database queries are slow. Caching stores frequently accessed data in memory for instant retrieval.
 
@@ -848,7 +848,9 @@ async def get_cache_stats():
 
 ---
 
-### 15. Denormalization
+### 15. Denormalization ⏭️ Skipped (for now)
+
+> **Decision (2026-09-29)**: Deferred. The current schema is a single `groceries` table with no joins and no stats dashboard, so there is nothing to denormalize yet. Revisit once categories are normalized into their own table or a per-user statistics dashboard is added.
 
 **Why You Need It**: Normalized databases require joins, which are slow. Denormalization trades space for speed.
 
@@ -943,7 +945,7 @@ async def update_category_name(category_id: str, new_name: str):
 
 ### 16. Latency Optimization
 
-**Status**: 🟡 Partial (2026-08-28) — `X-Response-Time` header middleware added (`backend/app/middleware/latency_header.py`), but uses format spec `.2` (2 significant figures) instead of `.2f`, so any response ≥10ms renders in scientific notation (e.g. `1.2e+02ms`). See `phase-4-caching-review.md` Topic 16.1. Connection pooling sub-item tracked separately in `phase-3-databases-sql-review.md` Topic 4.1.
+**Status**: 🟡 In progress (2026-09-29) — `X-Response-Time` header middleware added (`backend/app/middleware/latency_header.py`); the `.2` → `.2f` format bug is fixed (`phase-4-caching-review.md` Topic 16.1). Remaining: response compression, connection-pool hardening (`pool_pre_ping`/`pool_recycle`, tracked in `phase-3-databases-sql-review.md` Topic 4.1), and measuring p95 latency against the < 100ms target.
 
 **Why You Need It**: Users expect instant responses. Every 100ms delay = 1% drop in conversions.
 
