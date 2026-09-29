@@ -8,7 +8,7 @@ Reviewed: 2026-08-28. Implementation commits: `a7c57fa` (redis docker setup), `b
 
 ## Topic 14: Caching Strategies
 
-### 14.1 List cache key ignores query filters — 🔴 Open (correctness bug)
+### 14.1 List cache key ignores query filters — ✅ Resolved
 **File:** `backend/app/features/grocery/service.py:120-133`, key defined at `backend/app/utils/redis_key_helper.py:6`
 
 `list_all_groceries(filters)` reads and writes the grocery list under one static key, `RedisKeyHelper.GROCERIES` (`"groceries"`), regardless of the `GroceryFilterParams` (`type`, `current_seller`, `best_seller`, `category`, `should_include`, `search`) that the router (`routers/v1/router.py:55`) already accepts and passes in on every call.
@@ -17,28 +17,36 @@ Reviewed: 2026-08-28. Implementation commits: `a7c57fa` (redis docker setup), `b
 
 **Fix direction:** derive the cache key from the filter params (e.g. hash or serialize `GroceryFilterParams` into the key: `groceries:{type}:{seller}:{category}:{search}...`), or only cache the unfiltered list and bypass the cache whenever `filters.has_conditions()` is true.
 
-### 14.2 No cache invalidation on create — 🔴 Open (correctness bug)
+**Resolution (`c4f1ad3`, `e7dbde3`):** took the bypass approach. `list_all_groceries` computes `use_cache = not (filters and (filters.has_conditions() or filters.search))` and gates **both** the cache read and the cache write on it (`if use_cache and result:`). The first pass (`c4f1ad3`) only gated the read, so filtered results still overwrote the `"groceries"` key; `e7dbde3` added the write guard. An empty `?search=` is treated as unfiltered by both the service and `repository.py:32`, so they stay consistent.
+
+### 14.2 No cache invalidation on create — ✅ Resolved
 **File:** `backend/app/features/grocery/service.py:153-156`
 
 `create_grocery` writes to the database but never calls `remove_grocery_detail_from_redis` (or otherwise touches the `"groceries"` list key). A newly created item is invisible to `list_all_groceries` callers until the cache entry naturally expires (`REDIS_TTL=300s`).
 
 **Fix direction:** invalidate (or repopulate) the `"groceries"` list cache key at the end of `create_grocery`, same as `update_grocery` already does for the detail+list keys.
 
-### 14.3 No cache invalidation on delete — 🔴 Open (correctness bug)
+**Resolution (`c4f1ad3`):** `create_grocery` now deletes `RedisKeyHelper.GROCERIES` after the repository insert.
+
+### 14.3 No cache invalidation on delete — ✅ Resolved
 **File:** `backend/app/features/grocery/service.py:169-173`
 
 `delete_grocery` removes the row from Postgres but never invalidates `grocery:{id}:detail` or the `"groceries"` list key. A deleted item keeps being served from cache — `GET /groceries/{id}` returns a "found" response for an item that no longer exists, and it still shows up in list responses — until TTL expiry.
 
 **Fix direction:** call `remove_grocery_detail_from_redis(grocery_id)` before/after the repository delete, mirroring `update_grocery`.
 
-### 14.4 No cache invalidation on bulk update — 🔴 Open (correctness bug)
+**Resolution (`c4f1ad3`):** `delete_grocery` calls `remove_grocery_detail_from_redis(grocery_id)` after the repository delete, clearing both the detail and list keys.
+
+### 14.4 No cache invalidation on bulk update — ✅ Resolved
 **File:** `backend/app/features/grocery/service.py:175-188`
 
 `bulk_update_should_include` updates `should_include` on multiple rows directly via the repository but never invalidates the affected items' detail cache entries or the list cache. Stale `should_include` values can be served from cache for up to the full TTL after a bulk update.
 
 **Fix direction:** invalidate the list cache key plus each updated grocery's detail key (`remove_grocery_detail_from_redis` per id, or a batched `delete` call) after a successful bulk update.
 
-### 14.5 Empty list results are never cached — 🟡 Low priority (by design, undocumented)
+**Resolution:** `bulk_update_should_include` calls `remove_grocery_detail_from_redis` for every updated row. The loop runs **before** the `missing_ids` check: the repository commits the matched rows (`repository.py:111`) before the service raises `ResourceNotFoundException`, so invalidating after the raise would have left those committed rows stale in cache on a partial-miss request.
+
+### 14.5 Empty list results are never cached — ⏸ Deferred (low priority)
 **File:** `backend/app/features/grocery/service.py:131-133`
 
 `if result: await self.add_grocery_list_to_redis(result)` — an empty grocery list is never written to cache, so every request against an empty/fully-filtered-out list falls through to the DB every time. Not a correctness bug, just a missed optimization; worth a one-line comment if intentional (e.g. avoiding caching `[]` under a shared key that Topic 14.1's fix will make filter-specific anyway).
@@ -47,7 +55,7 @@ Reviewed: 2026-08-28. Implementation commits: `a7c57fa` (redis docker setup), `b
 
 ## Topic 16: Latency Optimization
 
-### 16.1 `X-Response-Time` header renders in scientific notation above 10ms — 🔴 Open (bug)
+### 16.1 `X-Response-Time` header renders in scientific notation above 10ms — ✅ Resolved
 **File:** `backend/app/middleware/latency_header.py:11`
 
 ```python
@@ -66,23 +74,25 @@ Any response taking ≥10ms — which is most of them — reports a header like 
 
 **Fix direction:** change the format spec to `.2f`.
 
+**Resolution (`dc0563e`):** format spec changed to `.2f`.
+
 ---
 
 ## Summary
 
 | # | File | Topic | Status |
 |---|------|-------|--------|
-| 14.1 | `features/grocery/service.py:120-133` | List cache key doesn't vary by filter params — wrong data can be served | 🔴 Open |
-| 14.2 | `features/grocery/service.py:153-156` | No cache invalidation on create | 🔴 Open |
-| 14.3 | `features/grocery/service.py:169-173` | No cache invalidation on delete | 🔴 Open |
-| 14.4 | `features/grocery/service.py:175-188` | No cache invalidation on bulk update | 🔴 Open |
-| 14.5 | `features/grocery/service.py:131-133` | Empty list results never cached | 🟡 Low priority |
-| 16.1 | `middleware/latency_header.py:11` | `.2` format spec → scientific notation above 10ms | 🔴 Open |
+| 14.1 | `features/grocery/service.py` | List cache key doesn't vary by filter params — wrong data can be served | ✅ Resolved |
+| 14.2 | `features/grocery/service.py` | No cache invalidation on create | ✅ Resolved |
+| 14.3 | `features/grocery/service.py` | No cache invalidation on delete | ✅ Resolved |
+| 14.4 | `features/grocery/service.py` | No cache invalidation on bulk update | ✅ Resolved |
+| 14.5 | `features/grocery/service.py` | Empty list results never cached | ⏸ Deferred (low priority) |
+| 16.1 | `middleware/latency_header.py:11` | `.2` format spec → scientific notation above 10ms | ✅ Resolved |
 
-**Assessment:** the cache-aside read path (list + detail, cache-hit-first with DB fallback) and the update-path invalidation are correctly implemented — that part matches the roadmap's Step 2/4 pattern (`system-design-learning-roadmap.md:751-821`). But 3 of the 4 mutation paths (create, delete, bulk-update) don't invalidate, and the list cache key is shared across all filter combinations. Given these are all correctness bugs affecting user-visible data (stale/wrong reads), **Topic 14 is not yet ready to mark ✅** — recommend fixing 14.1–14.4 before calling this done, since the "Success Criteria" of proper cache invalidation on updates (`system-design-learning-roadmap.md:842-845`) is explicitly not met for create/delete/bulk-update.
+**Assessment (re-reviewed 2026-09-29):** all correctness bugs are closed. The list cache is only read and written for the unfiltered request, and every mutation path (create, update, delete, bulk-update — including partial-miss bulk updates) invalidates the affected detail keys and the list key. This meets the roadmap's cache-invalidation success criteria (`system-design-learning-roadmap.md:842-845`), so **Topic 14 can be marked ✅**. Verified by code reading; no automated tests cover the cache paths yet.
 
-## Recommended next steps (priority order)
-1. **14.1 — Filter-aware cache key**: highest priority — this is the one that can serve outright wrong data to unrelated requests, not just stale data.
-2. **14.2 / 14.3 / 14.4 — Invalidate on create/delete/bulk-update**: same fix shape as the existing `update_grocery` → `remove_grocery_detail_from_redis` call; straightforward to close all three together.
-3. **16.1 — Latency header format**: one-character fix (`.2` → `.2f`), independent of the caching work.
-4. **14.5 — Cache empty results**: revisit once 14.1's key scheme is decided; low priority.
+## Optional follow-ups (non-blocking)
+1. **Batch bulk-update invalidation** — `remove_grocery_detail_from_redis` deletes the `"groceries"` key on every call, so a bulk update of N items deletes it N times. A single `redis.delete(*keys)` would be cleaner.
+2. **Type hint** — `remove_grocery_detail_from_redis(grocery_id: str)` receives a `UUID` from bulk update. Works (UUIDs format to canonical lowercase), but the annotation is inaccurate.
+3. **Canonicalize ids before building cache keys** — `get_grocery_by_id` / `update_grocery` / `delete_grocery` build the detail key from the raw path string. A GET with an uppercase UUID caches under a key that bulk update (which uses the canonical lowercase form) never invalidates. Normalizing via `validate_uuid` before key construction closes this.
+4. **14.5 — Cache empty results** — needs `RedisService.get` to distinguish a cached `[]` from a miss.

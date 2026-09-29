@@ -189,13 +189,14 @@ class GroceryService:
         )
         found_ids = {grocery.id for grocery in updated_groceries}
         missing_ids = [str(gid) for gid in data.grocery_ids if gid not in found_ids]
+
+        for grocery in updated_groceries:
+            await self.remove_grocery_detail_from_redis(grocery.id)
+
         if missing_ids:
             logger.error(GROCERY_NOT_FOUND.format(grocery_id=", ".join(missing_ids)))
             raise ResourceNotFoundException(
                 message=GROCERY_NOT_FOUND.format(grocery_id=", ".join(missing_ids))
             )
-
-        for grocery in updated_groceries:
-            await self.remove_grocery_detail_from_redis(grocery.id)
 
         return [GroceryUpdateResponseSchema.model_validate(grocery) for grocery in updated_groceries]
