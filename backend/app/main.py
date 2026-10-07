@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from app.core.config import settings
 from app.api.router import api_router
 from app.core.exception_handlers import register_exception_handlers
@@ -38,6 +39,8 @@ app = FastAPI(
 app.openapi = lambda: custom_openapi(app=app)
 
 # ── Middleware ──────────────────────────────────────────────────────────────
+# Compress any response larger than 1,000 bytes
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 # request logger middleware
 app.add_middleware(RequestLoggerMiddleware, env_name=settings.ENVIRONMENT)
 app.add_middleware(LatencyHeaderMiddleware)
