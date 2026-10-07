@@ -5,11 +5,11 @@ No FASTAPI no HTTP concepts
 
 from uuid import UUID
 
-from sqlalchemy import select, update, Sequence, and_, or_, cast, String
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import select, update, Sequence, and_, or_, cast, String, func
+from sqlalchemy.exc import SQLAlchemyError, TimeoutError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import DatabaseException
+from app.core.exceptions import DatabaseException, DatabaseTimeoutException
 from app.features.grocery.filters import GroceryFilterParams
 from app.features.grocery.models import Grocery
 
@@ -18,8 +18,15 @@ class GroceryRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    async def __simulation_database_timeout(self, sleep_time: int) -> None:
+        """Simulate database timeout"""
+        await self.session.execute(select(func.pg_sleep(sleep_time)))
+
     async def get_groceries(self, filters: GroceryFilterParams | None = None) -> Sequence[Grocery]:
         """Get all groceries, optionally filtered/searched — no pagination for now"""
+
+        await self.__simulation_database_timeout(10)
+
         stmt = select(Grocery)
 
         if not filters:
@@ -61,9 +68,12 @@ class GroceryRepository:
 
     async def get_by_id(self, grocery_id: str) -> Grocery | None:
         """Fetch a single grocery item by ID. Returns None if not found."""
-        stmt = select(Grocery).where(Grocery.id == grocery_id)
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        try:
+            stmt = select(Grocery).where(Grocery.id == grocery_id)
+            result = await self.session.execute(stmt)
+            return result.scalar_one_or_none()
+        except (SQLAlchemyError, TimeoutError) as _:
+            raise DatabaseTimeoutException()
 
     async def add_grocery(self, grocery: Grocery) -> Grocery:
         """Add a new grocery item with explicit transaction rollback on error."""
