@@ -15,9 +15,9 @@ class Settings(BaseSettings):
     DB_PORT: str
     DB_NAME: str
     # DB pool configs
-    POOL_SIZE: int
-    MAX_OVERFLOW: int
-    POOL_TIMEOUT: int
+    POOL_SIZE: int   # connection that can be taken at a moment
+    MAX_OVERFLOW: int # extra connection count even after pool size is full
+    POOL_TIMEOUT: int # time after trying to pool connection will be canceled
 
     # REDIS config
     REDIS_HOST: str
