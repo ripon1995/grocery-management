@@ -56,3 +56,10 @@ class DatabaseException(AppBaseException):
     error_code = 'database_error'
     detail = 'Database error'
     message = 'Database error'
+
+
+class DatabaseTimeoutException(AppBaseException):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    error_code = 'database_timeout'
+    detail = 'Database pool exhausted'
+    message = 'Database server is under heavy load. Please try again shortly.'
