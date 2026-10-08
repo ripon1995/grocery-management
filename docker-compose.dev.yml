@@ -21,6 +21,16 @@ services:
         condition: service_completed_successfully # wait for migrations + seed
     networks:
       - grocery-net # Connects backend to the custom network
+    # ── Add resource limits here ─────────────────────────────────────────────
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 256M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
+
 
   frontend:
     build: ./frontend
