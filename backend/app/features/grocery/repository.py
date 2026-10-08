@@ -4,14 +4,14 @@ No FASTAPI no HTTP concepts
 """
 
 from uuid import UUID
-
-from sqlalchemy import select, update, Sequence, and_, or_, cast, String, func
+import logging
+from sqlalchemy import select, update, Sequence, and_, or_, cast, String, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.errors import handle_db_errors
 from app.features.grocery.filters import GroceryFilterParams
 from app.features.grocery.models import Grocery
-
+logger = logging.getLogger(__name__)
 
 class GroceryRepository:
     def __init__(self, session: AsyncSession):
@@ -21,6 +21,19 @@ class GroceryRepository:
     async def __simulation_database_timeout(self, sleep_time: int) -> None:
         """Simulate database timeout"""
         await self.session.execute(select(func.pg_sleep(sleep_time)))
+
+    async def __simulation_dead_connection(self) -> None:
+        """Simulate dead connection"""
+        pid_result = await self.session.execute(text('SELECT pg_backend_pid();'))
+        backend_pid = pid_result.scalar()
+        logger.info(f"🔌 [POOL DEBUG] Active Connection DB Backend PID: {backend_pid}")
+        await self.session.execute(text(f"SELECT pg_terminate_backend({backend_pid});"))
+        logger.warning(f"💥 [POOL DEBUG] Killed DB Backend PID {backend_pid} from inside session!")
+
+    async def __log_current_pid(self) -> None:
+        """Helper to log active connection PID without altering state."""
+        pid_result = await self.session.execute(text("SELECT pg_backend_pid();"))
+        logger.info(f"🟢 [DB ACCESS] Executing query on DB Backend PID: {pid_result.scalar()}")
 
     # ================================= filter and search methods ==================================
     @staticmethod
@@ -53,8 +66,6 @@ class GroceryRepository:
     @handle_db_errors('Failed to fetch groceries from database')
     async def get_groceries(self, filters: GroceryFilterParams | None = None) -> Sequence[Grocery]:
         """Get all groceries, optionally filtered/searched — no pagination for now"""
-
-        await self.__simulation_database_timeout(10)
 
         stmt = select(Grocery)
 

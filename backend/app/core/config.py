@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     POOL_SIZE: int   # connection that can be taken at a moment
     MAX_OVERFLOW: int # extra connection count even after pool size is full
     POOL_TIMEOUT: int # time after trying to pool connection will be canceled
+    POOL_RECYCLE: int
 
     # REDIS config
     REDIS_HOST: str

@@ -9,8 +9,10 @@ engine = create_async_engine(
     echo=settings.SHOW_SQL_LOG,
     future=True,
     pool_size=settings.POOL_SIZE,
+    pool_pre_ping=True,
     max_overflow=settings.MAX_OVERFLOW,
     pool_timeout=settings.POOL_TIMEOUT,
+    pool_recycle=settings.POOL_RECYCLE,
     connect_args={
         "prepared_statement_cache_size": 0,
         "statement_cache_size": 0
