@@ -13,13 +13,7 @@ services:
     ports:
       - "8000:8000" # Port mapping for host:container
     env_file:
-      - ./backend/.env # Location of the .env file
-    environment: # overrides DB_* from .env to point at the local postgres
-      DB_HOST: postgres
-      DB_PORT: "5432"
-      DB_USER: grocery_dev
-      DB_PASSWORD: grocery_dev
-      DB_NAME: grocery-dev
+      - ./backend/.env.dev # dev-only env (local postgres), see backend/.env.dev.sample
     depends_on:
       redis:
         condition: service_started

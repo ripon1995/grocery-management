@@ -1,0 +1,30 @@
+# env files: injected at runtime via compose `env_file`, never baked into the image
+.env
+.env.*
+!.env.sample
+!.env.dev.sample
+
+# local virtualenv (deps are installed from requirements.txt inside the image)
+.grocery-management-venv/
+.venv/
+venv/
+
+# python cache / tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# editor / OS
+.idea/
+.vscode/
+.DS_Store
+
+# not needed at runtime
+.python-version
+README.md
+Dockerfile
+.dockerignore
