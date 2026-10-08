@@ -943,9 +943,34 @@ async def update_category_name(category_id: str, new_name: str):
 
 ---
 
-### 16. Latency Optimization
+### 16. Latency Optimization ✅ (Completed)
 
-**Status**: 🟡 In progress (2026-09-29) — `X-Response-Time` header middleware added (`backend/app/middleware/latency_header.py`); the `.2` → `.2f` format bug is fixed (`phase-4-caching-review.md` Topic 16.1). Remaining: response compression, connection-pool hardening (`pool_pre_ping`/`pool_recycle`, tracked in `phase-3-databases-sql-review.md` Topic 4.1), and measuring p95 latency against the < 100ms target.
+**Status**: ✅ Done (2026-10-08) — p95 < 100ms met at the realistic data ceiling (500 rows). What was implemented:
+- **Latency measurement**: `X-Response-Time` header middleware (`backend/app/middleware/latency_header.py`, `.2f` format bug fixed — `phase-4-caching-review.md` Topic 16.1).
+- **Response compression**: `GZipMiddleware(minimum_size=1000)` in `backend/app/main.py`.
+- **Connection pooling**: `pool_size`, `max_overflow`, `pool_timeout`, `pool_pre_ping`, `pool_recycle` all set from settings (`backend/app/db/session.py`); closes `phase-3-databases-sql-review.md` Topic 4.1.
+- **Query timeout**: Postgres `statement_timeout = 5000ms` via asyncpg `server_settings`, so one slow query can't hold a pooled connection indefinitely.
+- **DB error handling**: `handle_db_errors` decorator (`backend/app/db/errors.py`) on `GroceryRepository` — rolls back and maps pool-checkout timeout → `503 database_timeout`, other `SQLAlchemyError` → `500 database_error` (`DatabaseException` changed from 400 → 500).
+- **Test tooling**: separate dev stack (`docker-compose.dev.yml` + `docker/grocery-management-postgres.yml`, env in `backend/.env.dev`) with local Postgres seeded by `backend/scripts/seed_groceries.py` (`SEED_GROCERY_COUNT`); standalone k6 runner (`docker/grocery-management-k6.yml`, script `load-tests/k6/groceries-read.js`); `backend/.dockerignore` keeps env files and the venv out of the image.
+
+**Load test results** (k6 `groceries-read.js`, 1m45s, up to 20 VUs on detail + 2 VUs on list, ~17 req/s, `POOL_SIZE=1`/`MAX_OVERFLOW=0`, 0% failed requests):
+
+| Rows | detail p95 | list p95 | list avg | max | data received |
+|------|-----------|----------|----------|-----|---------------|
+| 100 | 21.85ms | 30.36ms | 15.35ms | 102ms | 2.3 MB |
+| 500 | 29.53ms | 43.06ms | 28.33ms | 262ms | 6.0 MB |
+
+**Findings**:
+- **Pagination deliberately not added** — a grocery list is expected to stay at 200–500 items, and at 500 rows list p95 is 43ms (~2.3x headroom). The cap is a domain assumption only; nothing in `get_groceries` enforces it yet.
+- **List cost scales with row count even on a cache hit** (5x rows → ~2x avg): a cache hit still deserializes the cached JSON, re-runs `model_validate` per item, re-encodes and gzips. Past ~1000 rows, returning the cached JSON as-is would be the next optimization.
+- **100k-row stress experiment** (2026-10-08): list endpoint took ~3.5s uncached / ~1.9s cached (34 MB JSON, 4.6 MB gzipped, 42 MB Redis value). The SQL itself ran in ~0.5s, under `statement_timeout`; the rest was Python-side — ORM hydration 1.26s, `model_validate` 0.65s, `model_dump` 0.66s, JSON 0.32s, gzip ~1.2s. Lesson: `statement_timeout` protects the DB/pool, not end-to-end latency.
+
+**Caveats / not covered**:
+- Results are mostly the **Redis cache path** (5-min TTL, no writes during the run) — DB-path latency not isolated.
+- **Light load only** (~17 req/s with `sleep(1)`); no stress/capacity test (`ramping-arrival-rate`) to find the req/s where p95 > 100ms or 503s start.
+- Measured with `POOL_SIZE=1`; pool sizing not compared.
+- Grocery list is not yet per-user, so the 500-item ceiling is shared across all users.
+- `AuthRepository` is not wrapped with `handle_db_errors`; `QueryCanceledError` (statement timeout) maps to 500, not 503.
 
 **Why You Need It**: Users expect instant responses. Every 100ms delay = 1% drop in conversions.
 
@@ -1015,7 +1040,7 @@ async def get_grocery(id: str, include_details: bool = False):
 
 #### 4. Connection Pooling
 
-**Status**: 🟡 Partial (2026-08-13) — `backend/app/db/session.py` now sets `pool_size`, `max_overflow`, `pool_timeout` from settings (was previously using SQLAlchemy defaults entirely). `pool_recycle`/`pool_pre_ping` still unset — see Topic 4.1 in `phase-3-databases-sql-review.md`.
+**Status**: ✅ Done (2026-10-08) — `backend/app/db/session.py` sets `pool_size`, `max_overflow`, `pool_timeout`, `pool_recycle` from settings plus `pool_pre_ping=True`. Pool exhaustion surfaces as `503 database_timeout` via `handle_db_errors`. Dead-connection and pool-timeout behaviour verified with in-repo simulation helpers (`pg_terminate_backend`, `pg_sleep`).
 
 ```python
 # Bad: New connection per request
