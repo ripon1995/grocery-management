@@ -8,6 +8,7 @@ from app.api.router import api_router
 from app.core.exception_handlers import register_exception_handlers
 from app.core.log_config import configure_logging
 from app.core.openapi_config import custom_openapi
+from app.db.session import engine
 from app.middleware.latency_header import LatencyHeaderMiddleware
 from app.middleware.request_logger import RequestLoggerMiddleware
 from app.clients.redis_client import init_redis, close_redis
@@ -19,10 +20,16 @@ configure_logging(level=settings.LOG_LEVEL, environment=settings.ENVIRONMENT)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # ==================== STARTUP ====================
+    print("🚀 Starting up application...")
     await init_redis()
     print("Application startup complete ✓")
-    yield
+    yield # Application handles requests while paused here
+
+    # ==================== SHUTDOWN ====================
+    print("🛑 Shutting down application...")
     await close_redis()
+    await engine.dispose()
     print("Application shutdown complete ✓")
 
 
