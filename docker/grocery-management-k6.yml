@@ -1,0 +1,18 @@
+# Standalone k6 load runner, not included in any other compose file.
+# Start the API first (e.g. the dev stack), then from the repo root:
+#   docker compose -f docker/grocery-management-k6.yml run --rm k6
+#   docker compose -f docker/grocery-management-k6.yml run --rm k6 run /scripts/<other-script>.js
+# Point at another API: BASE_URL=http://<host>:<port> docker compose -f docker/grocery-management-k6.yml run --rm k6
+name: grocery-management-k6 # separate project so it never touches the dev/prod stacks
+
+services:
+  k6:
+    image: grafana/k6:1.0.0
+    environment:
+      BASE_URL: ${BASE_URL:-http://host.docker.internal:8000} # API published on the host, no shared network needed
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # makes host.docker.internal resolve on Linux too
+    volumes:
+      - ../load-tests/k6:/scripts:ro
+      - ../load-tests/k6/results:/results # summary JSON lands here (gitignored)
+    command: run --summary-export=/results/summary.json /scripts/groceries-read.js
