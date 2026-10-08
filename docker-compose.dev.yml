@@ -34,7 +34,7 @@ services:
     tty: true
     stdin_open: true
     ports:
-      - "5173:3000"
+      - "3000:3000"
     env_file:
       - ./frontend/.env
     depends_on: # by this it will tell to build backend first cause it depend on backend

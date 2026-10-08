@@ -22,7 +22,7 @@ from app.db.session import engine
 from app.features.grocery.models import Grocery
 
 ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
-SEED_COUNT = int(os.getenv("SEED_GROCERY_COUNT", "100000"))
+SEED_COUNT = int(os.getenv("SEED_GROCERY_COUNT", "100"))
 BATCH_SIZE = 2_000
 DB_WAIT_ATTEMPTS = 30
 
