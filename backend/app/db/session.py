@@ -15,7 +15,10 @@ engine = create_async_engine(
     pool_recycle=settings.POOL_RECYCLE,
     connect_args={
         "prepared_statement_cache_size": 0,
-        "statement_cache_size": 0
+        "statement_cache_size": 0,
+        "server_settings": {
+            "statement_timeout": "5000"
+        }
     }
 )
 

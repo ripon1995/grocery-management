@@ -5,9 +5,9 @@ Used by repositories so they don't repeat try/except in every method.
 
 from functools import wraps
 
-from sqlalchemy.exc import SQLAlchemyError, TimeoutError
+from sqlalchemy.exc import SQLAlchemyError, TimeoutError, StatementError
 
-from app.core.exceptions import DatabaseException, DatabaseTimeoutException
+from app.core.exceptions import DatabaseException, DatabaseTimeoutException, DatabaseStatementTimeoutException
 
 
 def handle_db_errors(message: str = 'Database error'):
@@ -23,6 +23,9 @@ def handle_db_errors(message: str = 'Database error'):
             except TimeoutError as e:  # pool checkout timeout; subclass of SQLAlchemyError, so catch it first
                 await self.session.rollback()
                 raise DatabaseTimeoutException() from e
+            except StatementError as e:
+                await self.session.rollback()
+                raise DatabaseStatementTimeoutException() from e
             except SQLAlchemyError as e:
                 await self.session.rollback()
                 raise DatabaseException(message=message) from e
