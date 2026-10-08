@@ -52,7 +52,7 @@ class UnauthorizedException(AppBaseException):
 
 
 class DatabaseException(AppBaseException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     error_code = 'database_error'
     detail = 'Database error'
     message = 'Database error'
