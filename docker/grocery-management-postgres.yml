@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: grocery_dev_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: grocery_dev
+      POSTGRES_PASSWORD: grocery_dev
+      POSTGRES_DB: grocery-dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - grocery-net
+
+  # one-shot job: wait for DB -> migrate -> seed (see backend/scripts/seed_groceries.py)
+  db-init:
+    build: ../backend
+    container_name: grocery_dev_db_init
+    env_file:
+      - ../backend/.env
+    environment: # overrides DB_* from .env to point at the local postgres
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: grocery_dev
+      DB_PASSWORD: grocery_dev
+      DB_NAME: grocery-dev
+      PYTHONUNBUFFERED: "1" # keep print() and alembic logs in order
+    command: python -m scripts.seed_groceries
+    depends_on:
+      - postgres
+    networks:
+      - grocery-net
+
+volumes:
+  postgres_data:
+
+networks:
+  grocery-net: # Custom network name
+    driver: bridge

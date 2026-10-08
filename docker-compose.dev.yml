@@ -1,0 +1,48 @@
+# Dev stack: local postgres (migrated + seeded) instead of Supabase
+# Usage: docker compose -f docker-compose.dev.yml up --build
+name: grocery-management-dev # separate project so it doesn't clash with the prod stack
+
+include:
+  - ./docker/grocery-management-redis.yml
+  - ./docker/grocery-management-postgres.yml
+
+services:
+  backend:
+    build: ./backend # Location of the backend Dockerfile (terminology -> context file)
+    container_name: grocery-api-dev # Custom container name
+    ports:
+      - "8000:8000" # Port mapping for host:container
+    env_file:
+      - ./backend/.env # Location of the .env file
+    environment: # overrides DB_* from .env to point at the local postgres
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: grocery_dev
+      DB_PASSWORD: grocery_dev
+      DB_NAME: grocery-dev
+    depends_on:
+      redis:
+        condition: service_started
+      db-init:
+        condition: service_completed_successfully # wait for migrations + seed
+    networks:
+      - grocery-net # Connects backend to the custom network
+
+  frontend:
+    build: ./frontend
+    container_name: grocery-frontend-dev
+    tty: true
+    stdin_open: true
+    ports:
+      - "5173:3000"
+    env_file:
+      - ./frontend/.env
+    depends_on: # by this it will tell to build backend first cause it depend on backend
+      - backend
+    networks:
+      - grocery-net
+
+
+networks:
+  grocery-net: # Custom network name
+    driver: bridge
