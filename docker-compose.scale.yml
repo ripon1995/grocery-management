@@ -1,0 +1,61 @@
+# Horizontal-scaling stack: 3 identical API instances sharing one Postgres + one Redis.
+# Same image and env (.env.dev) for every instance, so a JWT issued by one is accepted by the others.
+# Usage (stop the dev stack first, it uses the same postgres/redis container names):
+#   docker compose -f docker-compose.dev.yml down
+#   docker compose -f docker-compose.scale.yml up --build
+# Instances are published on the host as :8001, :8002, :8003 (no load balancer yet, see topic 19).
+name: grocery-management-scale # separate project so it doesn't clash with the dev/prod stacks
+
+include:
+  - ./docker/grocery-management-redis.yml
+  - ./docker/grocery-management-postgres.yml
+
+# shared definition for every API instance
+x-backend: &backend
+  build: ./backend
+  image: grocery-api-scale # build once, reuse the same image for all instances
+  env_file:
+    - ./backend/.env.dev # dev-only env (local postgres), see backend/.env.dev.sample
+  depends_on:
+    redis:
+      condition: service_started
+    db-init:
+      condition: service_completed_successfully # wait for migrations + seed
+  networks:
+    - grocery-net
+  environment:
+    WEB_CONCURRENCY: '1' # worker count per instance
+  deploy:
+    resources:
+      limits:
+        cpus: '1.00'
+        memory: 256M
+      reservations:
+        cpus: '0.10'
+        memory: 128M
+
+services:
+  backend-1:
+    <<: *backend
+    container_name: grocery-api-1
+    hostname: grocery-api-1 # distinguishes instances in logs
+    ports:
+      - "8001:8000"
+
+  backend-2:
+    <<: *backend
+    container_name: grocery-api-2
+    hostname: grocery-api-2
+    ports:
+      - "8002:8000"
+
+  backend-3:
+    <<: *backend
+    container_name: grocery-api-3
+    hostname: grocery-api-3
+    ports:
+      - "8003:8000"
+
+networks:
+  grocery-net: # Custom network name
+    driver: bridge
