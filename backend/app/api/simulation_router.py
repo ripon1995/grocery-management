@@ -35,7 +35,7 @@ def stress_cpu():
     target = b"stress_test"
     for _ in range(500_000):
         target = hashlib.sha256(target).digest()
-    return {"status": "done"}
+    return {"status": "done", "worker_pid": os.getpid()}  # uvicorn worker process that served this request
 
 
 # ================================ 3. Sequential vs ThreadPool vs ProcessPool ================================
