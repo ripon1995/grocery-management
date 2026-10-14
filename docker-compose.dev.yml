@@ -22,6 +22,8 @@ services:
     networks:
       - grocery-net # Connects backend to the custom network
     # ── Add resource limits here ─────────────────────────────────────────────
+    environment:
+      WEB_CONCURRENCY: '1' # worker count
     deploy:
       resources:
         limits:
