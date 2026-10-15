@@ -57,6 +57,20 @@ services:
     expose:
       - "8000"
 
+  frontend:
+    build: ./frontend
+    container_name: grocery-frontend-dev
+    tty: true
+    stdin_open: true
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env
+    depends_on: # by this it will tell to build backend first cause it depend on backend
+      - nginx
+    networks:
+      - grocery-net
+
 networks:
   grocery-net: # Custom network name
     driver: bridge
