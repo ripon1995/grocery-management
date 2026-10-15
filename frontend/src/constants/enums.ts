@@ -26,7 +26,8 @@ export const Seller = {
     COMILLA: 'comilla',
     DEFAULT: 'default',
     AGORA: 'agora',
-    ONLINE: 'online'
+    ONLINE: 'online',
+    CHALDAL: 'chaldal'
 } as const;
 export type Seller = typeof Seller[keyof typeof Seller];
 

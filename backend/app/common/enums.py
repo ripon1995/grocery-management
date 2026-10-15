@@ -31,3 +31,14 @@ class Seller(str, Enum):
     DEFAULT = 'default'
     AGORA = 'agora'
     ONLINE = 'online'
+    CHALDAL = 'chaldal'
+
+
+# shops Gemini explore / campaign crawler work with (Phase 6)
+MARKET_SHOPS = (Seller.SHWAPNO, Seller.CHALDAL, Seller.MEENA)
+
+
+class PriceSource(str, Enum):
+    MANUAL = 'manual'
+    GEMINI = 'gemini'
+    CAMPAIGN = 'campaign'

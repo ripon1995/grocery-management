@@ -18,6 +18,7 @@ from app.core.config import settings
 from app.db.base import Base
 from app.features.grocery.models import Grocery
 from app.features.auth.models import User
+from app.features.market.models import PriceObservation, Campaign
 
 target_metadata = Base.metadata
 
