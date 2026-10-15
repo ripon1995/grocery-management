@@ -82,6 +82,13 @@ class GroceryRepository:
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
+    @handle_db_errors('Failed to fetch shopping list from database')
+    async def get_included_groceries(self) -> Sequence[Grocery]:
+        """Groceries marked should_include=True (the shopping list)"""
+        stmt = select(Grocery).where(Grocery.should_include.is_(True))
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
+
     @handle_db_errors('Failed to fetch grocery from database')
     async def get_by_id(self, grocery_id: str) -> Grocery | None:
         """Fetch a single grocery item by ID. Returns None if not found."""

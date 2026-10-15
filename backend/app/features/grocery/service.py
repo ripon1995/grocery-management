@@ -22,6 +22,10 @@ from app.common.enums import Seller
 from .filters import GroceryFilterParams
 from .models import Grocery
 from .repository import GroceryRepository
+from .shopping_list import (
+    build_shopping_list,
+    shopping_list_to_csv
+)
 from .schemas.request_schemas import (
     GroceryCreateSchema,
     GroceryUpdateSchema,
@@ -156,6 +160,10 @@ class GroceryService:
         await self.add_grocery_detail_to_redis(result)
 
         return result
+
+    async def export_shopping_list_csv(self) -> str:
+        groceries = await self.repo.get_included_groceries()
+        return shopping_list_to_csv(build_shopping_list(groceries))
 
     async def create_grocery(self, data: GroceryCreateSchema) -> GroceryCreateResponseSchema:
         grocery = self.__prepare_grocery(data)
