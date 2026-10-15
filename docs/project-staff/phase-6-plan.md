@@ -35,7 +35,7 @@ All numbers in this doc are measured on the dev or scale stack, the same way as 
 | nginx access log | `docker logs grocery_dev_nginx` shows how many requests hit which path. |
 | RabbitMQ UI | `localhost:15672`, shows messages waiting, unacked and in the dead-letter queue (DLQ). |
 
-Switch to the real Gemini only for the accuracy checks in Steps 3 and 6.
+Switch to the real Gemini only for the accuracy checks in Steps 2 and 5.
 
 ---
 
@@ -51,8 +51,8 @@ Switch to the real Gemini only for the accuracy checks in Steps 3 and 6.
 | How Gemini finds prices | **Search-grounded** answers (explore) / **extracting data from pages we download ourselves** (campaigns) | Gemini can't browse websites itself. Grounding lets it search Google; for campaigns, we download the offer pages and Gemini only turns the text into structured data. |
 | Trust in Gemini output | A suggestion until a user applies it, and dropped if it has no source URL on the shop's own domain | Search-grounded prices can be stale or invented. |
 
-### Free-tier limits (fill in before Step 3)
-Copy them from Google's Gemini API rate-limits page for the chosen `GEMINI_MODEL`. The rate limiter in Step 4 is sized from these numbers.
+### Free-tier limits (fill in before Step 2)
+Copy them from Google's Gemini API rate-limits page for the chosen `GEMINI_MODEL`. The rate limiter in Step 3 is sized from these numbers.
 
 | Limit | Value | Checked on |
 |---|---|---|
@@ -87,8 +87,8 @@ Copy them from Google's Gemini API rate-limits page for the chosen `GEMINI_MODEL
 ## 4. New data
 
 - **`Seller` enum:** add `CHALDAL`. `MEENA` = Meena Bazar, `SHWAPNO` = Shwapno.
-- **`price_observations`:** `grocery_id`, `seller`, `price`, `source` (`manual` / `gemini` / `campaign`), `source_url`, `observed_at`. One row for every price seen anywhere.
-- **`campaigns`:** `seller`, `title`, `product_name`, `discount_text`, `discount_percent`, `campaign_price`, `valid_until`, `source_url`, `fetched_at`, `content_hash` (unique), `matched_grocery_id`.
+- **`price_observation`:** `grocery_id`, `seller`, `price`, `source` (`manual` / `gemini` / `campaign`), `source_url`, `observed_at`. One row for every price seen anywhere.
+- **`campaign`:** `seller`, `title`, `product_name`, `discount_text`, `discount_percent`, `campaign_price`, `valid_until`, `source_url`, `fetched_at`, `content_hash` (unique), `matched_grocery_id`.
 
 ---
 
@@ -110,45 +110,7 @@ Check one shop's subtotal by hand against the items in the UI.
 
 ---
 
-## 6. Step 2 – Price history (Topic 15 Denormalization, Topic 10 Indexing)
-
-### Problem
-1. **`best_price` is wrong over time.** It only ever goes down (`GroceryService.__update_best_price_and_best_seller`), so a one-off cheap price from a year ago stays the "best" forever. Also, when `best_price` is `None`, `best_seller` is forced to `MEENA`.
-2. **The obvious fix makes the list slow.** The obvious fix is to store every price in `price_observations` and calculate the best price with `MIN(price)` over the last 30 days **on every list request**. That turns the most-used endpoint into an aggregate over a growing table.
-
-### Show the problem
-```bash
-# 1. stale best price
-#    update one item: price 100 @ shwapno → 150 @ meena → 160 @ meena
-#    GET /groceries/{id} → best_price stays 100, even after the 100 is months old
-
-# 2. slow list: simple version calculates MIN() on each request
-#    seed 500 groceries × 200 observations each (seed script option)
-docker compose -f docker/grocery-management-k6.yml run --rm k6     # record GET /groceries p95
-# psql: EXPLAIN ANALYZE the list query → note the Seq Scan on price_observations
-```
-
-### Fix
-- **Denormalization:** `best_price`/`best_seller` stay as columns on `grocery` and are recalculated **when a price is added**, not when the list is read. Reads become a plain column read again.
-- **Indexing:** an index on `price_observations (grocery_id, observed_at DESC)`, so the recalculation is an index lookup.
-- Creating or updating an item adds a `manual` observation, and the `MEENA` default is removed.
-
-### Check again
-The same three checks: the stale-price scenario, k6 p95, and `EXPLAIN ANALYZE` of the recalculation query.
-
-| Check | Before | After |
-|---|---|---|
-| best_price after 100 → 150 → 160 (old 100 outside 30 days) | 100 (wrong) | _TBD_ (expect 150) |
-| `GET /groceries` p95, 500 items × 200 observations | _TBD_ | _TBD_ |
-| Plan for the best-price query | Seq Scan | Index Scan |
-
-### What's achieved
-- [ ] The best price reflects recent prices, with history you can see on the item page.
-- [ ] The trade-off measured: writes do a bit more work so reads stay fast.
-
----
-
-## 7. Step 3 – Explore an item (Topic 22 Message Queues)
+## 6. Step 2 – Explore an item (Topic 22 Message Queues)
 
 ### Simple version
 `POST /api/v1/market/explore {grocery_id}`. The endpoint reads the grocery, calls Gemini **inside the request**, saves the offers it finds and returns them.
@@ -176,7 +138,7 @@ wait
 - **RabbitMQ** with an `explore.jobs` queue. The API only checks the request, publishes a message and returns **`202 {job_id}`** at once, **without** keeping a DB connection open.
 - A **worker** container (`python -m app.worker`) takes the message, calls Gemini, saves the results and only then **acks** it.
 - Failed messages are **retried 3 times**, then moved to **`explore.jobs.dlq`** (dead-letter queue).
-- Job status is kept in Redis (`job:{id}`), and the frontend polls `GET /api/v1/jobs/{id}` (Step 5 replaces polling).
+- Job status is kept in Redis (`job:{id}`), and the frontend polls `GET /api/v1/jobs/{id}` (Step 4 replaces polling).
 
 ### Check again
 The same commands, plus two queue-specific ones:
@@ -211,7 +173,7 @@ Explore 5 well-known items and compare each price Gemini found with the shop's w
 
 ---
 
-## 8. Step 4 – Protecting the Gemini quota (Topic 23 Rate Limiting, + caching)
+## 7. Step 3 – Protecting the Gemini quota (Topic 23 Rate Limiting, + caching)
 
 ### Problem
 1. **A burst uses up the free tier for everyone.** Results are shared, but every click is a new Gemini call. Once Gemini starts returning `429`, explore fails for every user. With the daily cap, it stays broken until the quota resets. Retries make it worse, because retrying a `429` uses more quota.
@@ -264,10 +226,10 @@ The same 4 checks.
 
 ---
 
-## 9. Step 5 – Live results (Topic 25 WebSockets)
+## 8. Step 4 – Live results (Topic 25 WebSockets)
 
 ### Problem
-1. **Polling floods the API.** After Step 3 the browser asks `GET /jobs/{id}` every second. A 15 s explore is about 15 requests, and 20 open tabs is about 300 requests to deliver one result.
+1. **Polling floods the API.** After Step 2 the browser asks `GET /jobs/{id}` every second. A 15 s explore is about 15 requests, and 20 open tabs is about 300 requests to deliver one result.
 2. **Results arrive late.** A result can arrive up to one poll interval after the job finished.
 3. **Other users don't see updates.** When someone else explores an item or a crawl finds a campaign, your page doesn't change until you refresh.
 4. **A simple WebSocket breaks behind the load balancer.** In the simple version, each API instance keeps its WebSocket connections in memory. A browser connected to `grocery-api-2` never hears about a job submitted through `grocery-api-1`. On top of that, nginx doesn't pass WebSocket connections through yet, so the connection fails.
@@ -285,7 +247,7 @@ websocat ws://localhost/ws/market
 ```
 
 ### Fix
-- `WS /ws/market` pushes `explore.done` (and `campaign.new` from Step 7).
+- `WS /ws/market` pushes `explore.done` (and `campaign.new` from Step 6).
 - The worker publishes events to a **Redis pub/sub** channel (`market.events`). **Every** API instance subscribes to it and forwards events to its own connected browsers, so it doesn't matter which instance a browser is on.
 - nginx gets the WebSocket headers (`proxy_http_version 1.1`, `Upgrade`, `Connection "upgrade"`) and a long `proxy_read_timeout`. The server sends a ping every 30 s so idle connections aren't dropped.
 - The frontend opens one socket and stops polling.
@@ -306,7 +268,7 @@ The same commands.
 
 ---
 
-## 10. Step 6 – Show campaigns (Topic 22 again: scheduled jobs)
+## 9. Step 5 – Show campaigns (Topic 22 again: scheduled jobs)
 
 ### Site survey (first)
 | Shop | Offers page URL | Offers in plain HTML? (`curl` + grep) | robots.txt allows it? | Approach |
@@ -357,7 +319,7 @@ For each shop: campaigns visible on the website vs campaigns saved by the crawle
 
 ---
 
-## 11. Step 7 – Campaign alerts (Topic 26 Webhooks)
+## 10. Step 6 – Campaign alerts (Topic 26 Webhooks)
 
 ### Problem
 - **No way to be told.** You only find out a list item is on offer if you open the app on the right day.
@@ -398,7 +360,7 @@ The same 4 checks.
 
 ---
 
-## 12. Step 8 – market-intel service (Topic 21 Microservices, Topic 24 API Gateway)
+## 11. Step 7 – market-intel service (Topic 21 Microservices, Topic 24 API Gateway)
 
 ### Problem (everything is still one app)
 1. **Changing market code restarts the grocery API.** Editing a Gemini prompt means rebuilding and restarting `grocery-api-1..3`, and `/groceries` errors while they restart.
@@ -415,7 +377,7 @@ docker compose -f docker-compose.scale.yml up -d --build   # count k6 errors dur
 
 ### Fix, part 1: microservices
 - Move `features/market/` and the worker into a separate `market-intel` service, with its own Dockerfile, settings and requirements.
-- It owns its own tables (`price_observations`, `campaigns`) in the shared Postgres. It only reads `grocery`.
+- It owns its own tables (`price_observation`, `campaign`) in the shared Postgres. It only reads `grocery`.
 
 **The split itself creates new problems (the Topic 24 "before"):**
 - The frontend now needs two base URLs, and two WebSocket/API origins.
@@ -452,18 +414,17 @@ The same commands.
 
 ---
 
-## 13. Phase 6 tracker
+## 12. Phase 6 tracker
 
 | Step | Feature | Topic | Problem it solves | Status | Done on |
 |---|---|---|---|---|---|
 | 1 | Shopping-list export | – | Planning a shopping trip by hand | ✅ | 2026-10-15 |
-| 2 | Price history | 15, 10 | `best_price` only goes down; calculating it live is slow | ⬜ | |
-| 3 | Explore an item | 22 | Requests waiting on Gemini, blocking the DB pool, losing work | ⬜ | |
-| 4 | Quota protection | 23 | Bursts use up the free tier; duplicate calls; per-instance limits leak | ⬜ | |
-| 5 | Live results | 25 | Polling floods the API; WebSockets break behind the load balancer | ⬜ | |
-| 6 | Show campaigns | 22 | Crawling on page view times out; duplicate rows; schedule runs 3 times | ⬜ | |
-| 7 | Campaign alerts | 26 | No notification; inline webhooks are slow, lost, duplicated, can be faked | ⬜ | |
-| 8 | market-intel + gateway | 21, 24 | One deploy unit and one point of failure; the split's two-origin problems | ⬜ | |
+| 2 | Explore an item | 22 | Requests waiting on Gemini, blocking the DB pool, losing work | ⬜ | |
+| 3 | Quota protection | 23 | Bursts use up the free tier; duplicate calls; per-instance limits leak | ⬜ | |
+| 4 | Live results | 25 | Polling floods the API; WebSockets break behind the load balancer | ⬜ | |
+| 5 | Show campaigns | 22 | Crawling on page view times out; duplicate rows; schedule runs 3 times | ⬜ | |
+| 6 | Campaign alerts | 26 | No notification; inline webhooks are slow, lost, duplicated, can be faked | ⬜ | |
+| 7 | market-intel + gateway | 21, 24 | One deploy unit and one point of failure; the split's two-origin problems | ⬜ | |
 
 **Phase 6 is done when** every step's Before/After table is filled in and every "What's achieved" box is ticked.
 
