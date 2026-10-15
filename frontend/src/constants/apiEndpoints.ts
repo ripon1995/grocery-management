@@ -9,6 +9,7 @@ const GROCERY_APIS = {
     GROCERY_UPDATE: `${GROCERIES}/:id`,
     GROCERY_DELETE: `${GROCERIES}/:id`,
     GROCERY_BULK_SHOULD_INCLUDE: `${GROCERIES}/bulk/should-include`,
+    GROCERY_EXPORT: `${GROCERIES}/export`,
 } as const;
 
 const AUTH_APIS = {

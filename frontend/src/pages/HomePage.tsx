@@ -4,11 +4,17 @@ import {Typography} from '@mui/material';
 import GroceryTable from "../components/grocery_components/GroceryList.tsx";
 import GroceryFilterBar from "../components/grocery_components/GroceryFilterBar.tsx";
 import Box from "@mui/material/Box";
-import {MonthlyGroceryAppAddButton, MonthlyGroceryAppIncludeSelectedButton} from "../components/common/MonthlyGroceryAppButton.tsx";
+import {
+    MonthlyGroceryAppAddButton,
+    MonthlyGroceryAppExportButton,
+    MonthlyGroceryAppIncludeSelectedButton
+} from "../components/common/MonthlyGroceryAppButton.tsx";
 import PATHS from "../constants/paths.ts";
 import useGroceryStore from "../store/useGroceryStore.ts";
 import MonthlyGroceryAppLoader from "../components/common/MonthlyGroceryAppLoader.tsx";
 import type {IGroceryFilterParams} from "../api/types/requests/grocery/GroceryFilterParams.ts";
+import {exportShoppingList} from "../api/endpoints/GroceryApi.ts";
+import {AppToast} from "../components/common/AppToast.tsx";
 
 
 function HomePage() {
@@ -18,6 +24,7 @@ function HomePage() {
     const {groceries, fetchGroceries, isLoading, deleteGroceryItem, bulkUpdateShouldIncludeItems} = useGroceryStore();
     const [filters, setFilters] = useState<IGroceryFilterParams>({});
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [isExporting, setIsExporting] = useState(false);
 
     // 2. Trigger the fetch when the page mounts or filters change
     useEffect(() => {
@@ -51,6 +58,22 @@ function HomePage() {
     const handleToggleSelectAll = (checked: boolean) => {
         setSelectedIds(checked ? groceries.map((item) => item.id) : []);
     };
+    const handleExport = async () => {
+        setIsExporting(true);
+        try {
+            const {blob, filename} = await exportShoppingList();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch {
+            AppToast.error('Failed to export the shopping list');
+        } finally {
+            setIsExporting(false);
+        }
+    };
     const handleIncludeSelected = async () => {
         await bulkUpdateShouldIncludeItems(selectedIds, true);
         setSelectedIds([]);
@@ -74,8 +97,9 @@ function HomePage() {
                     Monthly Grocery List
                 </Typography>
 
-                {/* 2. The Button (Pushed to Right) */}
-                <Box sx={{position: 'absolute', right: 0}}>
+                {/* 2. The Buttons (Pushed to Right) */}
+                <Box sx={{position: 'absolute', right: 0, display: 'flex', gap: 2}}>
+                    <MonthlyGroceryAppExportButton onClick={handleExport} disabled={isExporting}/>
                     <MonthlyGroceryAppAddButton onClick={handleSave}/>
                 </Box>
             </Box>

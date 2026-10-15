@@ -106,7 +106,7 @@ open /tmp/list.csv
 Check one shop's subtotal by hand against the items in the UI.
 
 ### What's achieved
-- [ ] One click gives a shopping list split by shop, with a budget estimate.
+- [x] One click gives a shopping list split by shop, with a budget estimate. (2026-10-15: 28 included items → 6 shops, grand total 10238, matches a SQL cross-check)
 
 ---
 
@@ -456,7 +456,7 @@ The same commands.
 
 | Step | Feature | Topic | Problem it solves | Status | Done on |
 |---|---|---|---|---|---|
-| 1 | Shopping-list export | – | Planning a shopping trip by hand | ⬜ | |
+| 1 | Shopping-list export | – | Planning a shopping trip by hand | ✅ | 2026-10-15 |
 | 2 | Price history | 15, 10 | `best_price` only goes down; calculating it live is slow | ⬜ | |
 | 3 | Explore an item | 22 | Requests waiting on Gemini, blocking the DB pool, losing work | ⬜ | |
 | 4 | Quota protection | 23 | Bursts use up the free tier; duplicate calls; per-instance limits leak | ⬜ | |

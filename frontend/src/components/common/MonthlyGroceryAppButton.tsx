@@ -1,6 +1,7 @@
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import AddIcon from '@mui/icons-material/Add';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 interface IButtonProps {
     onClick: () => void;
@@ -84,6 +85,38 @@ export function MonthlyGroceryAppAddButton({onClick}: IButtonProps) {
                 Add Grocery
             </Button>
         </Stack>
+    );
+}
+
+interface IExportButtonProps {
+    onClick: () => void;
+    disabled?: boolean;
+}
+
+export function MonthlyGroceryAppExportButton({onClick, disabled}: IExportButtonProps) {
+    return (
+        <Button
+            variant="outlined"
+            startIcon={<FileDownloadIcon/>}
+            onClick={onClick}
+            disabled={disabled}
+            sx={{
+                color: 'purple',
+                borderColor: 'purple',
+                borderWidth: '2px',
+                fontWeight: 'bold',
+                padding: '10px 30px',
+                fontSize: '1.1rem',
+                borderRadius: '4px',
+                '&:hover': {
+                    borderColor: 'success.dark',
+                    backgroundColor: 'rgba(46, 125, 50, 0.04)',
+                    borderWidth: '2px'
+                }
+            }}
+        >
+            Export List
+        </Button>
     );
 }
 

@@ -46,7 +46,22 @@ export const deleteGrocery = async (grocery_id: string): Promise<void> => {
     return;
 }
 
-export const bulkUpdateShouldInclude = async (payload: IGroceryBulkUpdatePayload): Promise<IGroceryListItem[]> => {
+export interface IExportFile {
+    blob: Blob;
+    filename: string;
+}
+
+export const exportShoppingList = async (): Promise<IExportFile> => {
+    const response = await axiosInstance.get<Blob>(API_ENDPOINTS.GROCERY.GROCERY_EXPORT, {
+        params: {format: 'csv'},
+        responseType: 'blob',
+    });
+    const disposition = String(response.headers['content-disposition'] ?? '');
+    const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? 'shopping-list.csv';
+    return {blob: response.data, filename};
+}
+
+export const bulkUpdateShouldInclude =async (payload: IGroceryBulkUpdatePayload): Promise<IGroceryListItem[]> => {
     const response = await axiosInstance.patch<IApiResponse<GroceryListResponse[]>>(API_ENDPOINTS.GROCERY.GROCERY_BULK_SHOULD_INCLUDE, payload);
     return response.data.data.map(item => (toGroceryListItem(item)));
 }
