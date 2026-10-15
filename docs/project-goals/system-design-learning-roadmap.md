@@ -1132,7 +1132,21 @@ redis.config_set("maxmemory", "4gb")
 
 ---
 
-### 18. Horizontal Scaling
+### 18. Horizontal Scaling ✅ (Completed)
+
+**Status**: ✅ Done (2026-10-15) — 3 identical API instances behind nginx, verified live. What was implemented:
+- **Multi-instance stack**: `docker-compose.scale.yml` runs `grocery-api-1/2/3` from one image (`grocery-api-scale`), same `backend/.env.dev`, 1 CPU / 256 MB limit and `WEB_CONCURRENCY=1` each. Includes the shared Redis, Postgres (+ `db-init` migrate/seed) and nginx compose files.
+- **Stateless app**: no in-memory sessions — JWT auth signed with a shared `SECRET_KEY`, cache in the shared Redis, data in the shared Postgres. No local file storage.
+- **No bypass**: instances use `expose: 8000` only (no host ports), so the load balancer on `:80` is the single entry point.
+
+**Verification** (2026-10-15, all requests through nginx `:80`):
+- Register + login on one instance, then 6 authenticated `POST /api/v1/groceries/` calls round-robined 2/2/2 across all three → all `422` (auth accepted, empty body rejected); a bogus token → `401`.
+- Direct `localhost:8001` → connection refused.
+
+**Caveats / not covered**:
+- Shared file storage (S3) not needed yet — the app stores no files.
+- Single Postgres and single Redis remain single points of failure (see topics 11 and 12).
+- `ip_hash` (sticky sessions) was tried and removed — not needed since the app is stateless.
 
 **Why You Need It**: Vertical scaling hits limits. Horizontal scaling adds more servers.
 
@@ -1185,7 +1199,34 @@ uvicorn main:app --port 8002 &
 
 ---
 
-### 19. Load Balancers
+### 19. Load Balancers ✅ (Completed)
+
+**Status**: ✅ Done (2026-10-15) — nginx round-robin load balancer in front of the 3 API instances. What was implemented:
+- **nginx service**: `docker/grocery-management-nginx.yml` (`nginx:alpine`, host `:80`), config mounted from `infra/nginx.conf`.
+- **Upstream**: `grocery_api_cluster` with round-robin (default) over `grocery-api-1/2/3:8000`, each `max_fails=2 fail_timeout=5s` (passive health check).
+- **Fast failover**: `proxy_connect_timeout 2s` + `proxy_next_upstream error timeout http_502 http_503`, so a request to a dead instance is retried on a healthy one instead of hanging for the 60s default.
+- **Forwarded headers**: `Host`, `X-Real-IP`, `X-Forwarded-For`, `X-Forwarded-Proto`.
+
+**Verification** (2026-10-15, counted per-container from `RequestLoggerMiddleware` logs):
+
+| Test | Result |
+|------|--------|
+| 30 × `GET /api/v1/health/` | 10 / 10 / 10, all `200` |
+| `grocery-api-2` stopped, 30 GETs | 30/30 `200`; 2 requests took ~2.1s (connect timeout → retried), then api-2 marked down, rest ~0.11s, split 15 / 15 |
+| `grocery-api-2` stopped, 6 POST `/auth/login` | 6/6 answered (`401` as expected), ~5ms |
+| `grocery-api-2` restarted | rejoined automatically, 10 / 10 / 10 |
+| Rolling restart of all 3 under continuous load (~4 req/s, 75s) | 303/303 `200`, 1 request > 1s (max 1.17s) |
+
+**Findings**:
+- **Before the timeout fix**, stopping one instance made 4 of 30 requests hang past a 10s client timeout (nginx default `proxy_connect_timeout` is 60s and a server is only marked down after a failure is recorded).
+- **nginx must be reloaded after editing `infra/nginx.conf`** (`docker exec grocery_dev_nginx nginx -s reload`). A stale `ip_hash` config in the running process sent all 30 requests to one instance even though the file on disk had it commented out.
+
+**Caveats / not covered**:
+- Health checks are passive only (open-source nginx has no active `health_check`); while an instance is down, one request every `fail_timeout` (5s) pays the ~2s connect timeout as nginx probes it again.
+- nginx resolves `grocery-api-N` once at startup — if a recreated container gets a new IP, nginx needs a reload (or a `resolver 127.0.0.11` + variable-based `proxy_pass`).
+- Non-idempotent requests (POST/PATCH) are only retried on connect failure, not after being sent to an upstream that then fails — by design.
+- No response header identifies which instance served a request (e.g. `add_header X-Upstream $upstream_addr`); distribution was measured from container logs.
+- Only round-robin tested; `least_conn` / weights not compared. No HTTPS (topic 20).
 
 **Why You Need It**: Distribute traffic across multiple backend servers. Essential for horizontal scaling.
 
