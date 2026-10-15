@@ -6,9 +6,10 @@ Only HTTP concerns:
 
 Router should be thin.
 """
-from typing import Annotated, List
+from datetime import date
+from typing import Annotated, List, Literal
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, Query, Response
 from fastapi import Body
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -76,6 +77,28 @@ async def bulk_update_should_include(
         success=True,
         data=item,
         message='Bulk update should_include fetched successfully',
+    )
+
+
+# must stay above "/{grocery_id}", otherwise "export" is matched as a grocery id
+@router.get(
+    "/export",
+    response_class=Response,
+    status_code=status.HTTP_200_OK,
+    summary="Export the shopping list (should_include items) grouped by shop",
+    responses={200: {"content": {"text/csv": {}}}},
+)
+async def export_shopping_list(
+        format: Literal["csv"] = Query(default="csv", description="Export file format"),
+        grocery_service: GroceryService = Depends(get_grocery_service)
+):
+    content = await grocery_service.export_shopping_list_csv()
+    filename = f"shopping-list-{date.today().isoformat()}.{format}"
+    return Response(
+        # BOM so Excel opens the file as UTF-8
+        content="﻿" + content,
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
