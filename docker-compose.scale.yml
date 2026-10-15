@@ -3,12 +3,13 @@
 # Usage (stop the dev stack first, it uses the same postgres/redis container names):
 #   docker compose -f docker-compose.dev.yml down
 #   docker compose -f docker-compose.scale.yml up --build
-# Instances are published on the host as :8001, :8002, :8003 (no load balancer yet, see topic 19).
+# Instances are published on the host as :8001, :8002, :8003.
 name: grocery-management-scale # separate project so it doesn't clash with the dev/prod stacks
 
 include:
   - ./docker/grocery-management-redis.yml
   - ./docker/grocery-management-postgres.yml
+  - ./docker/grocery-management-nginx.yml
 
 # shared definition for every API instance
 x-backend: &backend
