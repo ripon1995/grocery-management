@@ -59,6 +59,7 @@ app.add_middleware(
     allow_credentials=True,  # Allow cookies/auth headers
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
+    expose_headers=["Content-Disposition"],  # let the browser read the export filename
 )
 
 # ── Exception handlers ──────────────────────────────────────────────────────
