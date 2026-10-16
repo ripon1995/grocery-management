@@ -11,6 +11,11 @@ services:
       RABBITMQ_DEFAULT_PASS: grocery_mq
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck: # the broker takes a few seconds before it accepts connections
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"] # ping passes before the AMQP listener is open
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - grocery-net
 

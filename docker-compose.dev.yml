@@ -5,6 +5,7 @@ name: grocery-management-dev # separate project so it doesn't clash with the pro
 include:
   - ./docker/grocery-management-redis.yml
   - ./docker/grocery-management-postgres.yml
+  - ./docker/grocery-management-rabbitmq.yml
 
 services:
   backend:
@@ -17,6 +18,8 @@ services:
     depends_on:
       redis:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy # broker accepts connections
       db-init:
         condition: service_completed_successfully # wait for migrations + seed
     networks:

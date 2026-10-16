@@ -1,5 +1,6 @@
 include:
   - ./docker/grocery-management-redis.yml
+  - ./docker/grocery-management-rabbitmq.yml
 
 services:
   backend:
@@ -10,7 +11,10 @@ services:
     env_file:
       - ./backend/.env # Location of the .env file
     depends_on:
-      - redis
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy # broker accepts connections
     networks:
       - grocery-net # Connects backend to the custom network
 

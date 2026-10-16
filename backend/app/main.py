@@ -32,9 +32,10 @@ async def lifespan(app: FastAPI):
 
     # ==================== SHUTDOWN ====================
     print("🛑 Shutting down application...")
-    await close_redis()
-    await close_gemini_client()
+    # reverse of startup: the fake Gemini uses Redis, so Redis closes last
     await close_rabbitmq_client()
+    await close_gemini_client()
+    await close_redis()
     await engine.dispose()
     print("Application shutdown complete ✓")
 
