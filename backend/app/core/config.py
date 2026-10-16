@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 24 * 60
 
+    # GEMINI CONFIG
+    GEMINI_API_KEY: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=('.env', 'backend/.env'),
         env_file_encoding='utf-8',
