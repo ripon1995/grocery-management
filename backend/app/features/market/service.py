@@ -9,6 +9,7 @@ from uuid import UUID
 from google import genai
 from google.genai import errors, types
 
+from app.common.enums import ExploreJobStatus
 from app.core.config import settings
 from app.core.exceptions import (
     GeminiException,
@@ -18,9 +19,9 @@ from app.core.exceptions import (
 from app.features.grocery.models import Grocery
 from app.services.redis_service import RedisService
 from .repository import MarketRepository
+from .job_queue_service import MarketJobQueueService
 from .schemas.response_schemas import (
-    MarketExploreResponseSchema,
-    GroceryExploreResultSchema,
+    MarketExploreJobSchema,
     ShopOfferSchema,
 )
 
@@ -40,30 +41,29 @@ Rules:
 
 
 class MarketService:
-    def __init__(self, repo: MarketRepository, gemini: genai.Client, market_cache: RedisService):
+    def __init__(
+            self,
+            repo: MarketRepository,
+            gemini: genai.Client,
+            market_cache: RedisService,
+            job: MarketJobQueueService
+    ):
         self.repo = repo
         self.gemini = gemini
         self.market_cache = market_cache
+        self.job = job
 
-    async def explore(self, grocery_ids: List[UUID]) -> MarketExploreResponseSchema:
+    async def explore(self, grocery_ids: List[UUID]) -> MarketExploreJobSchema:
+        """Queue the found groceries for the worker; missing IDs are reported straight away."""
         groceries = await self.repo.get_groceries_by_ids(grocery_ids)
         found_ids = {grocery.id for grocery in groceries}
+        not_found_ids = [gid for gid in grocery_ids if gid not in found_ids]
 
-        response = MarketExploreResponseSchema(
-            not_found_ids=[gid for gid in grocery_ids if gid not in found_ids],
-        )
+        if not found_ids:  # nothing to explore, so no job
+            return MarketExploreJobSchema(status=ExploreJobStatus.DONE, not_found_ids=not_found_ids)
 
-        # TODO: check cache before asking Gemini
-        # one grocery at a time: the free tier has a low requests-per-minute limit
-        for grocery in groceries:
-            offers = await self.__ask_gemini(grocery)
-            response.results.append(GroceryExploreResultSchema(
-                grocery_id=grocery.id,
-                offers=offers,
-                cheapest=min(offers, key=lambda offer: offer.price, default=None),
-            ))
-
-        return response
+        job_id = await self.job.enqueue_job([gid for gid in grocery_ids if gid in found_ids])
+        return MarketExploreJobSchema(job_id=job_id, status=ExploreJobStatus.PENDING, not_found_ids=not_found_ids)
 
     async def __ask_gemini(self, grocery: Grocery) -> List[ShopOfferSchema]:
         try:
