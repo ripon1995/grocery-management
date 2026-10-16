@@ -10,6 +10,7 @@ include:
   - ./docker/grocery-management-redis.yml
   - ./docker/grocery-management-postgres.yml
   - ./docker/grocery-management-nginx.yml
+  - ./docker/grocery-management-rabbitmq.yml
 
 # shared definition for every API instance
 x-backend: &backend
@@ -19,6 +20,8 @@ x-backend: &backend
     - ./backend/.env.dev # dev-only env (local postgres), see backend/.env.dev.sample
   depends_on:
     redis:
+      condition: service_started
+    rabbitmq:
       condition: service_started
     db-init:
       condition: service_completed_successfully # wait for migrations + seed

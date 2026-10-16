@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     FAKE_GEMINI_RPM: int = 0  # 0 = no limit
     FAKE_GEMINI_FAIL_RATE: float = 0.0
 
+    # RABBITMQ config
+    RABBIT_MQ_CONNECTION_URL: str
+
     model_config = SettingsConfigDict(
         env_file=('.env', 'backend/.env'),
         env_file_encoding='utf-8',
