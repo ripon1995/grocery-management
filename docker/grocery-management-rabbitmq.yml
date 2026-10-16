@@ -1,0 +1,22 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: grocery_dev_rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"    # AMQP broker port
+      - "15672:15672"  # Management Dashboard UI
+    environment:
+      RABBITMQ_DEFAULT_USER: grocery-mq
+      RABBITMQ_DEFAULT_PASS: grocery_mq
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - grocery-net
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  grocery-net: # Shared network with Redis, Postgres, and the API instances
+    driver: bridge
