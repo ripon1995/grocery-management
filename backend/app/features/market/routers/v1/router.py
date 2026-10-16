@@ -6,7 +6,7 @@ from starlette import status
 from app.core.api_response_schema import ApiResponseSchema
 from app.features.market.dependencies import get_market_service
 from app.features.market.schemas.request_schemas import MarketExploreRequestSchema
-from app.features.market.schemas.response_schemas import MarketExploreResponseSchema
+from app.features.market.schemas.response_schemas import MarketExploreJobSchema
 from app.features.market.service import MarketService
 
 router = APIRouter(
@@ -17,9 +17,9 @@ router = APIRouter(
 
 @router.post(
     path='/explore',
-    status_code=status.HTTP_200_OK,
-    summary='Explore market data',
-    response_model=ApiResponseSchema[MarketExploreResponseSchema],
+    status_code=status.HTTP_202_ACCEPTED,  # the worker does the Gemini calls; poll the job for results
+    summary='Queue a market explore job',
+    response_model=ApiResponseSchema[MarketExploreJobSchema],
 )
 async def explore(
         data: Annotated[MarketExploreRequestSchema, Body()],
@@ -29,5 +29,5 @@ async def explore(
     return ApiResponseSchema(
         success=True,
         data=result,
-        message="Market explore successful",
+        message="Market explore job queued",
     )

@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.common.enums import MARKET_SHOPS
+from app.common.enums import MARKET_SHOPS, ExploreJobStatus
 
 MarketShop = Literal[tuple(shop.value for shop in MARKET_SHOPS)]
 
@@ -24,4 +24,11 @@ class GroceryExploreResultSchema(BaseModel):
 
 class MarketExploreResponseSchema(BaseModel):
     results: List[GroceryExploreResultSchema] = []
+    not_found_ids: List[UUID] = []
+
+
+class MarketExploreJobSchema(BaseModel):
+    """Returned with 202: the job runs in the worker, poll it by job_id. job_id is None when no grocery was found."""
+    job_id: Optional[str] = None
+    status: ExploreJobStatus
     not_found_ids: List[UUID] = []
