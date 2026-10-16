@@ -70,3 +70,10 @@ class DatabaseStatementTimeoutException(AppBaseException):
     error_code = 'database_statement_timeout'
     detail = 'Database query timeout'
     message = 'Database query took too long to execute'
+
+
+class GeminiException(AppBaseException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    error_code = 'gemini_error'
+    detail = 'Gemini error'
+    message = 'Gemini error'

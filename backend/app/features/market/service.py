@@ -7,9 +7,10 @@ from typing import List
 from uuid import UUID
 
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 
 from app.core.config import settings
+from app.core.exceptions import GeminiException
 from app.features.grocery.models import Grocery
 from app.services.redis_service import RedisService
 from .repository import MarketRepository
@@ -51,13 +52,7 @@ class MarketService:
         # TODO: check cache before asking Gemini
         # one grocery at a time: the free tier has a low requests-per-minute limit
         for grocery in groceries:
-            try:
-                offers = await self.__ask_gemini(grocery)
-            except Exception as e:
-                logger.warning(f"Gemini explore failed for grocery {grocery.id}: {e!r}")
-                response.failed_ids.append(grocery.id)
-                continue
-
+            offers = await self.__ask_gemini(grocery)
             response.results.append(GroceryExploreResultSchema(
                 grocery_id=grocery.id,
                 offers=offers,
@@ -67,17 +62,41 @@ class MarketService:
         return response
 
     async def __ask_gemini(self, grocery: Grocery) -> List[ShopOfferSchema]:
-        response = await self.gemini.aio.models.generate_content(
-            model=settings.GEMINI_MODEL,
-            contents=EXPLORE_PROMPT.format(name=grocery.name, brand=grocery.brand),
-            config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())],  # without search, prices are made up
-                response_mime_type='application/json',
-                response_schema=list[ShopOfferSchema],
-            ),
-        )
+        try:
+            response = await self.gemini.aio.models.generate_content(
+                model=settings.GEMINI_MODEL,
+                contents=EXPLORE_PROMPT.format(name=grocery.name, brand=grocery.brand),
+                config=types.GenerateContentConfig(
+                    tools=[types.Tool(google_search=types.GoogleSearch())],  # without search, prices are made up
+                    response_mime_type='application/json',
+                    response_schema=list[ShopOfferSchema],
+                ),
+            )
+        except errors.APIError as e:
+            logger.warning(f"Gemini explore failed for grocery {grocery.id}: {e!r}")
+            raise GeminiException(
+                message=self.__gemini_error_message(e.code, grocery),
+                detail=f"{e.code} {e.status}: {e.message}",
+            ) from e
+        except Exception as e:  # network errors, timeouts
+            logger.warning(f"Gemini explore failed for grocery {grocery.id}: {e!r}")
+            raise GeminiException(
+                message=f"Could not reach Gemini while exploring '{grocery.name}'",
+                detail=repr(e),
+            ) from e
 
         if not isinstance(response.parsed, list):
-            raise ValueError(f"Gemini returned no parsable offers: {response.text!r}")
+            raise GeminiException(
+                message=f"Gemini returned an unexpected response for '{grocery.name}'",
+                detail=f"Response could not be parsed as shop offers: {(response.text or '')[:500]!r}",
+            )
 
         return [offer for offer in response.parsed if offer.price > 0]
+
+    @staticmethod
+    def __gemini_error_message(code: int, grocery: Grocery) -> str:
+        if code == 429:
+            return 'Gemini rate limit or quota reached. Please try again later.'
+        if code == 503:
+            return 'Gemini is overloaded right now. Please try again shortly.'
+        return f"Gemini request failed while exploring '{grocery.name}'"

@@ -6,6 +6,7 @@ import GroceryFilterBar from "../components/grocery_components/GroceryFilterBar.
 import Box from "@mui/material/Box";
 import {
     MonthlyGroceryAppAddButton,
+    MonthlyGroceryAppExploreSelectedButton,
     MonthlyGroceryAppExportButton,
     MonthlyGroceryAppIncludeSelectedButton
 } from "../components/common/MonthlyGroceryAppButton.tsx";
@@ -15,6 +16,10 @@ import MonthlyGroceryAppLoader from "../components/common/MonthlyGroceryAppLoade
 import type {IGroceryFilterParams} from "../api/types/requests/grocery/GroceryFilterParams.ts";
 import {exportShoppingList} from "../api/endpoints/GroceryApi.ts";
 import {AppToast} from "../components/common/AppToast.tsx";
+import {exploreMarket} from "../api/endpoints/MarketApi.ts";
+import type {IMarketExploreError, IMarketExploreResult} from "../types/IMarketExplore.ts";
+import MarketExploreDialog from "../components/market_components/MarketExploreDialog.tsx";
+import {BaseException} from "../api/exceptions/baseExceptions.ts";
 
 
 function HomePage() {
@@ -25,6 +30,10 @@ function HomePage() {
     const [filters, setFilters] = useState<IGroceryFilterParams>({});
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [isExporting, setIsExporting] = useState(false);
+    const [isExploreOpen, setIsExploreOpen] = useState(false);
+    const [isExploring, setIsExploring] = useState(false);
+    const [exploreResult, setExploreResult] = useState<IMarketExploreResult | null>(null);
+    const [exploreError, setExploreError] = useState<IMarketExploreError | null>(null);
 
     // 2. Trigger the fetch when the page mounts or filters change
     useEffect(() => {
@@ -78,6 +87,21 @@ function HomePage() {
         await bulkUpdateShouldIncludeItems(selectedIds, true);
         setSelectedIds([]);
     };
+    const handleExploreSelected = async () => {
+        setExploreResult(null);
+        setExploreError(null);
+        setIsExploreOpen(true);
+        setIsExploring(true);
+        try {
+            setExploreResult(await exploreMarket({grocery_ids: selectedIds}));
+        } catch (err: unknown) {
+            setExploreError(err instanceof BaseException
+                ? {message: err.message, detail: err.detail}
+                : {message: 'Failed to explore market prices', detail: String(err)});
+        } finally {
+            setIsExploring(false);
+        }
+    };
 
 
     return (
@@ -105,7 +129,12 @@ function HomePage() {
             </Box>
             <GroceryFilterBar onFilterChange={setFilters}/>
             {selectedIds.length > 0 && (
-                <Box sx={{display: 'flex', justifyContent: 'flex-end', mb: 2}}>
+                <Box sx={{display: 'flex', justifyContent: 'flex-end', gap: 2, mb: 2}}>
+                    <MonthlyGroceryAppExploreSelectedButton
+                        onClick={handleExploreSelected}
+                        disabled={isLoading || isExploring}
+                        count={selectedIds.length}
+                    />
                     <MonthlyGroceryAppIncludeSelectedButton
                         onClick={handleIncludeSelected}
                         disabled={isLoading}
@@ -126,6 +155,14 @@ function HomePage() {
                     onToggleSelectAll={handleToggleSelectAll}>
                 </GroceryTable>
             )}
+            <MarketExploreDialog
+                open={isExploreOpen}
+                isLoading={isExploring}
+                result={exploreResult}
+                error={exploreError}
+                groceries={groceries}
+                onClose={() => setIsExploreOpen(false)}
+            />
         </Box>
     );
 }

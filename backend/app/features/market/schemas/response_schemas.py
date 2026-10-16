@@ -25,4 +25,3 @@ class GroceryExploreResultSchema(BaseModel):
 class MarketExploreResponseSchema(BaseModel):
     results: List[GroceryExploreResultSchema] = []
     not_found_ids: List[UUID] = []
-    failed_ids: List[UUID] = []

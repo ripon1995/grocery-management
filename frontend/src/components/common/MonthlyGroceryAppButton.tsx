@@ -2,6 +2,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import AddIcon from '@mui/icons-material/Add';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 
 interface IButtonProps {
     onClick: () => void;
@@ -172,5 +173,28 @@ export function MonthlyGroceryAppLoginButton({onClick}: IButtonProps) {
                 Login
             </Button>
         </Stack>
+    );
+}
+export function MonthlyGroceryAppExploreSelectedButton({onClick, disabled, count}: IIncludeSelectedButtonProps) {
+    return (
+        <Button
+            variant="outlined"
+            startIcon={<TravelExploreIcon/>}
+            onClick={onClick}
+            disabled={disabled}
+            sx={{
+                color: 'purple',
+                borderColor: 'purple',
+                fontWeight: 'bold',
+                padding: '6px 20px',
+                borderRadius: '4px',
+                '&:hover': {
+                    borderColor: '#4a0072',
+                    backgroundColor: 'rgba(128, 0, 128, 0.04)',
+                }
+            }}
+        >
+            {`Explore prices (${count})`}
+        </Button>
     );
 }
