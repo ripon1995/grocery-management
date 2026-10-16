@@ -36,7 +36,6 @@ class Settings(BaseSettings):
     # GEMINI CONFIG
     GEMINI_API_KEY: str | None = None
     GEMINI_MODEL: str = 'gemini-flash-latest'
-    GEMINI_MAX_CONCURRENCY: int = 2  # free tier has a low requests-per-minute limit
 
     model_config = SettingsConfigDict(
         env_file=('.env', 'backend/.env'),

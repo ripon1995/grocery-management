@@ -1,36 +1,25 @@
-from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, HttpUrl
+from pydantic import BaseModel
 
-from app.common.enums import Seller, PriceSource
+from app.common.enums import MARKET_SHOPS
+
+MarketShop = Literal[tuple(shop.value for shop in MARKET_SHOPS)]
 
 
 class ShopOfferSchema(BaseModel):
-    """One shop's price for one grocery item, as found by Gemini"""
-    seller: Seller
+    """One shop's price for one grocery item. Also sent to Gemini as its response schema."""
+    seller: MarketShop
     product_name: str
     price: int
-    pack_size: Optional[str] = None
-    url: Optional[HttpUrl] = None
-    in_stock: Optional[bool] = None
+    url: Optional[str] = None
 
 
 class GroceryExploreResultSchema(BaseModel):
     grocery_id: UUID
-    name: str
-    brand: str
-    current_price: int
-    current_seller: Seller
     offers: List[ShopOfferSchema] = []
     cheapest: Optional[ShopOfferSchema] = None
-    savings: Optional[int] = None
-    source: PriceSource = PriceSource.GEMINI
-    explored_at: datetime
-    from_cache: bool = False
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class MarketExploreResponseSchema(BaseModel):
