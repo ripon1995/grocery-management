@@ -42,3 +42,10 @@ class PriceSource(str, Enum):
     MANUAL = 'manual'
     GEMINI = 'gemini'
     CAMPAIGN = 'campaign'
+
+
+class ExploreJobStatus(str, Enum):
+    PENDING = 'pending'
+    RUNNING = 'running'
+    DONE = 'done'
+    FAILED = 'failed'

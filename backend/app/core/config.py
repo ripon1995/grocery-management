@@ -46,6 +46,7 @@ class Settings(BaseSettings):
 
     # RABBITMQ config
     RABBIT_MQ_CONNECTION_URL: str
+    EXPLORE_JOB_TTL_S: int = 600  # how long a job's state stays in Redis; the worker resets it on each update
 
     model_config = SettingsConfigDict(
         env_file=('.env', 'backend/.env'),
