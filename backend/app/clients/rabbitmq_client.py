@@ -6,6 +6,7 @@ from aio_pika.abc import (
     AbstractRobustConnection,
     AbstractRobustChannel
 )
+from app.common.constants import EXPLORE_JOBS_QUEUE
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,8 @@ async def init_rabbitmq_client() -> None:
     try:
         rabbitmq_connection = await aio_pika.connect_robust(settings.RABBIT_MQ_CONNECTION_URL)
         rabbitmq_channel = await rabbitmq_connection.channel()  # publisher confirms on by default
+        # durable: the queue (and its persistent messages) survive a broker restart
+        await rabbitmq_channel.declare_queue(EXPLORE_JOBS_QUEUE, durable=True)
     except Exception as e:
         logger.error(f"🐇 [RABBITMQ] connection to {url.hostname}:{url.port} failed: {e!r}")
         raise
