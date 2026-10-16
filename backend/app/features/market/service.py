@@ -10,7 +10,11 @@ from google import genai
 from google.genai import errors, types
 
 from app.core.config import settings
-from app.core.exceptions import GeminiException
+from app.core.exceptions import (
+    GeminiException,
+    GeminiRateLimitException,
+    GeminiUnavailableException,
+)
 from app.features.grocery.models import Grocery
 from app.services.redis_service import RedisService
 from .repository import MarketRepository
@@ -72,18 +76,9 @@ class MarketService:
                     response_schema=list[ShopOfferSchema],
                 ),
             )
-        except errors.APIError as e:
+        except Exception as e:
             logger.warning(f"Gemini explore failed for grocery {grocery.id}: {e!r}")
-            raise GeminiException(
-                message=self.__gemini_error_message(e.code, grocery),
-                detail=f"{e.code} {e.status}: {e.message}",
-            ) from e
-        except Exception as e:  # network errors, timeouts
-            logger.warning(f"Gemini explore failed for grocery {grocery.id}: {e!r}")
-            raise GeminiException(
-                message=f"Could not reach Gemini while exploring '{grocery.name}'",
-                detail=repr(e),
-            ) from e
+            raise self.__handle_gemini_error(e, grocery) from e
 
         if not isinstance(response.parsed, list):
             raise GeminiException(
@@ -94,9 +89,20 @@ class MarketService:
         return [offer for offer in response.parsed if offer.price > 0]
 
     @staticmethod
-    def __gemini_error_message(code: int, grocery: Grocery) -> str:
-        if code == 429:
-            return 'Gemini rate limit or quota reached. Please try again later.'
-        if code == 503:
-            return 'Gemini is overloaded right now. Please try again shortly.'
-        return f"Gemini request failed while exploring '{grocery.name}'"
+    def __handle_gemini_error(error: Exception, grocery: Grocery) -> GeminiException:
+        """Map an error from the Gemini call to the app exception the API returns."""
+        if not isinstance(error, errors.APIError):  # network errors, timeouts
+            return GeminiException(
+                message=f"Could not reach Gemini while exploring '{grocery.name}'",
+                detail=repr(error),
+            )
+
+        detail = f"{error.code} {error.status}: {error.message}"
+        if error.code == 429:
+            return GeminiRateLimitException(detail=detail)
+        if error.code == 503:
+            return GeminiUnavailableException(detail=detail)
+        return GeminiException(
+            message=f"Gemini request failed while exploring '{grocery.name}'",
+            detail=detail,
+        )

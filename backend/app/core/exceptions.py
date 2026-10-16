@@ -73,7 +73,20 @@ class DatabaseStatementTimeoutException(AppBaseException):
 
 
 class GeminiException(AppBaseException):
-    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    status_code = status.HTTP_502_BAD_GATEWAY
     error_code = 'gemini_error'
     detail = 'Gemini error'
     message = 'Gemini error'
+
+class GeminiRateLimitException(GeminiException):
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    error_code = 'gemini_rate_limit'
+    detail = 'Gemini rate limit reached'
+    message = 'Gemini rate limit or quota reached. Please try again later.'
+
+
+class GeminiUnavailableException(GeminiException):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    error_code = 'gemini_unavailable'
+    detail = 'Gemini unavailable'
+    message = 'Gemini is overloaded right now. Please try again shortly.'
