@@ -1,3 +1,4 @@
+from typing import Literal
 from urllib.parse import quote_plus
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -36,6 +37,12 @@ class Settings(BaseSettings):
     # GEMINI CONFIG
     GEMINI_API_KEY: str | None = None
     GEMINI_MODEL: str = 'gemini-flash-latest'
+    GEMINI_PROVIDER: Literal['real', 'fake'] = 'real'
+
+    # FAKE GEMINI (GEMINI_PROVIDER=fake), see app/clients/fake_gemini_client.py
+    FAKE_GEMINI_LATENCY_S: float = 2.0
+    FAKE_GEMINI_RPM: int = 0  # 0 = no limit
+    FAKE_GEMINI_FAIL_RATE: float = 0.0
 
     model_config = SettingsConfigDict(
         env_file=('.env', 'backend/.env'),
