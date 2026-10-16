@@ -12,6 +12,7 @@ from app.db.session import engine
 from app.middleware.latency_header import LatencyHeaderMiddleware
 from app.middleware.request_logger import RequestLoggerMiddleware
 from app.clients.redis_client import init_redis, close_redis
+from app.clients.gemini_client import init_gemini_client, close_gemini_client
 
 # ── Logging ────────────────────────────────────────────────────────────────
 # step logger
@@ -23,12 +24,14 @@ async def lifespan(app: FastAPI):
     # ==================== STARTUP ====================
     print("🚀 Starting up application...")
     await init_redis()
+    await init_gemini_client()
     print("Application startup complete ✓")
     yield # Application handles requests while paused here
 
     # ==================== SHUTDOWN ====================
     print("🛑 Shutting down application...")
     await close_redis()
+    await close_gemini_client()
     await engine.dispose()
     print("Application shutdown complete ✓")
 
