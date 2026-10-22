@@ -31,7 +31,7 @@ Updated 2026-10-22, starting from commit `12b323d`.
 | Constants and statuses | `EXPLORE_JOBS_QUEUE` and `EXPLORE_JOB_KEY_PREFIX` in `app/common/constants.py`, `ExploreJobStatus` in `app/common/enums.py` |
 | The Gemini call | still in `MarketService` as `__ask_gemini` and `__handle_gemini_error`, unused since the API stopped calling Gemini |
 
-Nothing consumes `explore.jobs` yet, and the explore dialog in the UI doesn't work until the polling endpoint exists (section 6).
+Nothing consumes `explore.jobs` yet, and the explore dialog in the UI doesn't work until V1 steps 6 and 7 add the polling endpoint and the polling in the frontend.
 
 ### Settings
 In `backend/.env.dev` (the scale stack's API and the worker both use it):
@@ -58,7 +58,10 @@ ids() { docker exec grocery_dev_postgres sh -c "psql -U \$POSTGRES_USER -d \$POS
 explore() { curl -s -X POST localhost/api/v1/market/explore -H 'Content-Type: application/json' \
         -d "{\"grocery_ids\":$(ids ${1:-1})}" | python3 -c 'import sys,json;print(json.load(sys.stdin)["data"]["job_id"])'; }
 
-# (status, number of results, attempts, error)
+# the job through the API (after V1 step 6): (success, status, results / total, error code)
+poll() { curl -s "localhost/api/v1/market/explore/jobs/$1" | python3 -c 'import sys,json;d=json.load(sys.stdin);j=d.get("data") or {};print(d.get("success"), j.get("status"), len(j.get("results") or []), "/", j.get("total"), (d.get("error") or {}).get("error_code"))'; }
+
+# the job straight from Redis: (status, number of results, attempts, error)
 job() { docker exec grocery_dev_redis redis-cli GET "market:explore:job:$1" \
         | python3 -c 'import sys,json;j=json.loads(sys.stdin.read() or "null");print(j and (j["status"], len(j["results"]), j.get("attempts"), j.get("error")))'; }
 
@@ -97,6 +100,10 @@ publish() { docker exec -e PAYLOAD="$1" grocery_dev_rabbitmq sh -c \
 | 3 | The consumer | `app/worker/explore_consumer.py` (new) |
 | 4 | The entry point, `python -m app.worker` | `app/worker/__init__.py` (empty), `app/worker/__main__.py` (new) |
 | 5 | A `worker` service in compose | `docker-compose.scale.yml`, `docker-compose.dev.yml` |
+| 6 | `GET /market/explore/jobs/{job_id}`: the polling endpoint | `schemas/response_schemas.py`, `service.py`, `routers/v1/router.py` |
+| 7 | The frontend polls the job until it's done | `MarketApi.ts`, `IMarketExplore.ts`, `apiEndpoints.ts`, `HomePage.tsx`, `MarketExploreDialog.tsx` |
+
+Steps 6 and 7 only read the job from Redis, so they work with the V1 worker. They don't depend on V2.
 
 Remember: no functions inside methods. Helpers are private `__methods` on the class, and the RabbitMQ callback can be a bound method: `queue.consume(self.__on_message)`. The `async def main()` in the test snippets is a top-level function in a throwaway script, not app code.
 
@@ -329,6 +336,77 @@ curl -s -o /dev/null -w '%{http_code}\n' localhost/api/v1/groceries/
 **Expect:** `grocery-worker Up ...`, the "connected" and "waiting for explore jobs" lines, and `200` from the API throughout.
 **Achieved:** the worker is part of the stack but deploys and restarts on its own. Now run the V1 checks.
 
+### Step 6: the polling endpoint
+The job is in Redis, so any API replica can answer for it: the polling request doesn't need to reach the replica that took the explore.
+
+- **Schemas** (`schemas/response_schemas.py`):
+  - `ExploreJobErrorSchema(message: str, detail: str)`.
+  - `MarketExploreJobStatusSchema(job_id: str, status: ExploreJobStatus, total: int, results: List[GroceryExploreResultSchema] = [], error: Optional[ExploreJobErrorSchema] = None)`.
+  - V1 never sets `error`; V2's F4 does, and the schema is already ready for it.
+- **Service:** `MarketService.get_explore_job(job_id: UUID)`. Call `self.job.get_job(str(job_id))`. If it returns `None`, raise `ResourceNotFoundException(message="Explore job not found or expired", detail=...)`. Otherwise return `MarketExploreJobStatusSchema(**job, total=len(job['grocery_ids']))`; Pydantic ignores the extra keys such as `grocery_ids` and `attempts`.
+- **Router:** `@router.get('/explore/jobs/{job_id}', response_model=ApiResponseSchema[MarketExploreJobStatusSchema])`. Type the path parameter as `job_id: UUID`, so a malformed id is a 422 before it reaches Redis.
+
+This path sits under `/api/v1/market/*`, so the plan's Step 7 gateway routes it with the rest of the market API.
+
+**Test:** the endpoint follows a job from start to finish, rejects unknown and malformed ids, and works on every replica.
+**How:**
+```bash
+rebuild
+J=$(explore 3); for i in {1..8}; do poll $J; sleep 1; done
+poll 00000000-0000-0000-0000-000000000000
+curl -s -o /dev/null -w '%{http_code}\n' localhost/api/v1/market/explore/jobs/not-a-uuid
+for i in 1 2 3; do echo "api-$i: $(docker logs grocery-api-$i 2>&1 | grep -c 'GET | /api/v1/market/explore/jobs')"; done
+```
+**Expect:**
+- The polls go `True pending 0 / 3`, then `True running 1 / 3`, `2 / 3`, and end at `True done 3 / 3`.
+- The zero id gives `False None 0 / None resource_not_found`.
+- The malformed id gives `422`.
+- The polls are spread over all 3 replicas.
+
+**Achieved:** any client can follow a job over HTTP, and any replica can answer, because the job state lives in Redis rather than in one API process.
+
+### Step 7: the frontend polls the job
+- **`apiEndpoints.ts`:** `MARKET_EXPLORE_JOB: (jobId: string) => `${MARKET}/explore/jobs/${jobId}``.
+- **`IMarketExplore.ts`:**
+  - `ExploreJobStatus = 'pending' | 'running' | 'done' | 'failed'`.
+  - `IMarketExploreJob` (the 202 body): `{job_id: string | null, status, not_found_ids}`.
+  - `IMarketExploreJobStatus`: `{job_id, status, total, results, error: IMarketExploreError | null}`.
+- **`MarketApi.ts`:**
+  - `exploreMarket()` now returns `IMarketExploreJob`. Drop `EXPLORE_TIMEOUT_MS`: the POST answers at once, so the default timeout is fine again.
+  - Add `getExploreJob(jobId)`.
+- **Polling loop:** put it in a plain async function, for example `waitForExploreJob(jobId, onProgress, isCancelled)` in `MarketApi.ts`, rather than inside the component:
+  - every 1 s, `getExploreJob`, then call `onProgress(job)`
+  - stop on `done` or `failed`
+  - stop when `isCancelled()` returns true
+  - give up after a maximum wait, such as 3 min, with an error like "Still running, try again later"
+- **`HomePage.tsx`:** `handleExploreSelected` POSTs, keeps `not_found_ids` from the 202, and then:
+  - If `job_id` is `null` (nothing was found), it shows the not-found list straight away.
+  - Otherwise it calls `waitForExploreJob`, putting the partial `results` into `exploreResult` as they arrive.
+  - A `useRef<boolean>` set on close is the `isCancelled` flag.
+- **`MarketExploreDialog.tsx`:**
+  - Show the progress, for example "Searching shops... 2 of 5", with the results so far underneath.
+  - Let the dialog close while it's polling. The job keeps running in the worker, which is the point of the queue.
+
+The frontend container has the code baked in, so rebuild it after the change: `docker compose -f docker-compose.scale.yml up -d --build frontend`.
+
+**Test:** explore works in the UI again, shows its progress, and stops polling when it's done or when you close the dialog.
+**How:**
+1. Open `localhost:3000` with DevTools → Network.
+2. Select 3 groceries → **Explore prices**.
+3. Do it again with 5 groceries, and close the dialog after 2 s.
+4. Count the polls nginx served:
+   ```bash
+   docker logs grocery_dev_nginx 2>&1 | grep -c 'explore/jobs'
+   ```
+
+**Expect:**
+- One `POST` returns `202` at once. Then about one `GET .../explore/jobs/<id>` per second, while the dialog counts 1, 2, 3 of 3 and the table fills in.
+- After `done`, no more requests.
+- After closing the dialog, the requests stop, but `job <id>` shows the job still finishing in the worker.
+- With `FAKE_GEMINI_FAIL_RATE=1.0`, the V1 job stays `running` (clue 4), so the dialog spins until the maximum wait. After V2's F4, it shows the Gemini error within a few seconds.
+
+**Achieved:** explore works end to end in the browser without anyone waiting on a long request. You also have the "Before" number for Step 4 (WebSockets): how many polls it takes to deliver one result.
+
 ### V1 checks: it works
 | # | Test | How | Expect | Achieved |
 |---|---|---|---|---|
@@ -347,13 +425,13 @@ Each clue is a test you expect to show a problem. What you achieve is knowing wh
 | **1. No prefetch** | `docker stop grocery-worker; for i in {1..5}; do explore 3; done; docker start grocery-worker; docker logs -f grocery-worker` | All 5 `received` lines at once, and their Gemini calls interleave. Without `prefetch_count`, RabbitMQ pushes every waiting message to the worker, and aio-pika runs each callback as its own task. 5 jobs hit Gemini at the same time, which burns the free-tier RPM. |
 | **2. Session held during Gemini** | `FAKE_GEMINI_LATENCY_S=10`, then `explore 3; sleep 2; idle_tx` | One connection `idle in transaction`, with `open_for` growing to about 30 s. The first `SELECT` opened a transaction, and it stays open through every Gemini call. That's Step 2's problem 2 again, only now inside the worker. |
 | **3. No retry, and the work vanishes** | `FAKE_GEMINI_FAIL_RATE=0.5`, then `for i in {1..5}; do explore 3; done; sleep 30; queues; docker logs grocery-worker \| grep -c Traceback` | Several tracebacks, and every queue at 0. One 503 on any grocery fails the whole job, and the rejected message is discarded: there's nowhere to look at it later. |
-| **4. Failed job looks alive** | the same run: `job <a job id from a traceback>` | `('running', ...)` with no `error`. A polling client would wait until the TTL expires. |
+| **4. Failed job looks alive** | the same run: `job <a job id from a traceback>`, or explore in the UI | `('running', ...)` with no `error`. `poll` says `running` too, and the dialog spins until its maximum wait: the client can't tell a failed job from a slow one. |
 | **5. Redelivery starts over** | V1 check 4, with `before=$(calls)` first and `echo $(( $(calls) - before ))` at the end | 6 Gemini calls for 4 groceries. The redelivered job asked Gemini again for the grocery it already had. |
 | **6. Expired job** | `docker stop grocery-worker; J=$(explore 1); docker exec grocery_dev_redis redis-cli DEL "market:explore:job:$J"; docker start grocery-worker; sleep 3; docker logs grocery-worker \| tail` | `TypeError: 'NoneType' object is not subscriptable`, and the message is discarded. In real life this happens when the worker is down longer than `EXPLORE_JOB_TTL_S`. |
 | **7. Slow stop** | `J=$(explore 3); sleep 1; time docker stop grocery-worker` | About 10 s. In a container the worker is PID 1, and Linux ignores `SIGTERM` for PID 1 unless the process installs a handler, so Docker waits 10 s and then sends `SIGKILL`. |
 
 ### V1 done when
-- [ ] Steps 1–5 and V1 checks 1–4 pass.
+- [ ] Steps 1–7 and V1 checks 1–4 pass, and explore works in the UI.
 - [ ] You've triggered all 7 clues and can say why each one happens.
 - [ ] The Step 2 table in `phase-6-plan.md` has "response time", "worker down" and "restart during an explore" filled in.
 
@@ -487,7 +565,7 @@ J=$(explore 1); for i in {1..9}; do queues; sleep 5; done; job $J
 - Bug: temporarily add `raise RuntimeError('test bug')` at the top of the grocery loop, rebuild, then `J=$(explore 1); sleep 3; job $J; queues`. Remove the line afterwards.
 
 **Expect:** `('failed', 0, 4, {'message': 'Gemini is overloaded right now...', ...})` for the Gemini case. For the bug: `failed` with the error, a traceback in the log, and the message in the DLQ.
-**Achieved:** a client polling the job always learns the outcome, instead of waiting on `running` until the TTL expires.
+**Achieved:** a client polling the job always learns the outcome. `poll $J` shows `failed` with the error, and the dialog shows the Gemini message instead of spinning.
 
 ### F5. Resume instead of restart (fixes clue 5)
 **Do:** in `__run_job()`, skip groceries whose id is already in `job['results']`.
@@ -701,5 +779,5 @@ docker compose -f docker-compose.scale.yml logs worker | grep -i -m1 "timed out"
 ---
 
 ## 6. After the worker
-- `GET /api/v1/jobs/{id}` (reads `get_job`) and polling in `MarketExploreDialog`. Explore works in the UI again after this.
-- Step 3 adds the cache and rate limit. The cache check belongs in the worker's loop, before `explore_grocery`.
+- **Step 3** of the plan adds the cache and the rate limit. The cache check belongs in the worker's loop, before `explore_grocery`.
+- **Step 4** of the plan replaces the polling from V1 step 7 with a WebSocket push. The poll count from step 7's test is its "Before" number.
