@@ -138,7 +138,52 @@ wait
 - **RabbitMQ** with an `explore.jobs` queue. The API only checks the request, publishes a message and returns **`202 {job_id}`** at once, **without** keeping a DB connection open.
 - A **worker** container (`python -m app.worker`) takes the message, calls Gemini, saves the results and only then **acks** it.
 - Failed messages are **retried 3 times**, then moved to **`explore.jobs.dlq`** (dead-letter queue).
-- Job status is kept in Redis (`job:{id}`), and the frontend polls `GET /api/v1/jobs/{id}` (Step 4 replaces polling).
+- Job status is kept in Redis (`market:explore:job:{id}`), and the frontend polls `GET /api/v1/jobs/{id}` (Step 4 replaces polling).
+
+### Architecture so far
+✅ built · ⬜ not built yet. Updated 2026-10-22.
+
+**Before: simple version.** All the Gemini calls happen inside the HTTP request.
+```
+ browser ── POST /market/explore {grocery_ids} ──▶ nginx :80 ──▶ grocery-api-1..3
+    ▲                     (proxy_read_timeout 60 s)                 │
+    │                                                               │ 1. SELECT groceries     ──▶ Postgres
+    │                                                               │    (holds the only connection, POOL_SIZE=1)
+    │                                                               │ 2. one Gemini call per grocery, one at a time
+    │                                                               ▼
+    │                                                     Gemini / fake Gemini (2 s a call)
+    │
+    └── 200 {results, not_found_ids} after N × 2 s
+        100 items: nginx returns 504 at 60 s, and the API keeps calling Gemini for all 100 anyway
+```
+
+**Now: the API only queues the job.**
+```
+ browser ── POST /market/explore {grocery_ids} ──▶ nginx :80 ──▶ grocery-api-1..3
+    ▲                                                               │
+    │                                                               │ 1. SELECT groceries → not_found_ids   ──▶ Postgres
+    │                                                               │ 2. SET market:explore:job:{id}
+    │                                                               │    {status: pending, results: []}     ──▶ Redis (TTL 600 s)
+    │                                                               │ 3. publish {job_id, grocery_ids,
+    │                                                               │    retry_count: 0}, persistent        ──▶ RabbitMQ
+    └── 202 {job_id, status: pending, not_found_ids} in ~0.2 s      │                                          │
+                                                                                                               │ explore.jobs (durable) ✅
+                                                                                                               ▼
+                                                          ⬜ worker (python -m app.worker, prefetch 1)
+                                                               for each grocery: Gemini → update the job in Redis
+                                                               ack when the job is done · 3 retries → explore.jobs.dlq ⬜
+ ⬜ browser polls GET /api/v1/jobs/{id} ──▶ API reads the job from Redis
+```
+
+| Part | Where | Status |
+|---|---|---|
+| RabbitMQ broker + healthcheck | `docker/grocery-management-rabbitmq.yml` (UI on `:15672`) | ✅ |
+| Connection, channel, durable `explore.jobs` queue | `app/clients/rabbitmq_client.py` (opened at startup in `main.py`) | ✅ |
+| Job state in Redis + publish | `app/features/market/job_queue_service.py` | ✅ |
+| `POST /market/explore` returns `202 {job_id, status, not_found_ids}` | `app/features/market/service.py`, `routers/v1/router.py` | ✅ |
+| Worker that calls Gemini and acks | `app/worker` | ⬜ |
+| Retries + `explore.jobs.dlq` | worker + queue arguments | ⬜ |
+| `GET /api/v1/jobs/{id}` + frontend polling | market router, `MarketExploreDialog` | ⬜ (the dialog doesn't work until this is built) |
 
 ### Check again
 The same commands, plus two queue-specific ones:
