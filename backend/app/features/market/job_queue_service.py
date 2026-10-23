@@ -6,11 +6,11 @@ from uuid import UUID
 
 import aio_pika
 from aio_pika.abc import AbstractRobustChannel
-
-from app.common.constants import EXPLORE_JOB_KEY_PREFIX, EXPLORE_JOBS_QUEUE
+from app.utils.redis_key_helper import RedisKeyHelper
 from app.common.enums import ExploreJobStatus
 from app.core.config import settings
 from app.services.redis_service import RedisService
+from queues.explore_queue import EXPLORE_JOBS_QUEUE
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class MarketJobQueueService:
     # -----------------------------------------------------------------------------------------------
     @staticmethod
     def __job_key(job_id: str) -> str:
-        return f"{EXPLORE_JOB_KEY_PREFIX}:{job_id}"
+        return f"{RedisKeyHelper.EXPLORE_JOB_KEY_PREFIX}:{job_id}"
 
     # -----------------------------------------------------------------------------------------------
     # exposed methods

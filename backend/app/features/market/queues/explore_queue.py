@@ -1,10 +1,10 @@
 import logging
 from aio_pika.abc import AbstractRobustChannel
 
-from app.common.constants import EXPLORE_JOBS_QUEUE
-
 logger = logging.getLogger(__name__)
 
+
+EXPLORE_JOBS_QUEUE = 'explore.jobs'
 
 async def declare_explore_queue(channel: AbstractRobustChannel) -> None:
     """

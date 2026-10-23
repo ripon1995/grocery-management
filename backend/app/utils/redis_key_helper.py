@@ -9,7 +9,6 @@ class RedisKeyHelper(str, Enum):
     GROCERY_DETAIL = 'grocery:{grocery_id}:detail'
 
     # Market explore jobs
-    EXPLORE_JOBS_QUEUE = 'explore-jobs'
     EXPLORE_JOB_KEY_PREFIX = 'market:explore:job'
 
     def build_key(self, **kwargs) -> str:
