@@ -7,11 +7,12 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import {Alert, AlertTitle, Button, Link, Stack, Typography} from "@mui/material";
+import {Alert, AlertTitle, Button, LinearProgress, Link, Stack, Typography} from "@mui/material";
 import type {IGroceryListItem} from "../../types/IGroceryList.ts";
 import type {
     IGroceryExploreResult,
     IMarketExploreError,
+    IMarketExploreProgress,
     IMarketExploreResult,
     IShopOffer
 } from "../../types/IMarketExplore.ts";
@@ -21,6 +22,7 @@ interface IMarketExploreDialogProps {
     open: boolean;
     isLoading: boolean;
     result: IMarketExploreResult | null;
+    progress: IMarketExploreProgress | null;
     error: IMarketExploreError | null;
     groceries: IGroceryListItem[];
     onClose: () => void;
@@ -31,6 +33,9 @@ const isSafeUrl = (url: string | null): url is string => url != null && /^https?
 
 const groceryName = (groceries: IGroceryListItem[], grocery_id: string): string =>
     groceries.find((item) => item.id === grocery_id)?.name ?? grocery_id;
+
+const progressMessage = (progress: IMarketExploreProgress | null): string =>
+    progress == null ? 'Queuing explore...' : `Searching shops... ${progress.done} of ${progress.total}`;
 
 const OfferLabel = ({offer}: { offer: IShopOffer }) => (
     <Typography variant="body2">
@@ -81,27 +86,39 @@ const ExploreResultRow = ({row, grocery}: { row: IGroceryExploreResult; grocery:
     );
 };
 
-function MarketExploreDialog({open, isLoading, result, error, groceries, onClose}: IMarketExploreDialogProps) {
+function MarketExploreDialog({open, isLoading, result, progress, error, groceries, onClose}: IMarketExploreDialogProps) {
+    const hasResults = result != null && result.results.length > 0;
 
+    // Closing while it polls is fine: the job keeps running in the worker
     return (
-        <Dialog open={open} onClose={isLoading ? undefined : onClose} maxWidth="lg" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
             <DialogTitle sx={{fontWeight: 'bold'}}>Explore Market Prices</DialogTitle>
             <DialogContent>
-                {isLoading ? (
-                    <MonthlyGroceryAppLoader message="Searching shops..." minHeight={250} width="100%"/>
-                ) : error != null ? (
-                    <Alert severity="error">
-                        <AlertTitle>{error.message}</AlertTitle>
-                        <Typography variant="body2" sx={{wordBreak: 'break-word'}}>{error.detail}</Typography>
-                    </Alert>
-                ) : result == null ? null : (
+                {isLoading && !hasResults ? (
+                    <MonthlyGroceryAppLoader message={progressMessage(progress)} minHeight={250} width="100%"/>
+                ) : (
                     <Stack spacing={2}>
-                        {result.not_found_ids.length > 0 && (
+                        {isLoading && progress != null && (
+                            <Stack spacing={1}>
+                                <Typography variant="body2" color="text.secondary">{progressMessage(progress)}</Typography>
+                                <LinearProgress
+                                    variant="determinate"
+                                    value={progress.total > 0 ? (progress.done / progress.total) * 100 : 0}
+                                />
+                            </Stack>
+                        )}
+                        {error != null && (
+                            <Alert severity="error">
+                                <AlertTitle>{error.message}</AlertTitle>
+                                <Typography variant="body2" sx={{wordBreak: 'break-word'}}>{error.detail}</Typography>
+                            </Alert>
+                        )}
+                        {result != null && result.not_found_ids.length > 0 && (
                             <Alert severity="warning">
                                 {`Not found: ${result.not_found_ids.map((id) => groceryName(groceries, id)).join(', ')}. They may have been deleted.`}
                             </Alert>
                         )}
-                        {result.results.length > 0 && (
+                        {hasResults && (
                             <Table size="small">
                                 <TableHead>
                                     <TableRow sx={{'& .MuiTableCell-head': {fontWeight: 'bold'}}}>
@@ -122,14 +139,16 @@ function MarketExploreDialog({open, isLoading, result, error, groceries, onClose
                                 </TableBody>
                             </Table>
                         )}
-                        <Typography variant="caption" color="text.secondary">
-                            Prices are found by AI web search and may be out of date. Check the shop before buying.
-                        </Typography>
+                        {hasResults && (
+                            <Typography variant="caption" color="text.secondary">
+                                Prices are found by AI web search and may be out of date. Check the shop before buying.
+                            </Typography>
+                        )}
                     </Stack>
                 )}
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} disabled={isLoading} sx={{color: 'purple', fontWeight: 'bold'}}>Close</Button>
+                <Button onClick={onClose} sx={{color: 'purple', fontWeight: 'bold'}}>Close</Button>
             </DialogActions>
         </Dialog>
     );

@@ -22,3 +22,26 @@ export interface IMarketExploreError {
     message: string;
     detail: string;
 }
+
+export type ExploreJobStatus = 'pending' | 'running' | 'done' | 'failed';
+
+// The 202 from POST /market/explore. job_id is null when none of the groceries were found
+export interface IMarketExploreJob {
+    job_id: string | null;
+    status: ExploreJobStatus;
+    not_found_ids: string[];
+}
+
+// GET /market/explore/jobs/{job_id}: results fill in as the worker finishes each grocery
+export interface IMarketExploreJobStatus {
+    job_id: string;
+    status: ExploreJobStatus;
+    total: number;
+    results: IGroceryExploreResult[];
+    error: IMarketExploreError | null;
+}
+
+export interface IMarketExploreProgress {
+    done: number;
+    total: number;
+}

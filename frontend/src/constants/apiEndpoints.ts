@@ -19,6 +19,7 @@ const AUTH_APIS = {
 
 const MARKET_APIS = {
     MARKET_EXPLORE: `${MARKET}/explore`,
+    MARKET_EXPLORE_JOB: (jobId: string) => `${MARKET}/explore/jobs/${jobId}`,
 } as const;
 
 

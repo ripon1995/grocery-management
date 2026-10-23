@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useNavigate} from 'react-router-dom';
 import {Typography} from '@mui/material';
 import GroceryTable from "../components/grocery_components/GroceryList.tsx";
@@ -16,8 +16,12 @@ import MonthlyGroceryAppLoader from "../components/common/MonthlyGroceryAppLoade
 import type {IGroceryFilterParams} from "../api/types/requests/grocery/GroceryFilterParams.ts";
 import {exportShoppingList} from "../api/endpoints/GroceryApi.ts";
 import {AppToast} from "../components/common/AppToast.tsx";
-import {exploreMarket} from "../api/endpoints/MarketApi.ts";
-import type {IMarketExploreError, IMarketExploreResult} from "../types/IMarketExplore.ts";
+import {exploreMarket, waitForExploreJob} from "../api/endpoints/MarketApi.ts";
+import type {
+    IMarketExploreError,
+    IMarketExploreProgress,
+    IMarketExploreResult
+} from "../types/IMarketExplore.ts";
 import MarketExploreDialog from "../components/market_components/MarketExploreDialog.tsx";
 import {BaseException} from "../api/exceptions/baseExceptions.ts";
 
@@ -34,6 +38,9 @@ function HomePage() {
     const [isExploring, setIsExploring] = useState(false);
     const [exploreResult, setExploreResult] = useState<IMarketExploreResult | null>(null);
     const [exploreError, setExploreError] = useState<IMarketExploreError | null>(null);
+    const [exploreProgress, setExploreProgress] = useState<IMarketExploreProgress | null>(null);
+    // Bumped on every explore and on close: a poll loop stops once the run it belongs to is no longer current
+    const exploreRunRef = useRef(0);
 
     // 2. Trigger the fetch when the page mounts or filters change
     useEffect(() => {
@@ -88,19 +95,39 @@ function HomePage() {
         setSelectedIds([]);
     };
     const handleExploreSelected = async () => {
+        const runId = ++exploreRunRef.current;
+        const isCancelled = () => exploreRunRef.current !== runId;
         setExploreResult(null);
         setExploreError(null);
+        setExploreProgress(null);
         setIsExploreOpen(true);
         setIsExploring(true);
         try {
-            setExploreResult(await exploreMarket({grocery_ids: selectedIds}));
+            const {job_id, not_found_ids} = await exploreMarket({grocery_ids: selectedIds});
+            if (isCancelled()) return;
+            setExploreResult({results: [], not_found_ids});
+            if (job_id == null) return;  // nothing was found, so there's no job to wait for
+
+            const job = await waitForExploreJob(job_id, (polled) => {
+                setExploreResult({results: polled.results, not_found_ids});
+                setExploreProgress({done: polled.results.length, total: polled.total});
+            }, isCancelled);
+            if (job?.status === 'failed') {
+                setExploreError(job.error ?? {message: 'Explore failed', detail: `Explore job ${job_id} failed`});
+            }
         } catch (err: unknown) {
+            if (isCancelled()) return;
             setExploreError(err instanceof BaseException
                 ? {message: err.message, detail: err.detail}
                 : {message: 'Failed to explore market prices', detail: String(err)});
         } finally {
-            setIsExploring(false);
+            if (!isCancelled()) setIsExploring(false);
         }
+    };
+    const handleExploreClose = () => {
+        exploreRunRef.current++;  // stop polling; the job keeps running in the worker
+        setIsExploreOpen(false);
+        setIsExploring(false);
     };
 
 
@@ -159,9 +186,10 @@ function HomePage() {
                 open={isExploreOpen}
                 isLoading={isExploring}
                 result={exploreResult}
+                progress={exploreProgress}
                 error={exploreError}
                 groceries={groceries}
-                onClose={() => setIsExploreOpen(false)}
+                onClose={handleExploreClose}
             />
         </Box>
     );
