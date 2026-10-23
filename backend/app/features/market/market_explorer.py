@@ -13,7 +13,7 @@ from app.core.exceptions import (
 )
 
 from app.features.grocery.models import Grocery
-from schemas.response_schemas import ShopOfferSchema
+from .schemas.response_schemas import ShopOfferSchema
 
 logger = logging.getLogger(__name__)
 
