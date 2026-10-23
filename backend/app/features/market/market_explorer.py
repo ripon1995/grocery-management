@@ -17,22 +17,23 @@ from schemas.response_schemas import ShopOfferSchema
 
 logger = logging.getLogger(__name__)
 
+EXPLORE_PROMPT = """Find the current price of this grocery item at the online shops Shwapno, Chaldal and Meena Bazar in Bangladesh.
+
+Item: {name}
+Brand: {brand}
+
+Rules:
+- Only include offers from shwapno, chaldal or meena (Meena Bazar).
+- price is in whole Bangladeshi taka (BDT), as an integer.
+- Only include a shop if you found the item there; do not guess prices.
+- Include the product page url when you have it.
+"""
+
 
 class MarketExplorer:
     def __init__(self, gemini: genai.Client | FakeGeminiClient):
-        logger.debug("Initializing MarketExplorerWorkerService")
+        logger.debug("Initializing MarketExplorer")
         self.gemini = gemini
-        self.EXPLORE_PROMPT = """Find the current price of this grocery item at the online shops Shwapno, Chaldal and Meena Bazar in Bangladesh.
-
-        Item: {name}
-        Brand: {brand}
-
-        Rules:
-        - Only include offers from shwapno, chaldal or meena (Meena Bazar).
-        - price is in whole Bangladeshi taka (BDT), as an integer.
-        - Only include a shop if you found the item there; do not guess prices.
-        - Include the product page url when you have it.
-        """
 
     # -----------------------------------
     # private methods
@@ -42,7 +43,7 @@ class MarketExplorer:
         try:
             response = await self.gemini.aio.models.generate_content(
                 model=settings.GEMINI_MODEL,
-                contents=self.EXPLORE_PROMPT.format(name=grocery.name, brand=grocery.brand),
+                contents=EXPLORE_PROMPT.format(name=grocery.name, brand=grocery.brand),
                 config=types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())],  # without search, prices are made up
                     response_mime_type='application/json',
