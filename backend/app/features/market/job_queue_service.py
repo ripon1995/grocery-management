@@ -29,7 +29,7 @@ class MarketJobQueueService:
     # -----------------------------------------------------------------------------------------------
     @staticmethod
     def __job_key(job_id: str) -> str:
-        return f"{RedisKeyHelper.EXPLORE_JOB_KEY_PREFIX}:{job_id}"
+        return f"{RedisKeyHelper.EXPLORE_JOB_KEY_PREFIX.value}:{job_id}"
 
     # -----------------------------------------------------------------------------------------------
     # exposed methods
