@@ -7,11 +7,8 @@ Feature-specific DI:
 
 from aio_pika.abc import AbstractRobustChannel
 from fastapi import Depends
-from google import genai
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.clients.gemini_client import get_gemini_client
 from app.clients.rabbitmq_client import get_rabbitmq_channel
 from app.clients.redis_client import get_redis
 from app.db.session import get_db
@@ -38,8 +35,6 @@ def get_market_job_queue(
 
 def get_market_service(
         repo: MarketRepository = Depends(get_market_repository),
-        gemini: genai.Client = Depends(get_gemini_client),
-        market_cache: RedisService = Depends(get_market_redis),
         job: MarketJobQueueService = Depends(get_market_job_queue),
 ) -> MarketService:
-    return MarketService(repo, gemini, market_cache, job)
+    return MarketService(repo, job)
