@@ -3,6 +3,7 @@ import asyncio
 
 from app.clients.gemini_client import init_gemini_client, get_gemini_client
 from app.clients.rabbitmq_client import init_rabbitmq_client, get_rabbitmq_channel
+from app.features.market.queues.explore_queue import declare_explore_queue
 from app.clients.redis_client import init_redis, get_redis
 from app.core.config import settings
 from app.core.log_config import configure_logging
@@ -23,6 +24,7 @@ class Worker:
         await init_redis()  # same order as main.py: the fake Gemini needs Redis
         await init_gemini_client()
         await init_rabbitmq_client()  # also declares explore.jobs
+        await declare_explore_queue(get_rabbitmq_channel())
 
         consumer = ExploreJobConsumer(
             channel=get_rabbitmq_channel(),
