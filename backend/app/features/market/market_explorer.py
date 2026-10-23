@@ -13,7 +13,7 @@ from app.core.exceptions import (
 )
 
 from app.features.grocery.models import Grocery
-from .schemas.response_schemas import ShopOfferSchema
+from .schemas.response_schemas import ShopOfferSchema, GroceryExploreResultSchema
 
 logger = logging.getLogger(__name__)
 
@@ -84,3 +84,11 @@ class MarketExplorer:
     # -----------------------------------
     # exposed methods
     # -----------------------------------
+
+    async def explore_grocery(self, grocery: Grocery) -> GroceryExploreResultSchema:
+        offers = await self.__ask_gemini(grocery)
+        return GroceryExploreResultSchema(
+            grocery_id=grocery.id,
+            offers=offers,
+            cheapest=min(offers, key=lambda offer: offer.price, default=None),
+        )
