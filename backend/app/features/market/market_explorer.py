@@ -11,7 +11,7 @@ from app.core.exceptions import (
     GeminiUnavailableException,
 )
 
-from models import Grocery
+from app.features.grocery.models import Grocery
 from schemas.response_schemas import ShopOfferSchema
 
 logger = logging.getLogger(__name__)
