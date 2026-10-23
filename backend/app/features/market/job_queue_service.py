@@ -10,7 +10,7 @@ from app.utils.redis_key_helper import RedisKeyHelper
 from app.common.enums import ExploreJobStatus
 from app.core.config import settings
 from app.services.redis_service import RedisService
-from queues.explore_queue import EXPLORE_JOBS_QUEUE
+from .queues.explore_queue import EXPLORE_JOBS_QUEUE
 
 logger = logging.getLogger(__name__)
 
