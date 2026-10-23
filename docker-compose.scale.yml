@@ -59,6 +59,11 @@ services:
     hostname: grocery-api-3
     expose:
       - "8000"
+  worker:
+    <<: *backend
+    container_name: grocery-worker
+    hostname: grocery-worker
+    command: [ 'python', '-m', 'app.worker' ]
 
   frontend:
     build: ./frontend

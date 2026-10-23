@@ -57,3 +57,6 @@ def configure_logging(level: str = "INFO", environment: str = 'development'):
     # Optional: reduce noise from uvicorn/fastapi
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
     logging.getLogger("fastapi").setLevel(logging.WARNING)
+    # RabbitMQ clients log every AMQP frame (heartbeats, acks) at DEBUG
+    logging.getLogger("aiormq").setLevel(logging.INFO)
+    logging.getLogger("aio_pika").setLevel(logging.INFO)
