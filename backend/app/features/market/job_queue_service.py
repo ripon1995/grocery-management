@@ -31,15 +31,16 @@ class MarketJobQueueService:
     def __job_key(job_id: str) -> str:
         return f"{RedisKeyHelper.EXPLORE_JOB_KEY_PREFIX}:{job_id}"
 
+    # -----------------------------------------------------------------------------------------------
+    # exposed methods
+    # -----------------------------------------------------------------------------------------------
+
     async def get_job(self, job_id: str) -> dict | None:
         return await self.redis_service.get(self.__job_key(job_id))
 
     async def save_job(self, job: dict) -> None:
         await self.redis_service.set(self.__job_key(job['job_id']), job, ttl=settings.EXPLORE_JOB_TTL_S)
 
-    # -----------------------------------------------------------------------------------------------
-    # exposed methods
-    # -----------------------------------------------------------------------------------------------
     async def enqueue_job(self, grocery_ids: List[UUID]) -> str:
         """Record the job as pending in Redis, then publish it to the explore queue. Returns the job id."""
         job_id = str(uuid.uuid4())
