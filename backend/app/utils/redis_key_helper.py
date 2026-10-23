@@ -8,6 +8,10 @@ class RedisKeyHelper(str, Enum):
     # dynamic keys
     GROCERY_DETAIL = 'grocery:{grocery_id}:detail'
 
+    # Market explore jobs
+    EXPLORE_JOBS_QUEUE = 'explore-jobs'
+    EXPLORE_JOB_KEY_PREFIX = 'market:explore:job'
+
     def build_key(self, **kwargs) -> str:
         """Helper method to easily inject dynamic variables into the key template."""
         return self.value.format(**kwargs)
