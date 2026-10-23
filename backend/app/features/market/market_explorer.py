@@ -17,7 +17,7 @@ from schemas.response_schemas import ShopOfferSchema
 logger = logging.getLogger(__name__)
 
 
-class MarketExplorerWorkerService:
+class MarketExplorer:
     def __init__(self, gemini: genai.Client):
         logger.debug("Initializing MarketExplorerWorkerService")
         self.gemini = gemini
