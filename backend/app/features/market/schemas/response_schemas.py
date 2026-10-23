@@ -32,3 +32,17 @@ class MarketExploreJobSchema(BaseModel):
     job_id: Optional[str] = None
     status: ExploreJobStatus
     not_found_ids: List[UUID] = []
+
+
+class ExploreJobErrorSchema(BaseModel):
+    message: str
+    detail: str
+
+
+class MarketExploreJobStatusSchema(BaseModel):
+    """A polled explore job. results fill in as the worker finishes each grocery; error is set when it failed."""
+    job_id: str
+    status: ExploreJobStatus
+    total: int
+    results: List[GroceryExploreResultSchema] = []
+    error: Optional[ExploreJobErrorSchema] = None

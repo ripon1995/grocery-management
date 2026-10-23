@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends
 from starlette import status
@@ -6,7 +7,7 @@ from starlette import status
 from app.core.api_response_schema import ApiResponseSchema
 from app.features.market.dependencies import get_market_service
 from app.features.market.schemas.request_schemas import MarketExploreRequestSchema
-from app.features.market.schemas.response_schemas import MarketExploreJobSchema
+from app.features.market.schemas.response_schemas import MarketExploreJobSchema, MarketExploreJobStatusSchema
 from app.features.market.service import MarketService
 
 router = APIRouter(
@@ -30,4 +31,21 @@ async def explore(
         success=True,
         data=result,
         message="Market explore job queued",
+    )
+
+
+@router.get(
+    path='/explore/jobs/{job_id}',
+    summary='Get an explore job and the results so far',
+    response_model=ApiResponseSchema[MarketExploreJobStatusSchema],
+)
+async def get_explore_job(
+        job_id: UUID,  # a malformed id is a 422 before it reaches Redis
+        market_service: MarketService = Depends(get_market_service),
+):
+    result = await market_service.get_explore_job(job_id)
+    return ApiResponseSchema(
+        success=True,
+        data=result,
+        message="Market explore job fetched",
     )
