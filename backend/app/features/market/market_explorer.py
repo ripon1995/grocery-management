@@ -2,7 +2,7 @@ import logging
 from typing import List
 from google import genai
 from google.genai import errors, types
-from starlette import status
+from fastapi import status
 
 from app.clients.fake_gemini_client import FakeGeminiClient
 from app.core.config import settings
