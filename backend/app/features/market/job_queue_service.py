@@ -47,17 +47,12 @@ class MarketJobQueueService:
         ids = [str(grocery_id) for grocery_id in grocery_ids]
 
         # 1. Save the job state first, so the worker always finds it
-        await self.redis_service.set(
-            self.__job_key(job_id),
-            {
-                "job_id": job_id,
-                "status": ExploreJobStatus.PENDING.value,
-                "grocery_ids": ids,
-                "results": [],
-            },
-            ttl=settings.EXPLORE_JOB_TTL_S,
-        )
-
+        await self.save_job({
+            "job_id": job_id,
+            "status": ExploreJobStatus.PENDING.value,
+            "grocery_ids": ids,
+            "results": [],
+        })
         # 2. Publish the task message to RabbitMQ
         message = aio_pika.Message(
             body=json.dumps({
