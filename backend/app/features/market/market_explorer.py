@@ -4,6 +4,7 @@ from google import genai
 from google.genai import errors, types
 from starlette import status
 
+from app.clients.fake_gemini_client import FakeGeminiClient
 from app.core.config import settings
 from app.core.exceptions import (
     GeminiException,
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class MarketExplorer:
-    def __init__(self, gemini: genai.Client):
+    def __init__(self, gemini: genai.Client | FakeGeminiClient):
         logger.debug("Initializing MarketExplorerWorkerService")
         self.gemini = gemini
         self.EXPLORE_PROMPT = """Find the current price of this grocery item at the online shops Shwapno, Chaldal and Meena Bazar in Bangladesh.
