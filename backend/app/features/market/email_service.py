@@ -1,6 +1,6 @@
 import random
+import asyncio
 from enum import Enum
-
 from faker import Faker
 
 from app.features.market.schemas.response_schemas import EmailResponseSchema
@@ -27,6 +27,7 @@ class EmailService:
 
     async def send_email(self) -> EmailResponseSchema:
         self.mail_status = self.__parse_mail_status().value
+        await asyncio.sleep(10)
         return EmailResponseSchema(
             mail_to=self.mail_to,
             subject=self.subject,
