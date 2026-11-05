@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.common.enums import MARKET_SHOPS, ExploreJobStatus
+from app.common.enums import MARKET_SHOPS, ExploreJobStatus, MailJobStatus
 
 MarketShop = Literal[tuple(shop.value for shop in MARKET_SHOPS)]
 
@@ -54,3 +54,8 @@ class EmailResponseSchema(BaseModel):
   mail_to: str
   subject: str
   body: str
+
+
+class EmailJobResponseSchema(BaseModel):
+    job_id: str
+    status: MailJobStatus

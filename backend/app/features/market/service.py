@@ -6,12 +6,16 @@ import logging
 from typing import List
 from uuid import UUID
 
-from app.common.enums import ExploreJobStatus
+from app.common.enums import ExploreJobStatus, MailJobStatus
 from app.core.exceptions import ResourceNotFoundException
 from .email_service import EmailService
 from .repository import MarketRepository
 from .job_queue_service import MarketJobQueueService
-from .schemas.response_schemas import MarketExploreJobSchema, MarketExploreJobStatusSchema, EmailResponseSchema
+from .schemas.response_schemas import (
+    MarketExploreJobSchema,
+    MarketExploreJobStatusSchema,
+    EmailJobResponseSchema
+)
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +54,9 @@ class MarketService:
         # extra keys such as grocery_ids are ignored by the schema
         return MarketExploreJobStatusSchema(**job, total=len(job['grocery_ids']))
 
-    async def send_email(self) -> EmailResponseSchema:
-        # check user exists or not
+    async def send_email(self) -> EmailJobResponseSchema:
         # offload to email service
         result = await self.email.send_email()
+        job_id = await self.job.enqueue_email(result)
         # get result
-        return result
+        return EmailJobResponseSchema(job_id=job_id, status=MailJobStatus.PENDING)
