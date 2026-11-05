@@ -44,8 +44,10 @@ class MarketJobQueueService:
     # exposed methods
     # -----------------------------------------------------------------------------------------------
 
-    async def get_job(self, job_id: str) -> dict | None:
-        return await self.redis_service.get(self.__job_key(job_id, JobType.EXPLORE))
+    async def get_job(self, job_id: str, job_type: JobType) -> dict | None:
+        if job_type == JobType.EXPLORE:
+            return await self.redis_service.get(self.__job_key(job_id, JobType.EXPLORE))
+        return await self.redis_service.get(self.__job_key(job_id, JobType.EMAIL))
 
     async def save_job(self, job: dict, job_type: JobType) -> None:
         if job_type == JobType.EXPLORE:
