@@ -46,3 +46,12 @@ class MarketExploreJobStatusSchema(BaseModel):
     total: int
     results: List[GroceryExploreResultSchema] = []
     error: Optional[ExploreJobErrorSchema] = None
+
+
+
+# schemas/response_schemas.py
+class EmailResponseSchema(BaseModel):
+  mail_to: str
+  subject: str
+  body: str
+  mail_status: str

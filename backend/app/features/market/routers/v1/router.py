@@ -5,10 +5,12 @@ from fastapi import APIRouter, Body, Depends
 from starlette import status
 
 from app.core.api_response_schema import ApiResponseSchema
-from app.features.market.dependencies import get_market_service
+from app.features.market.dependencies import get_market_service, get_email_service
 from app.features.market.schemas.request_schemas import MarketExploreRequestSchema
-from app.features.market.schemas.response_schemas import MarketExploreJobSchema, MarketExploreJobStatusSchema
+from app.features.market.schemas.response_schemas import MarketExploreJobSchema, MarketExploreJobStatusSchema, \
+    EmailResponseSchema
 from app.features.market.service import MarketService
+from app.features.market.email_service import EmailService
 
 router = APIRouter(
     prefix="/v1/market",
@@ -25,6 +27,7 @@ router = APIRouter(
 async def explore(
         data: Annotated[MarketExploreRequestSchema, Body()],
         market_service: MarketService = Depends(get_market_service),
+        _email_service: EmailService = Depends(get_email_service)
 ):
     result = await market_service.explore(data.grocery_ids)
     return ApiResponseSchema(
@@ -49,3 +52,24 @@ async def get_explore_job(
         data=result,
         message="Market explore job fetched",
     )
+
+
+
+#------------------------ dummy mail ------------------
+@router.post(
+    path='/send-email',
+    summary='Send a dummy email',
+    response_model=ApiResponseSchema[EmailResponseSchema],
+)
+async def send_mail(
+        market_service: MarketService = Depends(get_market_service),
+        _email_service: EmailService = Depends(get_email_service)
+):
+    result = await market_service.send_email()
+    return ApiResponseSchema(
+        success=True,
+        data=result,
+        message="Mail sent successfully",
+    )
+#------------------------ dummy mail ------------------
+

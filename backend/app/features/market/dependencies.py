@@ -16,6 +16,7 @@ from app.features.market.job_queue_service import MarketJobQueueService
 from app.features.market.repository import MarketRepository
 from app.features.market.service import MarketService
 from app.services.redis_service import RedisService
+from app.features.market.email_service import EmailService
 
 
 def get_market_redis(redis: Redis = Depends(get_redis)) -> RedisService:
@@ -33,8 +34,13 @@ def get_market_job_queue(
     return MarketJobQueueService(rabbitmq_channel, redis_service)
 
 
+def get_email_service() -> EmailService:
+    return EmailService()
+
+
 def get_market_service(
         repo: MarketRepository = Depends(get_market_repository),
         job: MarketJobQueueService = Depends(get_market_job_queue),
+        email_service: EmailService = Depends(get_email_service),
 ) -> MarketService:
-    return MarketService(repo, job)
+    return MarketService(repo, job, email_service)

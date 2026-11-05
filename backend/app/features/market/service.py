@@ -5,11 +5,13 @@ service.py — Business logic layer
 import logging
 from typing import List
 from uuid import UUID
+
 from app.common.enums import ExploreJobStatus
 from app.core.exceptions import ResourceNotFoundException
+from .email_service import EmailService
 from .repository import MarketRepository
 from .job_queue_service import MarketJobQueueService
-from .schemas.response_schemas import MarketExploreJobSchema, MarketExploreJobStatusSchema
+from .schemas.response_schemas import MarketExploreJobSchema, MarketExploreJobStatusSchema, EmailResponseSchema
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +20,12 @@ class MarketService:
     def __init__(
             self,
             repo: MarketRepository,
-            job: MarketJobQueueService
+            job: MarketJobQueueService,
+            email: EmailService
     ):
         self.repo = repo
         self.job = job
+        self.email = email
 
     async def explore(self, grocery_ids: List[UUID]) -> MarketExploreJobSchema:
         """Queue the found groceries for the worker; missing IDs are reported straight away."""
@@ -45,3 +49,10 @@ class MarketService:
             )
         # extra keys such as grocery_ids are ignored by the schema
         return MarketExploreJobStatusSchema(**job, total=len(job['grocery_ids']))
+
+    async def send_email(self) -> EmailResponseSchema:
+        # check user exists or not
+        # offload to email service
+        result = await self.email.send_email()
+        # get result
+        return result
