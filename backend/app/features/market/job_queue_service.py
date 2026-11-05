@@ -8,7 +8,7 @@ from uuid import UUID
 import aio_pika
 from aio_pika.abc import AbstractRobustChannel
 from app.utils.redis_key_helper import RedisKeyHelper
-from app.common.enums import ExploreJobStatus, MailStatus
+from app.common.enums import ExploreJobStatus, MailJobStatus
 from app.core.config import settings
 from app.services.redis_service import RedisService
 from schemas.response_schemas import EmailResponseSchema
@@ -104,7 +104,7 @@ class MarketJobQueueService:
         # 1. Save the job state first, so the worker always finds it
         await self.save_job({
             "job_id": job_id,
-            "status": MailStatus.PENDING.value,
+            "status": MailJobStatus.PENDING.value,
             "data": email_response.model_dump_json(),
         }, job_type=JobType.EMAIL)
         # 2. Publish the task message to RabbitMQ
