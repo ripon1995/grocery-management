@@ -108,5 +108,26 @@ class MarketJobQueueService:
             "data": email_response.model_dump_json(),
         }, job_type=JobType.EMAIL)
         # 2. Publish the task message to RabbitMQ
+        message = aio_pika.Message(
+            body=json.dumps({
+                "job_id": job_id,
+                "retry_count": 0,
+            }).encode("utf-8"),
+            delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+            content_type="application/json",
+            correlation_id=job_id,
+        )
+
+        try:
+            # mandatory: the broker rejects a message no queue receives instead of dropping it
+            await self.rabbitmq_channel.default_exchange.publish(
+                message, routing_key=EXPLORE_JOBS_QUEUE, mandatory=True,
+            )
+        except Exception:
+            await self.redis_service.delete(
+                self.__job_key(job_id, JobType.EMAIL))  # never leave a job that no worker will pick up
+            raise
+
+        logger.info(f"Enqueued email job {job_id} for items")
 
         return job_id
