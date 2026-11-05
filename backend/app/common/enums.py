@@ -51,7 +51,7 @@ class ExploreJobStatus(str, Enum):
     FAILED = 'failed'
 
 
-class MailStatus(Enum):
+class MailJobStatus(Enum):
     PENDING = 'PENDING'
     SENDING = 'SENDING'
     SENT = 'SENT'
