@@ -11,6 +11,9 @@ class RedisKeyHelper(str, Enum):
     # Market explore jobs
     EXPLORE_JOB_KEY_PREFIX = 'market:explore:job'
 
+    # Email jobs
+    EMAIL_JOB_KEY_PREFIX = 'email:job'
+
     def build_key(self, **kwargs) -> str:
         """Helper method to easily inject dynamic variables into the key template."""
         return self.value.format(**kwargs)
