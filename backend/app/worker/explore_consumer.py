@@ -68,4 +68,4 @@ class ExploreJobConsumer:
         elif job_type == JobType.EMAIL:
             job['status'] = MailJobStatus.SENT.value
         await self.job_service.save_job(job, job_type=job_type)
-        logger.info(f"⚙️ [WORKER] job {job_id} done ({len(job['results'])} results)")
+        logger.info(f"⚙️ [WORKER] job {job_id} done  results)")
