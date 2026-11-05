@@ -1,8 +1,5 @@
-import random
 import asyncio
 from faker import Faker
-
-from app.common.enums import MailStatus
 from app.features.market.schemas.response_schemas import EmailResponseSchema
 
 
@@ -12,18 +9,11 @@ class EmailService:
         self.mail_to = self.fake.email()
         self.subject = self.fake.sentence(nb_words=6)
         self.body = self.fake.sentence(nb_words=30)
-        self.mail_status = MailStatus.PENDING.value
-
-    @staticmethod
-    def __parse_mail_status() -> MailStatus:
-        return random.choice(list(MailStatus))
 
     async def send_email(self) -> EmailResponseSchema:
-        self.mail_status = self.__parse_mail_status().value
         await asyncio.sleep(10)
         return EmailResponseSchema(
             mail_to=self.mail_to,
             subject=self.subject,
-            body=self.body,
-            mail_status=self.mail_status
+            body=self.body
         )
