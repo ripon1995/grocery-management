@@ -1,16 +1,9 @@
 import random
 import asyncio
-from enum import Enum
 from faker import Faker
 
+from app.common.enums import MailStatus
 from app.features.market.schemas.response_schemas import EmailResponseSchema
-
-
-class MailStatus(Enum):
-    PENDING = 'PENDING'
-    SENDING = 'SENDING'
-    SENT = 'SENT'
-    FAILED = 'FAILED'
 
 
 class EmailService:
