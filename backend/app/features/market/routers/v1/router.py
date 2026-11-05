@@ -7,8 +7,11 @@ from starlette import status
 from app.core.api_response_schema import ApiResponseSchema
 from app.features.market.dependencies import get_market_service, get_email_service
 from app.features.market.schemas.request_schemas import MarketExploreRequestSchema
-from app.features.market.schemas.response_schemas import MarketExploreJobSchema, MarketExploreJobStatusSchema, \
-    EmailResponseSchema
+from app.features.market.schemas.response_schemas import (
+    MarketExploreJobSchema,
+    MarketExploreJobStatusSchema,
+    EmailJobResponseSchema
+)
 from app.features.market.service import MarketService
 from app.features.market.email_service import EmailService
 
@@ -54,12 +57,12 @@ async def get_explore_job(
     )
 
 
-
-#------------------------ dummy mail ------------------
+# ------------------------ dummy mail ------------------
 @router.post(
     path='/send-email',
     summary='Send a dummy email',
-    response_model=ApiResponseSchema[EmailResponseSchema],
+    response_model=ApiResponseSchema[EmailJobResponseSchema],
+    status_code=status.HTTP_202_ACCEPTED,
 )
 async def send_mail(
         market_service: MarketService = Depends(get_market_service),
@@ -69,7 +72,6 @@ async def send_mail(
     return ApiResponseSchema(
         success=True,
         data=result,
-        message="Mail sent successfully",
+        message="Mail job queued successfully",
     )
-#------------------------ dummy mail ------------------
-
+# ------------------------ dummy mail ------------------

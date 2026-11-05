@@ -11,6 +11,7 @@ from app.services.redis_service import RedisService
 from app.worker.explore_consumer import ExploreJobConsumer
 from app.features.market.job_queue_service import MarketJobQueueService
 from app.features.market.market_explorer import MarketExplorer
+from app.features.market.email_service import EmailService
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ class Worker:
             channel=get_rabbitmq_channel(),
             job_service=MarketJobQueueService(get_rabbitmq_channel(), RedisService(get_redis())),
             explorer=MarketExplorer(get_gemini_client()),
+            email_service=EmailService(),
         )
         await consumer.start()
         logger.info("⚙️ [WORKER] waiting for explore jobs")

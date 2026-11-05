@@ -4,14 +4,16 @@ from uuid import UUID
 
 from aio_pika.abc import AbstractRobustChannel, AbstractIncomingMessage
 
-from app.common.enums import ExploreJobStatus
+from app.common.enums import ExploreJobStatus, MailJobStatus
 from app.db.session import async_session_factory
-from app.features.market.job_queue_service import MarketJobQueueService
+from app.features.market.job_queue_service import MarketJobQueueService, JobType
 from app.features.market.market_explorer import MarketExplorer
+from app.features.market.email_service import EmailService
 from app.features.market.queues.explore_queue import EXPLORE_JOBS_QUEUE
 from app.features.market.repository import MarketRepository
 
 logger = logging.getLogger(__name__)
+
 
 class ExploreJobConsumer:
 
@@ -19,17 +21,17 @@ class ExploreJobConsumer:
             self,
             channel: AbstractRobustChannel,
             explorer: MarketExplorer,
-            job_service: MarketJobQueueService
+            job_service: MarketJobQueueService,
+            email_service: EmailService,
     ) -> None:
         self.channel = channel
         self.explorer = explorer
         self.job_service = job_service
-
+        self.email_service = email_service
 
     async def start(self) -> None:
         job_queue = await self.channel.get_queue(EXPLORE_JOBS_QUEUE)
         await job_queue.consume(self.__on_message)
-
 
     async def __on_message(self, message: AbstractIncomingMessage) -> None:
         async with message.process(requeue=False):
@@ -37,26 +39,33 @@ class ExploreJobConsumer:
             logger.info(f"⚙️ [WORKER] job {body['job_id']} received (redelivered={message.redelivered})")
             await self.__run_job(body['job_id'])
 
-
-
     async def __run_job(self, job_id: str) -> None:
-        job = await self.job_service.get_job(job_id)
+        job_type = await self.job_service.get_job_type(job_id)
+        job = await self.job_service.get_job(job_id, job_type)
         if job is None:
             logger.info('No job left. So return')
             return
-        job['status'] = ExploreJobStatus.RUNNING.value
-        await self.job_service.save_job(job)
+        if job_type == JobType.EXPLORE:
+            job['status'] = ExploreJobStatus.RUNNING.value
+        elif job_type == JobType.EMAIL:
+            job['status'] = MailJobStatus.SENDING.value
+        await self.job_service.save_job(job, job_type=job_type)
 
         async with async_session_factory() as session:
-            groceries = await MarketRepository(session).get_groceries_by_ids([UUID(gid) for gid in job['grocery_ids']])
-            for grocery in groceries:
-                result = await self.explorer.explore_grocery(grocery)
-                job['results'].append(result.model_dump(mode='json'))
-                await self.job_service.save_job(job)
+            if job_type == JobType.EXPLORE:
+                groceries = await MarketRepository(session).get_groceries_by_ids(
+                    [UUID(gid) for gid in job['grocery_ids']])
+                for grocery in groceries:
+                    result = await self.explorer.explore_grocery(grocery)
+                    job['results'].append(result.model_dump(mode='json'))
+                    await self.job_service.save_job(job, job_type=job_type)
+            elif job_type == JobType.EMAIL:
+                result = await self.email_service.send_email()
+                job['result'] = result.model_dump(mode='json')
 
-        job['status'] = ExploreJobStatus.DONE.value
-        await self.job_service.save_job(job)
+        if job_type == JobType.EXPLORE:
+            job['status'] = ExploreJobStatus.DONE.value
+        elif job_type == JobType.EMAIL:
+            job['status'] = MailJobStatus.SENT.value
+        await self.job_service.save_job(job, job_type=job_type)
         logger.info(f"⚙️ [WORKER] job {job_id} done ({len(job['results'])} results)")
-
-
-

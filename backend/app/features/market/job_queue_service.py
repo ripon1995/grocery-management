@@ -11,7 +11,7 @@ from app.utils.redis_key_helper import RedisKeyHelper
 from app.common.enums import ExploreJobStatus, MailJobStatus
 from app.core.config import settings
 from app.services.redis_service import RedisService
-from schemas.response_schemas import EmailResponseSchema
+from app.features.market.schemas.response_schemas import EmailResponseSchema
 from .queues.explore_queue import EXPLORE_JOBS_QUEUE
 
 logger = logging.getLogger(__name__)
@@ -43,6 +43,11 @@ class MarketJobQueueService:
     # -----------------------------------------------------------------------------------------------
     # exposed methods
     # -----------------------------------------------------------------------------------------------
+
+    async def get_job_type(self, job_id: str) -> JobType:
+        if job_id.find('market:explore') != -1:
+            return JobType.EXPLORE
+        return JobType.EMAIL
 
     async def get_job(self, job_id: str, job_type: JobType) -> dict | None:
         if job_type == JobType.EXPLORE:
@@ -107,7 +112,7 @@ class MarketJobQueueService:
         await self.save_job({
             "job_id": job_id,
             "status": MailJobStatus.PENDING.value,
-            "data": email_response.model_dump_json(),
+            "result": email_response.model_dump_json(),
         }, job_type=JobType.EMAIL)
         # 2. Publish the task message to RabbitMQ
         message = aio_pika.Message(
