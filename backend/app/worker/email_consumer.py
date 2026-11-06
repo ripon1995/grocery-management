@@ -36,16 +36,16 @@ class EmailJobConsumer:
     async def __run_job(self, job_id: str) -> None:
         job = await self.job_service.get_email_job(job_id)
         if job is None:
-            logger.info('No EMAIL job found')
+            logger.info(f"⚙️ [WORKER][email] job {job_id} not found (expired?), skipping")
             return
 
         job['status'] = MailJobStatus.SENDING.value
         await self.job_service.save_email_job(job)
 
-        logger.info(f"⚙️ [WORKER] job -> Calling email service to send email)")
+        logger.info(f"⚙️ [WORKER][email] job {job_id} sending")
         result = await self.email_service.send_email()
         job['result'] = result.model_dump(mode='json')
         job['status'] = MailJobStatus.SENT.value
 
         await self.job_service.save_email_job(job)
-        logger.info(f"⚙️ [WORKER][email] job {job_id} done)")
+        logger.info(f"⚙️ [WORKER][email] job {job_id} done")
