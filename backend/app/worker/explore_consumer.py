@@ -1,14 +1,14 @@
-import logging
 import json
+import logging
 from uuid import UUID
 
 from aio_pika.abc import AbstractRobustChannel, AbstractIncomingMessage
 
-from app.common.enums import ExploreJobStatus, MailJobStatus
+from app.common.enums import ExploreJobStatus
 from app.db.session import async_session_factory
-from app.features.market.job_queue_service import MarketJobQueueService, JobType
-from app.features.market.market_explorer import MarketExplorer
 from app.features.market.email_service import EmailService
+from app.features.market.job_queue_service import MarketJobQueueService
+from app.features.market.market_explorer import MarketExplorer
 from app.features.market.queues.explore_queue import EXPLORE_JOBS_QUEUE
 from app.features.market.repository import MarketRepository
 
@@ -40,32 +40,22 @@ class ExploreJobConsumer:
             await self.__run_job(body['job_id'])
 
     async def __run_job(self, job_id: str) -> None:
-        job_type = await self.job_service.get_job_type(job_id)
-        job = await self.job_service.get_job(job_id, job_type)
+        job = await self.job_service.get_explore_job(job_id)
         if job is None:
             logger.info('No job left. So return')
             return
-        if job_type == JobType.EXPLORE:
-            job['status'] = ExploreJobStatus.RUNNING.value
-        elif job_type == JobType.EMAIL:
-            job['status'] = MailJobStatus.SENDING.value
-        await self.job_service.save_job(job, job_type=job_type)
+
+        job['status'] = ExploreJobStatus.RUNNING.value
+        await self.job_service.save_explore_job(job)
 
         async with async_session_factory() as session:
-            if job_type == JobType.EXPLORE:
-                groceries = await MarketRepository(session).get_groceries_by_ids(
-                    [UUID(gid) for gid in job['grocery_ids']])
-                for grocery in groceries:
-                    result = await self.explorer.explore_grocery(grocery)
-                    job['results'].append(result.model_dump(mode='json'))
-                    await self.job_service.save_job(job, job_type=job_type)
-            elif job_type == JobType.EMAIL:
-                result = await self.email_service.send_email()
-                job['result'] = result.model_dump(mode='json')
+            groceries = await MarketRepository(session).get_groceries_by_ids(
+                [UUID(gid) for gid in job['grocery_ids']])
+            for grocery in groceries:
+                result = await self.explorer.explore_grocery(grocery)
+                job['results'].append(result.model_dump(mode='json'))
+                await self.job_service.save_explore_job(job)
 
-        if job_type == JobType.EXPLORE:
-            job['status'] = ExploreJobStatus.DONE.value
-        elif job_type == JobType.EMAIL:
-            job['status'] = MailJobStatus.SENT.value
-        await self.job_service.save_job(job, job_type=job_type)
+        job['status'] = ExploreJobStatus.DONE.value
+        await self.job_service.save_explore_job(job)
         logger.info(f"⚙️ [WORKER] job {job_id} done  results)")
