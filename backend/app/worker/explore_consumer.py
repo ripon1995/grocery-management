@@ -6,7 +6,6 @@ from aio_pika.abc import AbstractRobustChannel, AbstractIncomingMessage
 
 from app.common.enums import ExploreJobStatus
 from app.db.session import async_session_factory
-from app.features.market.email_service import EmailService
 from app.features.market.job_queue_service import MarketJobQueueService
 from app.features.market.market_explorer import MarketExplorer
 from app.features.market.queues.explore_queue import EXPLORE_JOBS_QUEUE
@@ -21,13 +20,11 @@ class ExploreJobConsumer:
             self,
             channel: AbstractRobustChannel,
             explorer: MarketExplorer,
-            job_service: MarketJobQueueService,
-            email_service: EmailService,
+            job_service: MarketJobQueueService
     ) -> None:
         self.channel = channel
         self.explorer = explorer
         self.job_service = job_service
-        self.email_service = email_service
 
     async def start(self) -> None:
         job_queue = await self.channel.get_queue(EXPLORE_JOBS_QUEUE)
