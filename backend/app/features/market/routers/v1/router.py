@@ -10,7 +10,8 @@ from app.features.market.schemas.request_schemas import MarketExploreRequestSche
 from app.features.market.schemas.response_schemas import (
     MarketExploreJobSchema,
     MarketExploreJobStatusSchema,
-    EmailJobResponseSchema
+    EmailJobResponseSchema,
+    EmailJobPollResponseSchema
 )
 from app.features.market.service import MarketService
 
@@ -76,7 +77,7 @@ async def send_mail(
 @router.get(
     path='/send-email/{job_id}',
     summary='POLL api for email job status',
-    response_model=ApiResponseSchema[EmailJobResponseSchema],
+    response_model=ApiResponseSchema[EmailJobPollResponseSchema],
 )
 async def get_email_job(
         job_id: UUID,

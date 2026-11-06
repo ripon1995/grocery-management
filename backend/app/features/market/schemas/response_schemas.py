@@ -59,3 +59,9 @@ class EmailResponseSchema(BaseModel):
 class EmailJobResponseSchema(BaseModel):
     job_id: str
     status: MailJobStatus
+
+
+class EmailJobPollResponseSchema(BaseModel):
+    job_id: str
+    status: MailJobStatus
+    result: EmailResponseSchema

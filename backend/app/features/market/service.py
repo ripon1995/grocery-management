@@ -13,7 +13,8 @@ from .job_queue_service import MarketJobQueueService
 from .schemas.response_schemas import (
     MarketExploreJobSchema,
     MarketExploreJobStatusSchema,
-    EmailJobResponseSchema
+    EmailJobResponseSchema,
+    EmailJobPollResponseSchema
 )
 
 logger = logging.getLogger(__name__)
@@ -58,12 +59,13 @@ class MarketService:
         # get result
         return EmailJobResponseSchema(job_id=job_id, status=MailJobStatus.PENDING)
 
-    async def get_email_job(self, job_id: UUID) -> EmailJobResponseSchema:
+    async def get_email_job(self, job_id: UUID) -> EmailJobPollResponseSchema:
         job = await self.job.get_email_job(str(job_id))
+        logger.info(f'response_debug: {job}')
         if job is None:
             raise ResourceNotFoundException(
                 message="Email job not found or expired",
                 detail=f'No email job {job_id}; jobs are kept for a limited time after they\'re queued',
             )
 
-        return EmailJobResponseSchema(**job)
+        return EmailJobPollResponseSchema(**job)
