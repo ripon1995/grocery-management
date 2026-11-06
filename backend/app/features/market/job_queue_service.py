@@ -17,11 +17,6 @@ from .queues.explore_queue import EXPLORE_JOBS_QUEUE
 logger = logging.getLogger(__name__)
 
 
-class JobType(Enum):
-    EXPLORE = "EXPLORE"
-    EMAIL = "EMAIL"
-
-
 class MarketJobQueueService:
     def __init__(
             self,
