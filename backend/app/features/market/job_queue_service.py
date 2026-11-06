@@ -11,6 +11,7 @@ from app.utils.redis_key_helper import RedisKeyHelper
 from app.common.enums import ExploreJobStatus, MailJobStatus
 from app.core.config import settings
 from app.services.redis_service import RedisService
+from .queues.email_queue import EMAIL_JOB_QUEUE
 from .queues.explore_queue import EXPLORE_JOBS_QUEUE
 
 logger = logging.getLogger(__name__)
@@ -129,7 +130,7 @@ class MarketJobQueueService:
         try:
             # mandatory: the broker rejects a message no queue receives instead of dropping it
             await self.rabbitmq_channel.default_exchange.publish(
-                message, routing_key=EXPLORE_JOBS_QUEUE, mandatory=True,
+                message, routing_key=EMAIL_JOB_QUEUE, mandatory=True,
             )
         except Exception:
             await self.redis_service.delete(
