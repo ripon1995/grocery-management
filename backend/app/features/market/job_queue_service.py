@@ -11,7 +11,6 @@ from app.utils.redis_key_helper import RedisKeyHelper
 from app.common.enums import ExploreJobStatus, MailJobStatus
 from app.core.config import settings
 from app.services.redis_service import RedisService
-from app.features.market.schemas.response_schemas import EmailResponseSchema
 from .queues.explore_queue import EXPLORE_JOBS_QUEUE
 
 logger = logging.getLogger(__name__)
@@ -104,7 +103,7 @@ class MarketJobQueueService:
         logger.info(f"Enqueued explore job {job_id} for {len(ids)} items")
         return job_id
 
-    async def enqueue_email(self, email_response: EmailResponseSchema) -> str:
+    async def enqueue_email(self) -> str:
         """Record the job as pending in Redis, then publish it to the explore queue. Returns the job id."""
         job_id = str(uuid.uuid4())
 
@@ -112,7 +111,7 @@ class MarketJobQueueService:
         await self.save_job({
             "job_id": job_id,
             "status": MailJobStatus.PENDING.value,
-            "result": email_response.model_dump_json(),
+            "result": {},
         }, job_type=JobType.EMAIL)
         # 2. Publish the task message to RabbitMQ
         message = aio_pika.Message(

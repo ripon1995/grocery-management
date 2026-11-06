@@ -56,7 +56,6 @@ class MarketService:
 
     async def send_email(self) -> EmailJobResponseSchema:
         # offload to email service
-        result = await self.email.send_email()
-        job_id = await self.job.enqueue_email(result)
+        job_id = await self.job.enqueue_email()
         # get result
         return EmailJobResponseSchema(job_id=job_id, status=MailJobStatus.PENDING)
