@@ -15,6 +15,7 @@ from app.clients.redis_client import init_redis, close_redis
 from app.clients.gemini_client import init_gemini_client, close_gemini_client
 from app.clients.rabbitmq_client import init_rabbitmq_client, close_rabbitmq_client, get_rabbitmq_channel
 from app.features.market.queues.explore_queue import declare_explore_queue
+from app.features.market.queues.email_queue import declare_email_queue
 
 # ── Logging ────────────────────────────────────────────────────────────────
 # step logger
@@ -31,10 +32,11 @@ async def lifespan(app: FastAPI):
 
     # start market explore channels
     await declare_explore_queue(get_rabbitmq_channel())
+    await declare_email_queue(get_rabbitmq_channel())
 
     print("Application startup complete ✓")
 
-    yield # Application handles requests while paused here
+    yield  # Application handles requests while paused here
 
     # ==================== SHUTDOWN ====================
     print("🛑 Shutting down application...")

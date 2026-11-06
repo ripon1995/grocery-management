@@ -8,10 +8,12 @@ from app.clients.redis_client import init_redis, get_redis
 from app.core.config import settings
 from app.core.log_config import configure_logging
 from app.services.redis_service import RedisService
+from app.worker.email_consumer import EmailJobConsumer
 from app.worker.explore_consumer import ExploreJobConsumer
 from app.features.market.job_queue_service import MarketJobQueueService
 from app.features.market.market_explorer import MarketExplorer
 from app.features.market.email_service import EmailService
+from app.features.market.queues.email_queue import declare_email_queue
 
 logger = logging.getLogger(__name__)
 
@@ -25,15 +27,27 @@ class Worker:
         await init_redis()  # same order as main.py: the fake Gemini needs Redis
         await init_gemini_client()
         await init_rabbitmq_client()  # also declares explore.jobs
-        await declare_explore_queue(get_rabbitmq_channel())
 
-        consumer = ExploreJobConsumer(
-            channel=get_rabbitmq_channel(),
-            job_service=MarketJobQueueService(get_rabbitmq_channel(), RedisService(get_redis())),
-            explorer=MarketExplorer(get_gemini_client()),
-            email_service=EmailService(),
-        )
-        await consumer.start()
+        channel = get_rabbitmq_channel()
+        await declare_explore_queue(channel)
+        await declare_email_queue(channel)
+
+        job_service = MarketJobQueueService(get_rabbitmq_channel(), RedisService(get_redis()))
+        consumers = [
+            ExploreJobConsumer(
+                channel=channel,
+                job_service=job_service,
+                explorer=MarketExplorer(get_gemini_client())
+            ),
+            EmailJobConsumer(
+                channel=channel,
+                job_service=job_service,
+                email_service=EmailService()
+            ),
+        ]
+
+        for consumer in consumers:
+            await consumer.start()
         logger.info("⚙️ [WORKER] waiting for explore jobs")
         await self.stop_event.wait()  # ⚠️ CLUE 7: nothing ever sets it
 
