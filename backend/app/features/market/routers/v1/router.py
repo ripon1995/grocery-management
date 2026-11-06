@@ -71,4 +71,21 @@ async def send_mail(
         data=result,
         message="Mail job queued successfully",
     )
+
+
+@router.get(
+    path='/send-email/{job_id}',
+    summary='POLL api for email job status',
+    response_model=ApiResponseSchema[EmailJobResponseSchema],
+)
+async def get_email_job(
+        job_id: UUID,
+        market_service: MarketService = Depends(get_market_service),
+):
+    result = await market_service.get_email_job(job_id)
+    return ApiResponseSchema(
+        success=True,
+        data=result,
+        message="Email job fetched",
+    )
 # ------------------------ dummy mail ------------------
