@@ -53,7 +53,7 @@ class MarketService:
         return MarketExploreJobStatusSchema(**job, total=len(job['grocery_ids']))
 
     async def send_email(self) -> EmailJobResponseSchema:
-        """Queue the found groceries for the worker; missing IDs are reported straight away."""
+        """Queue mail task."""
         job_id = await self.job.enqueue_email()
         return EmailJobResponseSchema(job_id=job_id, status=MailJobStatus.PENDING)
 

@@ -55,4 +55,4 @@ class ExploreJobConsumer:
 
         job['status'] = ExploreJobStatus.DONE.value
         await self.job_service.save_explore_job(job)
-        logger.info(f"⚙️ [WORKER][explore] job {job_id} done  results)")
+        logger.info(f"⚙️ [WORKER][explore] job {job_id} done)")
