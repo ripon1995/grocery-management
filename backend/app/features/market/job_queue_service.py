@@ -34,38 +34,26 @@ class MarketJobQueueService:
     # private methods with single responsibilities
     # -----------------------------------------------------------------------------------------------
     @staticmethod
-    def __job_key(job_id: str, job_type: JobType) -> str:
-        if job_type == JobType.EMAIL:
-            return f'{RedisKeyHelper.EMAIL_JOB_KEY_PREFIX.value}:{job_id}'
+    def __explore_job_key(job_id: str) -> str:
         return f"{RedisKeyHelper.EXPLORE_JOB_KEY_PREFIX.value}:{job_id}"
 
+    @staticmethod
+    def __email_job_key(job_id: str) -> str:
+        return f'{RedisKeyHelper.EMAIL_JOB_KEY_PREFIX.value}:{job_id}'
+
     # -----------------------------------------------------------------------------------------------
-    # exposed methods
+    # exposed methods -> EXPLORE
     # -----------------------------------------------------------------------------------------------
 
-    async def get_job_type(self, job_id: str) -> JobType:
-        if job_id.find('market:explore') != -1:
-            return JobType.EXPLORE
-        return JobType.EMAIL
+    async def get_explore_job(self, job_id: str) -> dict | None:
+        return await self.redis_service.get(self.__explore_job_key(job_id))
 
-    async def get_job(self, job_id: str, job_type: JobType) -> dict | None:
-        if job_type == JobType.EXPLORE:
-            return await self.redis_service.get(self.__job_key(job_id, JobType.EXPLORE))
-        return await self.redis_service.get(self.__job_key(job_id, JobType.EMAIL))
-
-    async def save_job(self, job: dict, job_type: JobType) -> None:
-        if job_type == JobType.EXPLORE:
-            await self.redis_service.set(
-                self.__job_key(job['job_id'], JobType.EXPLORE),
-                job,
-                ttl=settings.EXPLORE_JOB_TTL_S
-            )
-        elif job_type == JobType.EMAIL:
-            await self.redis_service.set(
-                self.__job_key(job['job_id'], JobType.EMAIL),
-                job,
-                ttl=settings.EXPLORE_JOB_TTL_S
-            )
+    async def save_explore_job(self, job: dict) -> None:
+        await self.redis_service.set(
+            self.__explore_job_key(job['job_id']),
+            job,
+            ttl=settings.EXPLORE_JOB_TTL_S
+        )
 
     async def enqueue_job(self, grocery_ids: List[UUID]) -> str:
         """Record the job as pending in Redis, then publish it to the explore queue. Returns the job id."""
@@ -73,12 +61,12 @@ class MarketJobQueueService:
         ids = [str(grocery_id) for grocery_id in grocery_ids]
 
         # 1. Save the job state first, so the worker always finds it
-        await self.save_job({
+        await self.save_explore_job({
             "job_id": job_id,
             "status": ExploreJobStatus.PENDING.value,
             "grocery_ids": ids,
             "results": [],
-        }, job_type=JobType.EXPLORE)
+        })
         # 2. Publish the task message to RabbitMQ
         message = aio_pika.Message(
             body=json.dumps({
@@ -97,22 +85,36 @@ class MarketJobQueueService:
             )
         except Exception:
             await self.redis_service.delete(
-                self.__job_key(job_id, JobType.EXPLORE))  # never leave a job that no worker will pick up
+                self.__explore_job_key(job_id))  # never leave a job that no worker will pick up
             raise
 
         logger.info(f"Enqueued explore job {job_id} for {len(ids)} items")
         return job_id
+
+    # -----------------------------------------------------------------------------------------------
+    # exposed methods -> EMAIL
+    # -----------------------------------------------------------------------------------------------
+
+    async def get_email_job(self, job_id: str) -> dict | None:
+        return await self.redis_service.get(self.__email_job_key(job_id))
+
+    async def save_email_job(self, job: dict) -> None:
+        await self.redis_service.set(
+            self.__email_job_key(job['job_id']),
+            job,
+            ttl=settings.EXPLORE_JOB_TTL_S
+        )
 
     async def enqueue_email(self) -> str:
         """Record the job as pending in Redis, then publish it to the explore queue. Returns the job id."""
         job_id = str(uuid.uuid4())
 
         # 1. Save the job state first, so the worker always finds it
-        await self.save_job({
+        await self.save_email_job({
             "job_id": job_id,
             "status": MailJobStatus.PENDING.value,
             "result": {},
-        }, job_type=JobType.EMAIL)
+        })
         # 2. Publish the task message to RabbitMQ
         message = aio_pika.Message(
             body=json.dumps({
@@ -131,7 +133,7 @@ class MarketJobQueueService:
             )
         except Exception:
             await self.redis_service.delete(
-                self.__job_key(job_id, JobType.EMAIL))  # never leave a job that no worker will pick up
+                self.__email_job_key(job_id))  # never leave a job that no worker will pick up
             raise
 
         logger.info(f"Enqueued email job {job_id} for items")
