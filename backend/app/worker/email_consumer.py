@@ -30,7 +30,7 @@ class EmailJobConsumer:
     async def __on_message(self, message: AbstractIncomingMessage) -> None:
         async with message.process(requeue=False):
             body = json.loads(message.body)
-            logger.info(f"⚙️ [WORKER] job {body['job_id']} received (redelivered={message.redelivered})")
+            logger.info(f"⚙️ [WORKER][email] job {body['job_id']} received (redelivered={message.redelivered})")
             await self.__run_job(body['job_id'])
 
     async def __run_job(self, job_id: str) -> None:

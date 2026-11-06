@@ -101,7 +101,7 @@ class MarketJobQueueService:
         )
 
     async def enqueue_email(self) -> str:
-        """Record the job as pending in Redis, then publish it to the explore queue. Returns the job id."""
+        """Record the job as pending in Redis, then publish it to the email queue. Returns the job id."""
         job_id = str(uuid.uuid4())
 
         # 1. Save the job state first, so the worker always finds it
@@ -131,6 +131,6 @@ class MarketJobQueueService:
                 self.__email_job_key(job_id))  # never leave a job that no worker will pick up
             raise
 
-        logger.info(f"Enqueued email job {job_id} for items")
+        logger.info(f"Enqueued email job {job_id}")
 
         return job_id

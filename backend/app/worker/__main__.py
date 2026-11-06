@@ -26,13 +26,13 @@ class Worker:
         configure_logging(level=settings.LOG_LEVEL, environment=settings.ENVIRONMENT)
         await init_redis()  # same order as main.py: the fake Gemini needs Redis
         await init_gemini_client()
-        await init_rabbitmq_client()  # also declares explore.jobs
+        await init_rabbitmq_client()
 
         channel = get_rabbitmq_channel()
         await declare_explore_queue(channel)
         await declare_email_queue(channel)
 
-        job_service = MarketJobQueueService(get_rabbitmq_channel(), RedisService(get_redis()))
+        job_service = MarketJobQueueService(channel, RedisService(get_redis()))
         consumers = [
             ExploreJobConsumer(
                 channel=channel,
