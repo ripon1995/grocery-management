@@ -54,14 +54,11 @@ class MarketService:
 
     async def send_email(self) -> EmailJobResponseSchema:
         """Queue the found groceries for the worker; missing IDs are reported straight away."""
-        # offload to email service
         job_id = await self.job.enqueue_email()
-        # get result
         return EmailJobResponseSchema(job_id=job_id, status=MailJobStatus.PENDING)
 
     async def get_email_job(self, job_id: UUID) -> EmailJobPollResponseSchema:
         job = await self.job.get_email_job(str(job_id))
-        logger.info(f'response_debug: {job}')
         if job is None:
             raise ResourceNotFoundException(
                 message="Email job not found or expired",

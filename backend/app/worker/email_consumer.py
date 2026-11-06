@@ -48,4 +48,4 @@ class EmailJobConsumer:
         job['status'] = MailJobStatus.SENT.value
 
         await self.job_service.save_email_job(job)
-        logger.info(f"⚙️ [WORKER] job {job_id} done  results)")
+        logger.info(f"⚙️ [WORKER][email] job {job_id} done)")

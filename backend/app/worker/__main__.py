@@ -48,7 +48,7 @@ class Worker:
 
         for consumer in consumers:
             await consumer.start()
-        logger.info("⚙️ [WORKER] waiting for explore jobs")
+        logger.info("⚙️ [WORKER] waiting for jobs")
         await self.stop_event.wait()  # ⚠️ CLUE 7: nothing ever sets it
 
 
