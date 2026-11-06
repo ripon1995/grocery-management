@@ -39,7 +39,7 @@ class ExploreJobConsumer:
     async def __run_job(self, job_id: str) -> None:
         job = await self.job_service.get_explore_job(job_id)
         if job is None:
-            logger.info('No job left. So return')
+            logger.info('No explore job left. So return')
             return
 
         job['status'] = ExploreJobStatus.RUNNING.value

@@ -108,7 +108,7 @@ class MarketJobQueueService:
         await self.save_email_job({
             "job_id": job_id,
             "status": MailJobStatus.PENDING.value,
-            "result": {},
+            "result": None,
         })
         # 2. Publish the task message to RabbitMQ
         message = aio_pika.Message(

@@ -64,4 +64,4 @@ class EmailJobResponseSchema(BaseModel):
 class EmailJobPollResponseSchema(BaseModel):
     job_id: str
     status: MailJobStatus
-    result: EmailResponseSchema
+    result: Optional[EmailResponseSchema] = None
