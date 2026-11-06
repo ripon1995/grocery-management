@@ -8,7 +8,6 @@ from uuid import UUID
 
 from app.common.enums import ExploreJobStatus, MailJobStatus
 from app.core.exceptions import ResourceNotFoundException
-from .email_service import EmailService
 from .repository import MarketRepository
 from .job_queue_service import MarketJobQueueService
 from .schemas.response_schemas import (
@@ -25,11 +24,9 @@ class MarketService:
             self,
             repo: MarketRepository,
             job: MarketJobQueueService,
-            email: EmailService
     ):
         self.repo = repo
         self.job = job
-        self.email = email
 
     async def explore(self, grocery_ids: List[UUID]) -> MarketExploreJobSchema:
         """Queue the found groceries for the worker; missing IDs are reported straight away."""
